@@ -1,18 +1,18 @@
 #pragma once
 
-#include "vk_window.hpp"
+#include "ic_window.hpp"
 
 namespace render {
-class VkRenderer {
+class ICRenderer {
 private:
 public:
-    VkRenderer(int width, int height);
-    ~VkRenderer();
+    ICRenderer(int width, int height);
+    ~ICRenderer();
 
     void init();
     void draw();
     void cleanup();
 
-    VkWindow window;
+    ICWindow window;
 };
 } // namespace render

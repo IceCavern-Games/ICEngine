@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vk_types.hpp"
+#include "ic_types.hpp"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -8,7 +8,7 @@
 #include <string>
 
 namespace render {
-class VkWindow {
+class ICWindow {
 private:
     int width, height;
     std::string windowName;
@@ -17,11 +17,11 @@ private:
     void initWindow();
 
 public:
-    VkWindow(int w, int h, std::string name);
-    ~VkWindow();
+    ICWindow(int w, int h, std::string name);
+    ~ICWindow();
 
-    VkWindow(const VkWindow &) = delete;
-    VkWindow &operator=(const VkWindow &) = delete;
+    ICWindow(const ICWindow &) = delete;
+    ICWindow &operator=(const ICWindow &) = delete;
 
     bool shouldClose() { return glfwWindowShouldClose(pWindow); }
     VkExtent2D getExtent() {
