@@ -15,3 +15,5 @@ SET(GLM_TEST_ENABLE OFF CACHE BOOL "GLM Build unit tests")
 # Executable
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} Vulkan::Vulkan glm::glm)
+
+add_subdirectory("src")
