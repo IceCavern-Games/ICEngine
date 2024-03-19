@@ -14,6 +14,12 @@ set(Source_Files__Renderer
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer/ic_window.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer/ic_window.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer/ic_types.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer/ic_device.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer/ic_device.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer/ic_swap_chain.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer/ic_swap_chain.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer/util/initializers.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer/util/initializers.cpp
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${Source_Files__Renderer})

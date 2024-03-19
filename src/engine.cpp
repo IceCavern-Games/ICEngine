@@ -8,7 +8,7 @@ Engine::~Engine() {}
 void Engine::run() {
     renderer.init();
     // main loop
-    while (!renderer.window.shouldClose()) {
+    while (!renderer.shouldClose()) {
         renderer.draw();
     }
     renderer.cleanup();

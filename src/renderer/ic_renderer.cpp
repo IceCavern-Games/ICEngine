@@ -1,7 +1,7 @@
 #include "ic_renderer.hpp"
 
 namespace render {
-ICRenderer::ICRenderer(int width, int height) : window{width, height, "ICEngine"} {}
+ICRenderer::ICRenderer() {}
 ICRenderer::~ICRenderer() {}
 
 void ICRenderer::init() {}
