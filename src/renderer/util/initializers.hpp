@@ -6,13 +6,12 @@ namespace init {
 VkRenderingAttachmentInfo
 attachmentInfo(VkImageView view, VkClearValue *clear,
                VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, uint32_t bufferCount);
 VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlags flags = 0);
 VkCommandBufferSubmitInfo commandBufferSubmitInfo(VkCommandBuffer cmd);
-VkRenderingInfo renderingInfo(VkExtent2D renderExtent,
-                              VkRenderingAttachmentInfo *colorAttachment,
+VkRenderingInfo renderingInfo(VkExtent2D renderExtent, VkRenderingAttachmentInfo *colorAttachment,
                               VkRenderingAttachmentInfo *depthAttachment);
-VkSubmitInfo2 submitInfo(VkCommandBufferSubmitInfo *cmd,
-                         VkSemaphoreSubmitInfo *signalSemaphoreInfo,
+VkSubmitInfo2 submitInfo(VkCommandBufferSubmitInfo *cmd, VkSemaphoreSubmitInfo *signalSemaphoreInfo,
                          VkSemaphoreSubmitInfo *waitSemaphoreInfo);
 
 template <typename T> VkPushConstantRange pushConstants(VkShaderStageFlags flags) {

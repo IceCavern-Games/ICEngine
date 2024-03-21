@@ -18,8 +18,14 @@ set(Source_Files__Renderer
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer/ic_device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer/ic_swap_chain.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer/ic_swap_chain.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer/mesh.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer/mesh.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer/util/initializers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer/util/initializers.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer/util/pipeline_builder.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer/util/pipeline_builder.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer/util/images.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer/util/images.cpp
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${Source_Files__Renderer})

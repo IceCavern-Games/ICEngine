@@ -3,8 +3,7 @@
 namespace init {
 VkRenderingAttachmentInfo attachmentInfo(VkImageView view, VkClearValue *clear,
                                          VkImageLayout layout) {
-    VkRenderingAttachmentInfo info = {.sType =
-                                          VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+    VkRenderingAttachmentInfo info = {.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
     info.pNext = nullptr;
 
     info.imageView = view;
@@ -18,10 +17,18 @@ VkRenderingAttachmentInfo attachmentInfo(VkImageView view, VkClearValue *clear,
     return info;
 }
 
-VkCommandBufferBeginInfo
-commandBufferBeginInfo(VkCommandBufferUsageFlags flags /*= 0*/) {
-    VkCommandBufferBeginInfo info = {.sType =
-                                         VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, uint32_t bufferCount) {
+    VkCommandBufferAllocateInfo info = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
+    info.pNext = nullptr;
+    info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    info.commandPool = pool;
+    info.commandBufferCount = bufferCount;
+
+    return info;
+}
+
+VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlags flags /*= 0*/) {
+    VkCommandBufferBeginInfo info = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     info.pNext = nullptr;
     info.pInheritanceInfo = nullptr;
     info.flags = flags;
@@ -30,8 +37,7 @@ commandBufferBeginInfo(VkCommandBufferUsageFlags flags /*= 0*/) {
 }
 
 VkCommandBufferSubmitInfo commandBufferSubmitInfo(VkCommandBuffer cmd) {
-    VkCommandBufferSubmitInfo info = {.sType =
-                                          VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO};
+    VkCommandBufferSubmitInfo info = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO};
     info.pNext = nullptr;
     info.commandBuffer = cmd;
     info.deviceMask = 0;
@@ -39,8 +45,7 @@ VkCommandBufferSubmitInfo commandBufferSubmitInfo(VkCommandBuffer cmd) {
     return info;
 }
 
-VkRenderingInfo renderingInfo(VkExtent2D renderExtent,
-                              VkRenderingAttachmentInfo *colorAttachment,
+VkRenderingInfo renderingInfo(VkExtent2D renderExtent, VkRenderingAttachmentInfo *colorAttachment,
                               VkRenderingAttachmentInfo *depthAttachment) {
     VkRenderingInfo info{.sType = VK_STRUCTURE_TYPE_RENDERING_INFO};
     info.pNext = nullptr;
@@ -54,8 +59,7 @@ VkRenderingInfo renderingInfo(VkExtent2D renderExtent,
     return info;
 }
 
-VkSubmitInfo2 submitInfo(VkCommandBufferSubmitInfo *cmd,
-                         VkSemaphoreSubmitInfo *signalSemaphoreInfo,
+VkSubmitInfo2 submitInfo(VkCommandBufferSubmitInfo *cmd, VkSemaphoreSubmitInfo *signalSemaphoreInfo,
                          VkSemaphoreSubmitInfo *waitSemaphoreInfo) {
     VkSubmitInfo2 info = {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2};
     info.pNext = nullptr;

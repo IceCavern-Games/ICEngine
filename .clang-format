@@ -7,5 +7,5 @@ BreakBeforeBraces: Attach
 AllowShortIfStatementsOnASingleLine: false
 IndentCaseLabels: false
 AccessModifierOffset: -4
-ColumnLimit: 88
+ColumnLimit: 100
 ...

@@ -8,6 +8,7 @@
 #include <vulkan/vk_enum_string_helper.h>
 
 #include <stdexcept>
+#include <vector>
 
 #define VK_CHECK(x)                                                                    \
     do {                                                                               \
@@ -17,3 +18,15 @@
             abort();                                                                   \
         }                                                                              \
     } while (0)
+
+struct Pipeline {
+    VkPipeline pipeline;
+    VkPipelineLayout layout;
+    std::vector<VkShaderModule> shaderModules;
+    VkDescriptorSetLayout descriptorSetLayout;
+    bool transparent = false;
+
+    bool operator<(const Pipeline &other) const {
+        return pipeline < other.pipeline && transparent <= other.transparent;
+    }
+};
