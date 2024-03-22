@@ -3,6 +3,8 @@
 #include "util/initializers.hpp"
 #include "util/pipeline_builder.hpp"
 
+#include <iostream>
+
 namespace render {
 ICRenderer::ICRenderer() {}
 ICRenderer::~ICRenderer() {}
@@ -57,7 +59,6 @@ void ICRenderer::draw() {
     }
 
     icSwapChain.waitForFrameFence(&imageIndex);
-
     VK_CHECK(vkResetCommandBuffer(commandBuffers[imageIndex], 0));
 
     VkCommandBufferBeginInfo beginInfo = init::commandBufferBeginInfo();
@@ -88,7 +89,6 @@ void ICRenderer::draw() {
     renderingInfo.pColorAttachments = &colorAttachment;
     renderingInfo.pDepthAttachment = &depthAttachment;
     renderingInfo.pStencilAttachment = nullptr;
-    vkCmdBeginRendering(commandBuffers[imageIndex], &renderingInfo);
 
     VkViewport viewport = {};
     viewport.x = 0;
@@ -114,9 +114,14 @@ void ICRenderer::draw() {
                                 icSwapChain.getSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED,
                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
+    auto function = vkGetInstanceProcAddr(icDevice.instance(), "vkCmdBeginRenderingKHR");
+    ((PFN_vkCmdBeginRenderingKHR)function)(commandBuffers[imageIndex], &renderingInfo);
+
     triangle.bind(commandBuffers[imageIndex], testPipeline.layout, icSwapChain.getCurrentFrame());
     triangle.draw(commandBuffers[imageIndex]);
-    vkCmdEndRendering(commandBuffers[imageIndex]);
+
+    auto function2 = vkGetInstanceProcAddr(icDevice.instance(), "vkCmdEndRenderingKHR");
+    ((PFN_vkCmdEndRenderingKHR)function2)(commandBuffers[imageIndex]);
 
     util::transitionImageLayout(commandBuffers[imageIndex], icSwapChain.getImage(imageIndex),
                                 icSwapChain.getSwapChainImageFormat(),

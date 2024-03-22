@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include <vulkan/vulkan_beta.h>
+
 namespace render {
 
 struct SwapChainSupportDetails {
@@ -99,7 +101,8 @@ private:
 
     const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
     const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                                                        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME};
+                                                        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+                                                        VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME};
 };
 
 } // namespace render
