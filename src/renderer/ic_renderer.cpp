@@ -113,7 +113,6 @@ void ICRenderer::draw() {
     util::transitionImageLayout(commandBuffers[imageIndex], icSwapChain.getImage(imageIndex),
                                 icSwapChain.getSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED,
                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
     auto function = vkGetInstanceProcAddr(icDevice.instance(), "vkCmdBeginRenderingKHR");
     ((PFN_vkCmdBeginRenderingKHR)function)(commandBuffers[imageIndex], &renderingInfo);
 
