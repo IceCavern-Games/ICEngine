@@ -64,7 +64,7 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/icengine-config.cmake"
 "include(CMakeFindDependencyMacro)\n"
 "find_dependency(glfw3 CONFIG REQUIRED)\n"
 "find_dependency(glm CONFIG REQUIRED)\n"
-"find_dependency(vulkan REQUIRED)\n"
+"find_dependency(Vulkan REQUIRED)\n"
 "include(\"\${CMAKE_CURRENT_LIST_DIR}/icengine-targets.cmake\")\n"
 )
 
