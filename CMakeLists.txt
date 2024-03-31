@@ -55,19 +55,19 @@ install(
 
 # Generate and install *-targets.cmake
 install(EXPORT ${PROJECT_NAME}_targets
-        FILE ${PROJECT_NAME}-targets.cmake
+        FILE icengine-targets.cmake
         NAMESPACE IC::
         DESTINATION share/icengine)
 
 # Generate the config file in the current binary dir (this ensures it's not placed directly in source)
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/icengine-config.cmake"
 "include(CMakeFindDependencyMacro)\n"
 "find_dependency(glfw3 CONFIG REQUIRED)\n"
 "find_dependency(glm CONFIG REQUIRED)\n"
 "find_dependency(vulkan REQUIRED)\n"
-"include(\"\${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}-targets.cmake\")\n"
+"include(\"\${CMAKE_CURRENT_LIST_DIR}/icengine-targets.cmake\")\n"
 )
 
 # Install the generated config file
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/icengine-config.cmake"
         DESTINATION share/icengine)
