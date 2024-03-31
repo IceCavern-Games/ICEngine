@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 # Library
-add_library(${PROJECT_NAME} OBJECT
+add_library(${PROJECT_NAME}
     src/ic_app.cpp
 )
 
@@ -23,10 +23,8 @@ option(IC_RENDERER_VULKAN "Make Vulkan Renderer available" OFF)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
-set(GLM_TEST_ENABLE OFF CACHE BOOL "GLM Build unit tests")
-
 # Tracks which libraries we need to link, depending on the options above.
-set(LIBS, glfw ${GLFW_LIBRARIES} glm::glm)
+set(LIBS glfw glm::glm)
 
 if (IC_RENDERER_VULKAN)
     message("Vulkan Renderer Enabled")
