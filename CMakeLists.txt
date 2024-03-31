@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.21)
 project(IceCavernEngine)
 
+include(GNUInstallDirs)
+
 # Use C++ 20
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
@@ -13,6 +15,7 @@ add_library(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/icengine>
     PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
@@ -43,7 +46,12 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 
-install(FILES include/ic.h DESTINATION include)
+install(
+    FILES
+        include/ic.h
+        include/ic_app.h
+    DESTINATION include/icengine
+)
 
 # Generate and install *-targets.cmake
 install(EXPORT ${PROJECT_NAME}_targets
@@ -56,6 +64,7 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
 "include(CMakeFindDependencyMacro)\n"
 "find_dependency(glfw3 CONFIG REQUIRED)\n"
 "find_dependency(glm CONFIG REQUIRED)\n"
+"find_dependency(vulkan REQUIRED)\n"
 "include(\"\${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}-targets.cmake\")\n"
 )
 
