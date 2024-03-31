@@ -12,6 +12,10 @@ add_library(${PROJECT_NAME}
     src/ic_app.cpp
 )
 
+if (BUILD_SHARED_LIBS AND MSVC)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE ICENGINE_EXPORTS)
+endif()
+
 target_include_directories(${PROJECT_NAME}
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
