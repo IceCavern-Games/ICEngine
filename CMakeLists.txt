@@ -35,3 +35,30 @@ if (IC_RENDERER_VULKAN)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
+
+# Install the library and its headers
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}_targets
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+
+install(FILES include/ic.h DESTINATION include)
+
+# Generate and install *-targets.cmake
+install(EXPORT ${PROJECT_NAME}_targets
+        FILE ${PROJECT_NAME}-targets.cmake
+        NAMESPACE IC::
+        DESTINATION share/icengine)
+
+# Generate the config file in the current binary dir (this ensures it's not placed directly in source)
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+"include(CMakeFindDependencyMacro)\n"
+"find_dependency(glfw3 CONFIG REQUIRED)\n"
+"find_dependency(glm CONFIG REQUIRED)\n"
+"include(\"\${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}-targets.cmake\")\n"
+)
+
+# Install the generated config file
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+        DESTINATION share/icengine)
