@@ -1,7 +1,21 @@
 {
+    "name": "icengine",
     "dependencies": [
+        {
+            "name": "vcpkg-cmake",
+            "host": true
+        },
+        {
+            "name": "vcpkg-cmake-config",
+            "host": true
+        },
         "glfw3",
-        "glm",
-        "vulkan"
-    ]
+        "glm"
+    ],
+    "features": {
+        "ic-renderer-vulkan": {
+            "description": "Using Vulkan as the rendering backend",
+            "dependencies": ["vulkan"]
+        }
+    }
 }
