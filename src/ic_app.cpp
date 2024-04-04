@@ -37,12 +37,10 @@ bool App::run(const Config *c)
     GLFWwindow *window = glfwCreateWindow(app_config.width, app_config.height, app_config.name, nullptr, nullptr);
 
 #ifdef IC_RENDERER_VULKAN
-    IC_CORE_INFO("Yo, we got Vulkan");
-
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
-    std::cout << extensionCount << " extensions supported\n";
+    IC_CORE_INFO("{0} Vulkan extensions supported.", extensionCount;
 #endif
 
     app_is_running = true;
