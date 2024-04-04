@@ -5,7 +5,7 @@ using namespace IC;
 int main()
 {
     Config config;
-    config.name = "ICEngine Test App";
+    config.name = "ICEditor";
     config.width = 1280;
     config.height = 720;
 

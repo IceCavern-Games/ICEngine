@@ -76,9 +76,6 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/icengine-config.cmake"
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/icengine-config.cmake"
         DESTINATION share/icengine)
 
-
-add_executable(TestEditor
-    editor/main.cpp
-)
-
-target_link_libraries(TestEditor PRIVATE IceCavernEngine)
+if (BUILD_IC_EDITOR)
+    add_subdirectory(editor)
+endif()
