@@ -3,6 +3,7 @@ vcpkg_installed
 
 # VS Code
 .vscode/*
+.vs/*
 *.code-workspace
 
 # CMake

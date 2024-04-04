@@ -25,7 +25,7 @@ target_include_directories(${PROJECT_NAME}
 )
 
 # Platform Variables
-option(IC_RENDERER_VULKAN "Make Vulkan Renderer available" OFF)
+option(IC_RENDERER_VULKAN "Make Vulkan Renderer available" OFF`)
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
@@ -75,3 +75,10 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/icengine-config.cmake"
 # Install the generated config file
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/icengine-config.cmake"
         DESTINATION share/icengine)
+
+
+add_executable(TestEditor
+    editor/main.cpp
+)
+
+target_link_libraries(TestEditor PRIVATE IceCavernEngine)
