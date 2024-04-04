@@ -6,10 +6,12 @@ include(GNUInstallDirs)
 # Use C++ 20
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
+set(CMAKE_POSITION_INDEPENDENT_CODE true)
 
 # Library
 add_library(${PROJECT_NAME}
     src/ic_app.cpp
+    src/ic_log.cpp
 )
 
 if (BUILD_SHARED_LIBS AND MSVC)
@@ -29,9 +31,10 @@ option(IC_RENDERER_VULKAN "Make Vulkan Renderer available" OFF`)
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 # Tracks which libraries we need to link, depending on the options above.
-set(LIBS glfw glm::glm)
+set(LIBS glfw glm::glm spdlog::spdlog)
 
 if (IC_RENDERER_VULKAN)
     message("Vulkan Renderer Enabled")
@@ -54,6 +57,7 @@ install(
     FILES
         include/ic.h
         include/ic_app.h
+        include/ic_log.h
     DESTINATION include/icengine
 )
 
@@ -68,6 +72,7 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/icengine-config.cmake"
 "include(CMakeFindDependencyMacro)\n"
 "find_dependency(glfw3 CONFIG REQUIRED)\n"
 "find_dependency(glm CONFIG REQUIRED)\n"
+"find_dependency(spdlog CONFIG REQUIRED)\n"
 "find_dependency(Vulkan REQUIRED)\n"
 "include(\"\${CMAKE_CURRENT_LIST_DIR}/icengine-targets.cmake\")\n"
 )
