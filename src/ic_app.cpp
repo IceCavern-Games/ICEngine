@@ -40,7 +40,7 @@ bool App::run(const Config *c)
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
-    IC_CORE_INFO("{0} Vulkan extensions supported.", extensionCount;
+    IC_CORE_INFO("{0} Vulkan extensions supported.", extensionCount);
 #endif
 
     app_is_running = true;
