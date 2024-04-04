@@ -27,10 +27,11 @@ namespace
 bool App::run(const Config *c)
 {
     Log::Init();
-    IC_CORE_INFO("Hello, world.");
 
     // Copy config over.
     app_config = *c;
+
+    IC_CORE_INFO("Hello, {0}.", app_config.name);
 
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);

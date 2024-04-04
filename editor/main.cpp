@@ -9,7 +9,5 @@ int main()
     config.width = 1280;
     config.height = 720;
 
-    IC_APP_INFO("Editor Booting...");
-
     App::run(&config);
 }
