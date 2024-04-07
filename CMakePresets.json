@@ -1,0 +1,20 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "default",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            }
+        },
+        {
+            "name": "editor",
+            "inherits": "default",
+            "cacheVariables": {
+                "BUILD_IC_EDITOR": "On",
+                "IC_RENDERER_VULKAN": "On"
+            }
+        }
+    ]
+}

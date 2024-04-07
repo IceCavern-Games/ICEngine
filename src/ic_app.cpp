@@ -1,4 +1,5 @@
 #include <ic_app.h>
+#include <ic_log.h>
 
 #ifdef IC_RENDERER_VULKAN
 #define GLFW_INCLUDE_VULKAN
@@ -25,22 +26,22 @@ namespace
 
 bool App::run(const Config *c)
 {
-    std::cout << "Hello, world." << std::endl;
+    Log::Init();
 
     // Copy config over.
     app_config = *c;
+
+    IC_CORE_INFO("Hello, {0}.", app_config.name);
 
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     GLFWwindow *window = glfwCreateWindow(app_config.width, app_config.height, app_config.name, nullptr, nullptr);
 
 #ifdef IC_RENDERER_VULKAN
-    std::cout << "Yo, we got Vulkan" << std::endl;
-
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
-    std::cout << extensionCount << " extensions supported\n";
+    IC_CORE_INFO("{0} Vulkan extensions supported.", extensionCount);
 #endif
 
     app_is_running = true;

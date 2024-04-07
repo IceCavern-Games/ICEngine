@@ -8,7 +8,7 @@
 3. Run CMake Configuration
 
 ```sh
-cmake --preset=default
+cmake --preset editor
 ```
 
 4. Build the project
@@ -17,8 +17,8 @@ cmake --preset=default
 cmake --build build
 ```
 
-5. Run the executable
+5. Launch the editor
 
 ```sh
-./build/IceCavernGameEngine
+./build/ICEditor(.exe)
 ```
