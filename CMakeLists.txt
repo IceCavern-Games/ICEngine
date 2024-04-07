@@ -62,7 +62,7 @@ target_link_libraries(${PROJECT_NAME}
 ##############################################
 # Installation Instructions
 include(GNUInstallDirs)
-set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/icengine)
+set(INSTALL_CONFIGDIR share/icengine)
 
 install(
     TARGETS ${PROJECT_NAME}
