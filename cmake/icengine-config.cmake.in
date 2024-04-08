@@ -1,0 +1,10 @@
+get_filename_component(IC_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+if (NOT TARGET IC::ICEngine)
+    include(CMakeFindDependencyMacro)
+    find_dependency(glfw3 CONFIG REQUIRED)
+    find_dependency(glm CONFIG REQUIRED)
+    find_dependency(spdlog CONFIG REQUIRED)
+    find_dependency(Vulkan REQUIRED)
+    include("${IC_CMAKE_DIR}/icengine-targets.cmake")
+endif()
