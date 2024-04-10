@@ -1,5 +1,10 @@
 #pragma once
 
+#include <GLFW/glfw3.h>
+#include <ic_graphics.h>
+
+#include <vector>
+
 namespace IC::Renderer
 {
     enum class RendererType
@@ -8,21 +13,36 @@ namespace IC::Renderer
         Vulkan
     };
 
-    class Renderer 
+    struct RendererConfig
+    {
+        RendererType renderer_type;
+        GLFWwindow *pWindow;
+        int width;
+        int height;
+    };
+
+    class ICRenderer
     {
     public:
-        virtual void draw() = 0;
-        virtual void draw_mesh() = 0;
+        ICRenderer(RendererConfig config) { pWindow = config.pWindow; };
+        ~ICRenderer() = default;
+        virtual void draw_frame() = 0;
+        virtual void add_mesh(ICMesh &meshData, ICMaterial &materialData) = 0;
 
-    private:
-        static Renderer* make_vulkan();
+    protected:
+        GLFWwindow *pWindow;
+
+        static ICRenderer *make_vulkan(RendererConfig &renderer_config);
+
     public:
-        static Renderer* make_renderer(RendererType type) 
+        static ICRenderer *make_renderer(RendererConfig &renderer_config)
         {
-            switch(type)
+            switch (renderer_config.renderer_type)
             {
-                case RendererType::None: return nullptr;
-                case RendererType::Vulkan: return make_vulkan();
+            case RendererType::Vulkan:
+                return make_vulkan(renderer_config);
+            default:
+                return nullptr;
             }
         }
     };

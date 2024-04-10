@@ -17,6 +17,7 @@ option(IC_RENDERER_VULKAN "Make Vulkan Renderer available" OFF)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+find_package(tinyobjloader CONFIG REQUIRED)
 
 # Tracks which libraries we need to link, depending on the options above.
 set(LIBS glfw glm::glm)
@@ -27,6 +28,20 @@ if (IC_RENDERER_VULKAN)
 
     add_compile_definitions(IC_RENDERER_VULKAN)
     set(LIBS ${LIBS} Vulkan::Vulkan)
+
+    set(SOURCE_FILES__RENDERER
+        src/vulkan/descriptors.cpp
+        src/vulkan/pipelines.cpp
+        src/vulkan/swap_chain.cpp
+        src/vulkan/vulkan_device.cpp
+        src/vulkan/vulkan_initializers.cpp
+        src/vulkan/vulkan_renderer.cpp
+        src/vulkan/vulkan_util.cpp
+    )
+
+    set (INCLUDE_DIR__RENDERER
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan
+    )
 endif()
 
 ##############################################
@@ -34,7 +49,11 @@ endif()
 add_library(${PROJECT_NAME}
     src/ic_app.cpp
     src/ic_log.cpp
+    src/ic_graphics.cpp
 )
+
+# Renderer sources
+target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES__RENDERER})
 
 # This uses C++20 in its public interface, so CMake projects using ICEngine must support it too.
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
@@ -54,9 +73,13 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
+# Renderer include directory
+target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR__RENDERER})
+
 target_link_libraries(${PROJECT_NAME}
     PRIVATE ${LIBS}
     PUBLIC spdlog::spdlog_header_only
+    tinyobjloader::tinyobjloader
 )
 
 ##############################################

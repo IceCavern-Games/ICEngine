@@ -1,5 +1,7 @@
 #pragma once
 
+#include <renderer.h>
+
 namespace IC
 {
     // Application Configuration
