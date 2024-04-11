@@ -9,7 +9,7 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace IC::Renderer
+namespace IC
 {
     void PipelineBuilder::clear()
     {

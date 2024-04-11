@@ -5,7 +5,7 @@
 #include <vector>
 #include <deque>
 
-namespace IC::Renderer
+namespace IC
 {
     // Builds Descriptor Set Layouts
     struct DescriptorLayoutBuilder

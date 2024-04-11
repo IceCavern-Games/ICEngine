@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace IC::Renderer
+namespace IC
 {
     class PipelineBuilder
     {

@@ -4,17 +4,17 @@
 
 namespace IC
 {
-    class ICCamera
+    class Camera
     {
-    private:
-        glm::vec3 _lookVector;
-        glm::vec3 _position;
-
     public:
-        ICCamera();
-        ~ICCamera();
+        Camera();
+        ~Camera();
 
         glm::vec3 GetLookVector() { return _lookVector; }
         glm::vec3 GetPosition() { return _position; }
+
+    private:
+        glm::vec3 _lookVector;
+        glm::vec3 _position;
     };
 }

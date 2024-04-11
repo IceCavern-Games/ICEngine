@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace IC::Renderer
+namespace IC
 {
 
     class SwapChain
@@ -49,7 +49,7 @@ namespace IC::Renderer
         VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
         void WaitForFrameFence(uint32_t *imageIndex);
         void ImmediateSubmitCommandBuffers(const VkCommandBuffer buffer,
-                                      std::function<void(VkCommandBuffer cmd)> &&function);
+                                           std::function<void(VkCommandBuffer cmd)> &&function);
 
     private:
         void CreateSwapChain();

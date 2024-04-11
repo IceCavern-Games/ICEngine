@@ -3,7 +3,7 @@
 #include "vulkan_types.h"
 #include "vulkan_device.h"
 
-namespace IC::Renderer::Util
+namespace IC
 {
     void CreateAndFillBuffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize, VkBufferUsageFlags bufferUsageFlags, VkMemoryPropertyFlags memoryPropertyFlags, AllocatedBuffer &allocatedBuffer);
     VkDescriptorType MaterialInputTypeMapping(MaterialInputType inputType);

@@ -25,7 +25,7 @@
         }                                                   \
     } while (0)
 
-namespace IC::Renderer
+namespace IC
 {
     struct AllocatedBuffer
     {

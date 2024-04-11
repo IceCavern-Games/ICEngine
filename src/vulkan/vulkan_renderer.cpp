@@ -1,14 +1,18 @@
-#include "vulkan_renderer.h"
-
 #include "vulkan_initializers.h"
+#include "vulkan_renderer.h"
 #include "vulkan_util.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
 
-namespace IC::Renderer
+namespace IC
 {
+    Renderer *Renderer::MakeVulkan(RendererConfig &rendererConfig)
+    {
+        return new VulkanRenderer(rendererConfig);
+    }
+
     VulkanRenderer::VulkanRenderer(RendererConfig &config) : Renderer{config}, _swapChain{_vulkanDevice, {static_cast<uint32_t>(config.Width), static_cast<uint32_t>(config.Height)}}
     {
         CreateCommandBuffers();
@@ -99,8 +103,8 @@ namespace IC::Renderer
 
         // transitioning to COLOR_ATTACHMENT_OPTIMAL for imgui, imgui expects image to be in this format
         // todo: actually implement imgui
-        Util::TransitionImageLayout(_cBuffers[imageIndex], _swapChain.GetImage(imageIndex), _swapChain.GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED,
-                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        TransitionImageLayout(_cBuffers[imageIndex], _swapChain.GetImage(imageIndex), _swapChain.GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED,
+                              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
         auto function = vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdBeginRenderingKHR");
         ((PFN_vkCmdBeginRenderingKHR)function)(_cBuffers[imageIndex], &renderingInfo);
@@ -124,8 +128,8 @@ namespace IC::Renderer
         auto function2 = vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdEndRenderingKHR");
         ((PFN_vkCmdEndRenderingKHR)function2)(_cBuffers[imageIndex]);
 
-        Util::TransitionImageLayout(_cBuffers[imageIndex], _swapChain.GetImage(imageIndex), _swapChain.GetSwapChainImageFormat(),
-                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        TransitionImageLayout(_cBuffers[imageIndex], _swapChain.GetImage(imageIndex), _swapChain.GetSwapChainImageFormat(),
+                              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
         if (vkEndCommandBuffer(_cBuffers[imageIndex]) != VK_SUCCESS)
         {
@@ -159,8 +163,8 @@ namespace IC::Renderer
         meshRenderData.renderPipeline = _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), _swapChain, materialData);
 
         // buffers
-        Util::CreateAndFillBuffer(_vulkanDevice, meshData.Vertices.data(), sizeof(meshData.Vertices[0]) * meshData.VertexCount, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, meshRenderData.vertexBuffer);
-        Util::CreateAndFillBuffer(_vulkanDevice, meshData.Indices.data(), sizeof(meshData.Indices[0]) * meshData.IndexCount, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, meshRenderData.indexBuffer);
+        CreateAndFillBuffer(_vulkanDevice, meshData.Vertices.data(), sizeof(meshData.Vertices[0]) * meshData.VertexCount, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, meshRenderData.vertexBuffer);
+        CreateAndFillBuffer(_vulkanDevice, meshData.Indices.data(), sizeof(meshData.Indices[0]) * meshData.IndexCount, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, meshRenderData.indexBuffer);
 
         meshRenderData.mvpBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
         meshRenderData.constantsBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -170,7 +174,7 @@ namespace IC::Renderer
                                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                        meshRenderData.mvpBuffers[i].buffer, meshRenderData.mvpBuffers[i].memory);
 
-            Util::CreateAndFillBuffer(_vulkanDevice, &materialData.Constants, sizeof(MaterialConstants), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, meshRenderData.constantsBuffers[i]);
+            CreateAndFillBuffer(_vulkanDevice, &materialData.Constants, sizeof(MaterialConstants), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, meshRenderData.constantsBuffers[i]);
 
             vkMapMemory(_vulkanDevice.Device(), meshRenderData.mvpBuffers[i].memory, 0, sizeof(MVPObject), 0, &meshRenderData.mvpBuffers[i].mapped_memory);
             vkMapMemory(_vulkanDevice.Device(), meshRenderData.constantsBuffers[i].memory, 0, sizeof(MaterialConstants), 0, &meshRenderData.constantsBuffers[i].mapped_memory);

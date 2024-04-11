@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-namespace IC::Renderer::Init
+namespace IC::Init
 {
     VkRenderingAttachmentInfo AttachmentInfo(VkImageView view, VkClearValue *clear, VkImageLayout layout)
     {

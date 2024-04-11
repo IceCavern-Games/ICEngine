@@ -1,7 +1,7 @@
 #include "descriptors.h"
 #include "swap_chain.h"
 
-namespace IC::Renderer
+namespace IC
 {
     void DescriptorLayoutBuilder::AddBinding(uint32_t binding, VkDescriptorType type)
     {

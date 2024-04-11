@@ -4,7 +4,7 @@
 
 #include <cstring>
 
-namespace IC::Renderer::Util
+namespace IC
 {
     void CreateAndFillBuffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize, VkBufferUsageFlags bufferUsageFlags,
                              VkMemoryPropertyFlags memoryPropertyFlags, AllocatedBuffer &allocatedBuffer)

@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace IC::Renderer
+namespace IC
 {
 
     struct SwapChainSupportDetails
@@ -108,11 +108,11 @@ namespace IC::Renderer
         const std::vector<const char *> _validationLayers = {"VK_LAYER_KHRONOS_validation"};
 #ifdef IC_PLATFORM_MACOS
         const std::vector<const char *> _deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                                                            VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
-                                                            VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME};
+                                                             VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+                                                             VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME};
 #else
         const std::vector<const char *> _deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                                                            VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME};
+                                                             VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME};
 #endif
     };
 

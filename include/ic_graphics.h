@@ -10,6 +10,12 @@
 
 namespace IC
 {
+    enum class RendererType
+    {
+        None = -1,
+        Vulkan
+    };
+
     enum class MaterialInputType
     {
         Texture,

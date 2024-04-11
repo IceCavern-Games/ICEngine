@@ -8,15 +8,15 @@ namespace IC
 {
     class Log
     {
-    private:
-        static std::shared_ptr<spdlog::logger> _appLogger;
-        static std::shared_ptr<spdlog::logger> _coreLogger;
-
     public:
         static void Init();
 
         inline static std::shared_ptr<spdlog::logger> &GetAppLogger() { return _appLogger; }
         inline static std::shared_ptr<spdlog::logger> &GetCoreLogger() { return _coreLogger; }
+
+    private:
+        static std::shared_ptr<spdlog::logger> _appLogger;
+        static std::shared_ptr<spdlog::logger> _coreLogger;
     };
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ic_renderer.h"
+#include <ic_graphics.h>
 
 namespace IC
 {
@@ -9,6 +9,13 @@ namespace IC
     {
         // Application name.
         const char *Name = "ic";
+
+        // Which renderer to use.
+#ifdef IC_RENDERER_VULKAN
+        RendererType RendererType = RendererType::Vulkan;
+#else
+        RendererType RendererType = RendererType::None;
+#endif
 
         // Starting width, in pixels.
         // Depending on the OS DPI, the true window size may be a multiple of this.

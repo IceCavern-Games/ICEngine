@@ -1,12 +1,11 @@
 #include <ic_app.h>
 #include <ic_log.h>
+#include "ic_renderer.h"
 
 #ifdef IC_RENDERER_VULKAN
 #define GLFW_INCLUDE_VULKAN
-#include <vulkan/vulkan.h>
 #endif
 
-#include "vulkan/vulkan_renderer.h"
 #include <GLFW/glfw3.h>
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -23,14 +22,13 @@ namespace
     Config _appConfig;
     bool _appIsRunning = false;
     bool _appIsExiting = false;
+    RendererConfig _rendererConfig{};
+    Renderer *_appRendererApi;
 }
 
 bool App::Run(const Config *c)
 {
     Log::Init();
-
-    IC::Renderer::RendererConfig rendererConfig{};
-    IC::Renderer::Renderer *renderer;
 
     // Copy config over.
     _appConfig = *c;
@@ -41,22 +39,24 @@ bool App::Run(const Config *c)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     GLFWwindow *window = glfwCreateWindow(_appConfig.Width, _appConfig.Height, _appConfig.Name, nullptr, nullptr);
 
-    rendererConfig.Window = window;
-    rendererConfig.Width = _appConfig.Width;
-    rendererConfig.Height = _appConfig.Height;
-
-#ifdef IC_RENDERER_VULKAN
-    uint32_t extensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-
-    IC_CORE_INFO("{0} Vulkan extensions supported.", extensionCount);
-
-    rendererConfig.RendererType = IC::Renderer::RendererType::Vulkan;
-#endif
+    _rendererConfig.RendererType = _appConfig.RendererType;
+    _rendererConfig.Window = window;
+    _rendererConfig.Width = _appConfig.Width;
+    _rendererConfig.Height = _appConfig.Height;
 
     _appIsRunning = true;
 
-    renderer = new IC::Renderer::VulkanRenderer(rendererConfig);
+    _appRendererApi = Renderer::MakeRenderer(_rendererConfig);
+
+    if (_appRendererApi == nullptr)
+    {
+        IC_CORE_ERROR("Render module was not found.");
+
+        glfwDestroyWindow(window);
+        glfwTerminate();
+
+        return false;
+    }
 
     Mesh mesh;
     Material material{};
@@ -66,12 +66,12 @@ bool App::Run(const Config *c)
     material.VertShaderData = "resources/shaders/default_shader.vert.spv";
     material.Constants.Color = {1.0f, 0.0f, 0.0f, 1.0f};
 
-    renderer->AddMesh(mesh, material);
+    _appRendererApi->AddMesh(mesh, material);
 
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
-        renderer->DrawFrame();
+        _appRendererApi->DrawFrame();
     }
 
     glfwDestroyWindow(window);

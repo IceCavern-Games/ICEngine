@@ -1,3 +1,4 @@
+#include "ic_log.h"
 #include "swap_chain.h"
 #include "vulkan_types.h"
 #include "vulkan_initializers.h"
@@ -6,12 +7,11 @@
 #include <array>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 #include <limits>
 #include <set>
 #include <stdexcept>
 
-namespace IC::Renderer
+namespace IC
 {
 
     SwapChain::SwapChain(VulkanDevice &deviceRef, VkExtent2D extent)
@@ -415,19 +415,19 @@ namespace IC::Renderer
         {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
             {
-                std::cout << "Present mode: Mailbox" << std::endl;
+                IC_CORE_INFO("Present mode: Mailbox");
                 return availablePresentMode;
             }
         }
 
         // for (const auto &availablePresentMode : availablePresentModes) {
         //   if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-        //     std::cout << "Present mode: Immediate" << std::endl;
+        //     IC_CORE_INFO("Present mode: Immediate");
         //     return availablePresentMode;
         //   }
         // }
 
-        std::cout << "Present mode: V-Sync" << std::endl;
+        IC_CORE_INFO("Present mode: V-Sync");
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 

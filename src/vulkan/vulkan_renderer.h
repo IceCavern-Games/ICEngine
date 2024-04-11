@@ -1,12 +1,12 @@
 #pragma once
-#include <ic_renderer.h>
+#include "ic_renderer.h"
 
 #include "descriptors.h"
 #include "pipelines.h"
 #include "swap_chain.h"
 #include "vulkan_types.h"
 
-namespace IC::Renderer
+namespace IC
 {
     class VulkanRenderer : public Renderer
     {
@@ -20,11 +20,6 @@ namespace IC::Renderer
     private:
         void CreateCommandBuffers();
         void InitDescriptorAllocator();
-
-        static Renderer *MakeVulkan(RendererConfig rendererConfig)
-        {
-            return new VulkanRenderer(rendererConfig);
-        }
 
         VulkanDevice _vulkanDevice{Window};
         SwapChain _swapChain;
