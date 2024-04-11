@@ -1,10 +1,10 @@
 #pragma once
-#include <renderer.h>
+#include <ic_renderer.h>
 
-#include <descriptors.h>
-#include <pipelines.h>
-#include <swap_chain.h>
-#include <vulkan_types.h>
+#include "descriptors.h"
+#include "pipelines.h"
+#include "swap_chain.h"
+#include "vulkan_types.h"
 
 namespace IC::Renderer
 {

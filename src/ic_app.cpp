@@ -6,7 +6,7 @@
 #include <vulkan/vulkan.h>
 #endif
 
-#include <vulkan_renderer.h>
+#include "vulkan/vulkan_renderer.h"
 #include <GLFW/glfw3.h>
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

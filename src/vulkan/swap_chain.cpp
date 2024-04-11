@@ -1,6 +1,6 @@
-#include <swap_chain.h>
-#include <vulkan_types.h>
-#include <vulkan_initializers.h>
+#include "swap_chain.h"
+#include "vulkan_types.h"
+#include "vulkan_initializers.h"
 
 // std
 #include <array>
@@ -343,7 +343,7 @@ namespace IC::Renderer
             imageInfo.flags = 0;
 
             _device.CreateImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                       _depthImages[i], _depthImageMemorys[i]);
+                                        _depthImages[i], _depthImageMemorys[i]);
 
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
