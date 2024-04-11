@@ -20,12 +20,12 @@ using namespace IC;
 namespace
 {
     // Global App State
-    Config app_config;
-    bool app_is_running = false;
-    bool app_is_exiting = false;
+    Config _appConfig;
+    bool _appIsRunning = false;
+    bool _appIsExiting = false;
 }
 
-bool App::run(const Config *c)
+bool App::Run(const Config *c)
 {
     Log::Init();
 
@@ -33,17 +33,17 @@ bool App::run(const Config *c)
     IC::Renderer::ICRenderer *renderer;
 
     // Copy config over.
-    app_config = *c;
+    _appConfig = *c;
 
-    IC_CORE_INFO("Hello, {0}.", app_config.name);
+    IC_CORE_INFO("Hello, {0}.", _appConfig.Name);
 
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow *window = glfwCreateWindow(app_config.width, app_config.height, app_config.name, nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(_appConfig.Width, _appConfig.Height, _appConfig.Name, nullptr, nullptr);
 
     renderer_config.pWindow = window;
-    renderer_config.width = app_config.width;
-    renderer_config.height = app_config.height;
+    renderer_config.width = _appConfig.Width;
+    renderer_config.height = _appConfig.Height;
 
 #ifdef IC_RENDERER_VULKAN
     uint32_t extensionCount = 0;
@@ -54,7 +54,7 @@ bool App::run(const Config *c)
     renderer_config.renderer_type = IC::Renderer::RendererType::Vulkan;
 #endif
 
-    app_is_running = true;
+    _appIsRunning = true;
 
     renderer = new IC::Renderer::VulkanRenderer(renderer_config);
 
@@ -80,18 +80,18 @@ bool App::run(const Config *c)
     return true;
 }
 
-bool App::is_running()
+bool App::IsRunning()
 {
-    return app_is_running;
+    return _appIsRunning;
 }
 
-void App::exit()
+void App::Exit()
 {
-    if (!app_is_exiting && app_is_running)
-        app_is_exiting = true;
+    if (!_appIsExiting && _appIsRunning)
+        _appIsExiting = true;
 }
 
-const Config &App::config()
+const Config &App::GetConfig()
 {
-    return app_config;
+    return _appConfig;
 }
