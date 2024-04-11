@@ -140,7 +140,8 @@ namespace IC
 
         if (!pixels)
         {
-            throw std::runtime_error("failed to load texture image");
+            IC_CORE_ERROR("Failed to load texture image.");
+            throw std::runtime_error("Failed to load texture image.");
         }
 
         VkBuffer stagingBuffer;

@@ -137,7 +137,7 @@ namespace IC
         VK_CHECK(vkResetCommandBuffer(buffer, 0));
 
         VkCommandBufferBeginInfo beginInfo =
-            Init::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+            CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
         VK_CHECK(vkBeginCommandBuffer(buffer, &beginInfo));
 
@@ -145,8 +145,8 @@ namespace IC
 
         VK_CHECK(vkEndCommandBuffer(buffer));
 
-        VkCommandBufferSubmitInfo cmdInfo = Init::CommandBufferSubmitInfo(buffer);
-        VkSubmitInfo2 submit = Init::SubmitInfo(&cmdInfo, nullptr, nullptr);
+        VkCommandBufferSubmitInfo cmdInfo = CommandBufferSubmitInfo(buffer);
+        VkSubmitInfo2 submit = SubmitInfo(&cmdInfo, nullptr, nullptr);
 
         VK_CHECK(vkQueueSubmit2(_device.GraphicsQueue(), 1, &submit, _immFence));
 
@@ -384,8 +384,8 @@ namespace IC
                 vkCreateFence(_device.Device(), &fenceInfo, nullptr, &_inFlightFences[i]) !=
                     VK_SUCCESS)
             {
-                throw std::runtime_error(
-                    "failed to create synchronization objects for a frame!");
+                IC_CORE_ERROR("Failed to create synchronization objects for a frame.");
+                throw std::runtime_error("Failed to create synchronization objects for a frame.");
             }
         }
 

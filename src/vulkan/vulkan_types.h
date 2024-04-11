@@ -6,6 +6,7 @@
 #include <glm/vec4.hpp>
 
 #include <ic_graphics.h>
+#include <ic_log.h>
 #include <vulkan/vk_enum_string_helper.h>
 
 #include <array>
@@ -20,6 +21,7 @@
         VkResult err = x;                                   \
         if (err)                                            \
         {                                                   \
+            IC_CORE_ERROR("{0}", string_VkResult(err));     \
             throw std::runtime_error(string_VkResult(err)); \
             abort();                                        \
         }                                                   \

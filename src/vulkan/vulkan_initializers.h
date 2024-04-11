@@ -4,7 +4,7 @@
 #include "vulkan_device.h"
 #include "vulkan_types.h"
 
-namespace IC::Init
+namespace IC
 {
     // initial structures
     VkRenderingAttachmentInfo AttachmentInfo(VkImageView view, VkClearValue *clear, VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);

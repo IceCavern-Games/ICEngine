@@ -79,7 +79,8 @@ namespace IC
     {
         if (enableValidationLayers && !CheckValidationLayerSupport())
         {
-            throw std::runtime_error("validation layers requested, but not available!");
+            IC_CORE_ERROR("Validation layers requested, but not available.");
+            throw std::runtime_error("Validation layers requested, but not available.");
         }
 
         VkApplicationInfo appInfo = {};
@@ -125,7 +126,8 @@ namespace IC
         vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
         if (deviceCount == 0)
         {
-            throw std::runtime_error("failed to find GPUs with Vulkan support!");
+            IC_CORE_ERROR("Failed to find GPUs with Vulkan support.");
+            throw std::runtime_error("Failed to find GPUs with Vulkan support.");
         }
         IC_CORE_INFO("Device count: {0}", deviceCount);
         std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -142,7 +144,8 @@ namespace IC
 
         if (_physicalDevice == VK_NULL_HANDLE)
         {
-            throw std::runtime_error("failed to find a suitable GPU!");
+            IC_CORE_ERROR("Failed to find a suitable GPU.");
+            throw std::runtime_error("Failed to find a suitable GPU.");
         }
 
         vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
@@ -336,7 +339,8 @@ namespace IC
             IC_CORE_INFO("\t- {0}", required);
             if (available.find(required) == available.end())
             {
-                throw std::runtime_error("Missing required glfw extension");
+                IC_CORE_ERROR("Missing required GLFW extension.");
+                throw std::runtime_error("Missing required GLFW extension.");
             }
         }
     }
@@ -442,7 +446,9 @@ namespace IC
                 return format;
             }
         }
-        throw std::runtime_error("failed to find supported format!");
+
+        IC_CORE_ERROR("Failed to find supported format.");
+        throw std::runtime_error("Failed to find supported format.");
     }
 
     uint32_t VulkanDevice::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -458,7 +464,8 @@ namespace IC
             }
         }
 
-        throw std::runtime_error("failed to find suitable memory type!");
+        IC_CORE_ERROR("Failed to find suitable memory type.");
+        throw std::runtime_error("Failed to find suitable memory type.");
     }
 
     void VulkanDevice::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage,

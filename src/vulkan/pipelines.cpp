@@ -1,3 +1,5 @@
+#include <ic_log.h>
+
 #include "pipelines.h"
 
 #include "swap_chain.h"
@@ -29,7 +31,8 @@ namespace IC
 
         if (!file.is_open())
         {
-            throw std::runtime_error("failed to open file: " + filePath);
+            IC_CORE_ERROR("Failed to open file {0}.", filePath);
+            throw std::runtime_error("Failed to open file " + filePath + ".");
             return VK_NULL_HANDLE;
         }
 
@@ -50,7 +53,8 @@ namespace IC
 
         if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
         {
-            throw std::runtime_error("Failed to create shader module");
+            IC_CORE_ERROR("Failed to create shader module.");
+            throw std::runtime_error("Failed to create shader module.");
             return VK_NULL_HANDLE;
         }
 
@@ -111,7 +115,8 @@ namespace IC
         if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
                                       &newPipeline) != VK_SUCCESS)
         {
-            throw std::runtime_error("failed to create graphics pipeline");
+            IC_CORE_ERROR("Failed to create graphics pipeline.");
+            throw std::runtime_error("Failed to create graphics pipeline.");
             return VK_NULL_HANDLE;
         }
 
@@ -130,7 +135,8 @@ namespace IC
         if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &newPipeline) !=
             VK_SUCCESS)
         {
-            throw std::runtime_error("failed to create compute pipeline");
+            IC_CORE_ERROR("Failed to create compute pipeline.");
+            throw std::runtime_error("Failed to create compute pipeline.");
         }
         return newPipeline;
     }
@@ -251,7 +257,7 @@ namespace IC
                 return pipeline;
             }
         }
-        return Init::CreateOpaquePipeline(device, swapChain, materialData);
+        return CreateOpaquePipeline(device, swapChain, materialData);
     }
 
     bool PipelineManager::IsPipelineSuitable(Pipeline &pipeline, Material &materialData)

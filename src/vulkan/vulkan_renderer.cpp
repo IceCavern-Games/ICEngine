@@ -1,3 +1,5 @@
+#include <ic_log.h>
+
 #include "vulkan_initializers.h"
 #include "vulkan_renderer.h"
 #include "vulkan_util.h"
@@ -47,18 +49,20 @@ namespace IC
 
         if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
         {
-            throw std::runtime_error("failed to acquire swap chain image");
+            IC_CORE_ERROR("Failed to acquire swap chain image.");
+            throw std::runtime_error("Failed to acquire swap chain image.");
         }
 
         _swapChain.WaitForFrameFence(&imageIndex);
 
         vkResetCommandBuffer(_cBuffers[imageIndex], 0);
 
-        VkCommandBufferBeginInfo beginInfo = Init::CommandBufferBeginInfo();
+        VkCommandBufferBeginInfo beginInfo = CommandBufferBeginInfo();
 
         if (vkBeginCommandBuffer(_cBuffers[imageIndex], &beginInfo) != VK_SUCCESS)
         {
-            throw std::runtime_error("failed to begin recording command buffer");
+            IC_CORE_ERROR("Failed to begin recording command buffer.");
+            throw std::runtime_error("Failed to begin recording command buffer.");
         }
 
         VkRenderingAttachmentInfo colorAttachment = {.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
@@ -133,13 +137,15 @@ namespace IC
 
         if (vkEndCommandBuffer(_cBuffers[imageIndex]) != VK_SUCCESS)
         {
-            throw std::runtime_error("failed to record command buffer");
+            IC_CORE_ERROR("Failed to record command buffer.");
+            throw std::runtime_error("Failed to record command buffer.");
         }
 
         result = _swapChain.SubmitCommandBuffers(&_cBuffers[imageIndex], &imageIndex);
         if (result != VK_SUCCESS)
         {
-            throw std::runtime_error("failed to present swap chain image");
+            IC_CORE_ERROR("Failed to present swap chain image.");
+            throw std::runtime_error("Failed to present swap chain image.");
         }
     }
 

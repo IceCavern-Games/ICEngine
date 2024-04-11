@@ -1,4 +1,5 @@
 #include <ic_graphics.h>
+#include <ic_log.h>
 
 #include <tiny_obj_loader.h>
 
@@ -14,6 +15,7 @@ namespace IC
 
         if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, fileName.c_str()))
         {
+            IC_CORE_ERROR("Failed to load {0}.", fileName);
             throw std::runtime_error(warn + err);
         }
 

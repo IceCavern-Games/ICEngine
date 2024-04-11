@@ -1,3 +1,5 @@
+#include <ic_log.h>
+
 #include "vulkan_initializers.h"
 
 #include "pipelines.h"
@@ -7,7 +9,7 @@
 
 #include <iostream>
 
-namespace IC::Init
+namespace IC
 {
     VkRenderingAttachmentInfo AttachmentInfo(VkImageView view, VkClearValue *clear, VkImageLayout layout)
     {
@@ -121,7 +123,8 @@ namespace IC::Init
 
         if (vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS)
         {
-            throw std::runtime_error("failed to create texture sampler!");
+            IC_CORE_ERROR("Failed to create texture sampler.");
+            throw std::runtime_error("Failed to create texture sampler.");
         }
     }
 
