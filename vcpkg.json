@@ -4,6 +4,7 @@
         "glm",
         "spdlog",
         "tinyobjloader",
-        "vulkan"
+        "vulkan",
+        "vulkan-utility-libraries"
     ]
 }

@@ -244,8 +244,6 @@ namespace IC::Renderer
     // pipeline manager
     std::shared_ptr<Pipeline> PipelineManager::findOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain, ICMaterial &materialData)
     {
-        std::cout << "huh?\n";
-
         for (auto pipeline : createdPipelines)
         {
             if (isPipelineSuitable(*pipeline, materialData))
@@ -253,7 +251,6 @@ namespace IC::Renderer
                 return pipeline;
             }
         }
-        std::cout << "slurp\n";
         return Init::createOpaquePipeline(device, swapChain, materialData);
     }
 

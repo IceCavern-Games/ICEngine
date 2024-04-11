@@ -147,10 +147,8 @@ namespace IC::Renderer::Init
         PipelineBuilder pipelineBuilder;
 
         pipelineBuilder.pipelineLayout = pipelineLayout;
-        std::cout << "before shaders\n";
         VkShaderModule vertShaderModule = PipelineBuilder::createShaderModule(device, materialData.vertShaderData);
         VkShaderModule fragShaderModule = PipelineBuilder::createShaderModule(device, materialData.fragShaderData);
-        std::cout << "after shaders\n";
 
         pipelineBuilder.setShaders(vertShaderModule, fragShaderModule);
         pipelineBuilder.setInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);

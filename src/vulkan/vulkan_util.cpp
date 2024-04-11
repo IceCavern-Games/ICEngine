@@ -6,7 +6,8 @@
 
 namespace IC::Renderer::Util
 {
-    void create_and_fill_buffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize, VkBufferUsageFlags flags, AllocatedBuffer &allocatedBuffer)
+    void create_and_fill_buffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize, VkBufferUsageFlags buffer_usage_flags,
+         VkMemoryPropertyFlags memory_property_flags,  AllocatedBuffer &allocatedBuffer)
     {
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -21,8 +22,8 @@ namespace IC::Renderer::Util
         vkUnmapMemory(device.device(), stagingBufferMemory);
 
         device.createBuffer(bufferSize,
-                            VK_BUFFER_USAGE_TRANSFER_DST_BIT | flags,
-                            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, allocatedBuffer.buffer, allocatedBuffer.memory);
+                            VK_BUFFER_USAGE_TRANSFER_DST_BIT | buffer_usage_flags,
+                            memory_property_flags, allocatedBuffer.buffer, allocatedBuffer.memory);
 
         device.copyBuffer(stagingBuffer, allocatedBuffer.buffer, bufferSize);
 

@@ -35,7 +35,6 @@ namespace IC::Renderer
 
     void VulkanRenderer::draw_frame()
     {
-        std::cout << "drawing frame\n";
         uint32_t imageIndex;
         auto result = swapChain.acquireNextImage(&imageIndex);
 
@@ -98,14 +97,11 @@ namespace IC::Renderer
 
         vkCmdSetScissor(cBuffers[imageIndex], 0, 1, &scissor);
 
-        std::cout << "scissored\n";
-
         for (MeshRenderData data : renderData)
         {
             // bind pipeline todo: only bind if different
             vkCmdBindPipeline(cBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, data.renderPipeline->pipeline);
 
-            std::cout << "pls\n";
             MVPObject ubo{};
             // hard coded for now
             ubo.model = glm::scale(glm::mat4(1.0f), {0.2f, 0.2f, 0.2f});
@@ -113,11 +109,8 @@ namespace IC::Renderer
             ubo.proj = glm::perspective(glm::radians(45.0f), (float)swapChain.getSwapChainExtent().width / swapChain.getSwapChainExtent().height, 0.1f, 10.0f);
 
             data.update_mvp_buffer(ubo, swapChain.getCurrentFrame());
-            std::cout << "updated\n";
             data.bind(cBuffers[imageIndex], data.renderPipeline->layout, swapChain.getCurrentFrame());
-            std::cout << "binded\n";
             data.draw(cBuffers[imageIndex]);
-            std::cout << "drawn\n";
         }
 
         auto function2 = vkGetInstanceProcAddr(vulkanDevice.instance(), "vkCmdEndRenderingKHR");
@@ -162,8 +155,8 @@ namespace IC::Renderer
         meshRenderData.renderPipeline = pipelineManager.findOrCreateSuitablePipeline(vulkanDevice.device(), swapChain, materialData);
 
         // buffers
-        Util::create_and_fill_buffer(vulkanDevice, meshData.vertices.data(), sizeof(meshData.vertices[0]) * meshData.vertex_count, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, meshRenderData.vertexBuffer);
-        Util::create_and_fill_buffer(vulkanDevice, meshData.indices.data(), sizeof(meshData.indices[0]) * meshData.index_count, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, meshRenderData.indexBuffer);
+        Util::create_and_fill_buffer(vulkanDevice, meshData.vertices.data(), sizeof(meshData.vertices[0]) * meshData.vertex_count, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, meshRenderData.vertexBuffer);
+        Util::create_and_fill_buffer(vulkanDevice, meshData.indices.data(), sizeof(meshData.indices[0]) * meshData.index_count, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, meshRenderData.indexBuffer);
 
         meshRenderData.mvp_buffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
         meshRenderData.constants_buffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -173,7 +166,7 @@ namespace IC::Renderer
                                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                       meshRenderData.mvp_buffers[i].buffer, meshRenderData.mvp_buffers[i].memory);
 
-            Util::create_and_fill_buffer(vulkanDevice, &materialData.constants, sizeof(MaterialConstants), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, meshRenderData.constants_buffers[i]);
+            Util::create_and_fill_buffer(vulkanDevice, &materialData.constants, sizeof(MaterialConstants), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, meshRenderData.constants_buffers[i]);
 
             vkMapMemory(vulkanDevice.device(), meshRenderData.mvp_buffers[i].memory, 0, sizeof(MVPObject), 0, &meshRenderData.mvp_buffers[i].mapped_memory);
             vkMapMemory(vulkanDevice.device(), meshRenderData.constants_buffers[i].memory, 0, sizeof(MaterialConstants), 0, &meshRenderData.constants_buffers[i].mapped_memory);

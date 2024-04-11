@@ -62,7 +62,6 @@ bool App::run(const Config *c)
     ICMaterial material{};
 
     mesh.load_from_file("resources/models/cube.obj");
-    std::cout << "vert count: " << mesh.vertex_count << "\n";
     material.fragShaderData = "resources/shaders/default_shader.frag.spv";
     material.vertShaderData = "resources/shaders/default_shader.vert.spv";
     material.constants.color = {1.0f, 0.0f, 0.0f, 1.0f};
