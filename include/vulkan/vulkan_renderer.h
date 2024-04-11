@@ -14,24 +14,24 @@ namespace IC::Renderer
         VulkanRenderer(RendererConfig &config);
         ~VulkanRenderer();
 
-        void draw_frame();
-        void add_mesh(ICMesh &meshData, ICMaterial &materialData);
+        void DrawFrame();
+        void AddMesh(ICMesh &meshData, ICMaterial &materialData);
 
     private:
-        void create_command_buffers();
-        void init_descriptor_allocator();
+        void CreateCommandBuffers();
+        void InitDescriptorAllocator();
 
-        static ICRenderer *make_vulkan(RendererConfig renderer_config)
+        static ICRenderer *MakeVulkan(RendererConfig renderer_config)
         {
             return new VulkanRenderer(renderer_config);
         }
 
-        VulkanDevice vulkanDevice{pWindow};
-        SwapChain swapChain;
-        PipelineManager pipelineManager{};
-        DescriptorAllocator descriptorAllocator{};
+        VulkanDevice _vulkanDevice{pWindow};
+        SwapChain _swapChain;
+        PipelineManager _pipelineManager{};
+        DescriptorAllocator _descriptorAllocator{};
 
-        std::vector<MeshRenderData> renderData;
-        std::vector<VkCommandBuffer> cBuffers;
+        std::vector<MeshRenderData> _renderData;
+        std::vector<VkCommandBuffer> _cBuffers;
     };
 }

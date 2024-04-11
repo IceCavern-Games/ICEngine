@@ -23,7 +23,7 @@ namespace IC::Renderer
         shaderStages.clear();
     }
 
-    VkShaderModule PipelineBuilder::createShaderModule(VkDevice device, const std::string &filePath)
+    VkShaderModule PipelineBuilder::CreateShaderModule(VkDevice device, const std::string &filePath)
     {
         std::ifstream file{filePath, std::ios::ate | std::ios::binary};
 
@@ -57,7 +57,7 @@ namespace IC::Renderer
         return shaderModule;
     }
 
-    VkPipeline PipelineBuilder::buildPipeline(VkDevice device)
+    VkPipeline PipelineBuilder::BuildPipeline(VkDevice device)
     {
         VkPipelineViewportStateCreateInfo viewportState = {};
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -73,8 +73,8 @@ namespace IC::Renderer
         colorBlending.attachmentCount = 1;
         colorBlending.pAttachments = &colorBlendAttachment;
 
-        auto bindingDescription = getVertexBindingDescription();
-        auto attributeDescriptions = getVertexAttributeDescriptions();
+        auto bindingDescription = GetVertexBindingDescription();
+        auto attributeDescriptions = GetVertexAttributeDescriptions();
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInputInfo.vertexAttributeDescriptionCount =
@@ -118,7 +118,7 @@ namespace IC::Renderer
         return newPipeline;
     }
 
-    VkPipeline PipelineBuilder::buildComputePipeline(VkDevice device)
+    VkPipeline PipelineBuilder::BuildComputePipeline(VkDevice device)
     {
         VkComputePipelineCreateInfo pipelineInfo{.sType =
                                                      VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO};
@@ -135,37 +135,37 @@ namespace IC::Renderer
         return newPipeline;
     }
 
-    void PipelineBuilder::setShaders(VkShaderModule vertexShader, VkShaderModule fragmentShader)
+    void PipelineBuilder::SetShaders(VkShaderModule vertexShader, VkShaderModule fragmentShader)
     {
         shaderStages.clear();
-        shaderStages.push_back(shaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertexShader));
-        shaderStages.push_back(shaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragmentShader));
+        shaderStages.push_back(ShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertexShader));
+        shaderStages.push_back(ShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragmentShader));
     }
 
-    void PipelineBuilder::setComputeShader(VkShaderModule computeShader)
+    void PipelineBuilder::SetComputeShader(VkShaderModule computeShader)
     {
-        shaderStages.push_back(shaderStageCreateInfo(VK_SHADER_STAGE_COMPUTE_BIT, computeShader));
+        shaderStages.push_back(ShaderStageCreateInfo(VK_SHADER_STAGE_COMPUTE_BIT, computeShader));
     }
 
-    void PipelineBuilder::setInputTopology(VkPrimitiveTopology topology)
+    void PipelineBuilder::SetInputTopology(VkPrimitiveTopology topology)
     {
         inputAssembly.topology = topology;
         inputAssembly.primitiveRestartEnable = VK_FALSE;
     }
 
-    void PipelineBuilder::setPolygonMode(VkPolygonMode mode)
+    void PipelineBuilder::SetPolygonMode(VkPolygonMode mode)
     {
         rasterizer.polygonMode = mode;
         rasterizer.lineWidth = 1.f;
     }
 
-    void PipelineBuilder::setCullMode(VkCullModeFlags cullMode, VkFrontFace frontFace)
+    void PipelineBuilder::SetCullMode(VkCullModeFlags cullMode, VkFrontFace frontFace)
     {
         rasterizer.cullMode = cullMode;
         rasterizer.frontFace = frontFace;
     }
 
-    void PipelineBuilder::setMultisamplingNone()
+    void PipelineBuilder::SetMultisamplingNone()
     {
         multisampling.sampleShadingEnable = VK_FALSE;
         multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -175,14 +175,14 @@ namespace IC::Renderer
         multisampling.alphaToOneEnable = VK_FALSE;
     }
 
-    void PipelineBuilder::disableBlending()
+    void PipelineBuilder::DisableBlending()
     {
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                               VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         colorBlendAttachment.blendEnable = VK_FALSE;
     }
 
-    void PipelineBuilder::enableBlending()
+    void PipelineBuilder::EnableBlending()
     {
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                               VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -195,16 +195,16 @@ namespace IC::Renderer
         colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
     }
 
-    void PipelineBuilder::setColorAttachmentFormat(VkFormat format)
+    void PipelineBuilder::SetColorAttachmentFormat(VkFormat format)
     {
         colorAttachmentformat = format;
         renderInfo.colorAttachmentCount = 1;
         renderInfo.pColorAttachmentFormats = &colorAttachmentformat;
     }
 
-    void PipelineBuilder::setDepthFormat(VkFormat format) { renderInfo.depthAttachmentFormat = format; }
+    void PipelineBuilder::SetDepthFormat(VkFormat format) { renderInfo.depthAttachmentFormat = format; }
 
-    void PipelineBuilder::disableDepthTest()
+    void PipelineBuilder::DisableDepthTest()
     {
         depthStencil.depthTestEnable = VK_FALSE;
         depthStencil.depthWriteEnable = VK_FALSE;
@@ -217,7 +217,7 @@ namespace IC::Renderer
         depthStencil.maxDepthBounds = 1.f;
     }
 
-    void PipelineBuilder::enableDepthTest()
+    void PipelineBuilder::EnableDepthTest()
     {
         depthStencil.depthTestEnable = VK_TRUE;
         depthStencil.depthWriteEnable = VK_TRUE;
@@ -230,7 +230,7 @@ namespace IC::Renderer
         depthStencil.maxDepthBounds = 1.f;
     }
 
-    VkPipelineShaderStageCreateInfo PipelineBuilder::shaderStageCreateInfo(VkShaderStageFlagBits flags,
+    VkPipelineShaderStageCreateInfo PipelineBuilder::ShaderStageCreateInfo(VkShaderStageFlagBits flags,
                                                                            VkShaderModule module)
     {
         VkPipelineShaderStageCreateInfo createInfo{
@@ -242,19 +242,19 @@ namespace IC::Renderer
     }
 
     // pipeline manager
-    std::shared_ptr<Pipeline> PipelineManager::findOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain, ICMaterial &materialData)
+    std::shared_ptr<Pipeline> PipelineManager::FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain, ICMaterial &materialData)
     {
-        for (auto pipeline : createdPipelines)
+        for (auto pipeline : _createdPipelines)
         {
-            if (isPipelineSuitable(*pipeline, materialData))
+            if (IsPipelineSuitable(*pipeline, materialData))
             {
                 return pipeline;
             }
         }
-        return Init::createOpaquePipeline(device, swapChain, materialData);
+        return Init::CreateOpaquePipeline(device, swapChain, materialData);
     }
 
-    bool PipelineManager::isPipelineSuitable(Pipeline &pipeline, ICMaterial &materialData)
+    bool PipelineManager::IsPipelineSuitable(Pipeline &pipeline, ICMaterial &materialData)
     {
         // todo: code this
         return true;

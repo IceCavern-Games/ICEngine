@@ -7,14 +7,14 @@
 namespace IC::Renderer::Init
 {
     // initial structures
-    VkRenderingAttachmentInfo attachmentInfo(VkImageView view, VkClearValue *clear, VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlags flags = 0);
-    VkCommandBufferSubmitInfo commandBufferSubmitInfo(VkCommandBuffer cmd);
-    VkRenderingInfo renderingInfo(VkExtent2D renderExtent, VkRenderingAttachmentInfo *colorAttachment, VkRenderingAttachmentInfo *depthAttachment);
-    VkSubmitInfo2 submitInfo(VkCommandBufferSubmitInfo *cmd, VkSemaphoreSubmitInfo *signalSemaphoreInfo, VkSemaphoreSubmitInfo *waitSemaphoreInfo);
+    VkRenderingAttachmentInfo AttachmentInfo(VkImageView view, VkClearValue *clear, VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    VkCommandBufferBeginInfo CommandBufferBeginInfo(VkCommandBufferUsageFlags flags = 0);
+    VkCommandBufferSubmitInfo CommandBufferSubmitInfo(VkCommandBuffer cmd);
+    VkRenderingInfo RenderingInfo(VkExtent2D renderExtent, VkRenderingAttachmentInfo *colorAttachment, VkRenderingAttachmentInfo *depthAttachment);
+    VkSubmitInfo2 SubmitInfo(VkCommandBufferSubmitInfo *cmd, VkSemaphoreSubmitInfo *signalSemaphoreInfo, VkSemaphoreSubmitInfo *waitSemaphoreInfo);
 
     template <typename T>
-    VkPushConstantRange pushConstants(VkShaderStageFlags flags)
+    VkPushConstantRange PushConstants(VkShaderStageFlags flags)
     {
         VkPushConstantRange pushConstant{};
         pushConstant.offset = 0;
@@ -24,11 +24,11 @@ namespace IC::Renderer::Init
     }
 
     // images
-    void createImage(VulkanDevice *device, uint32_t width, uint32_t height, VkFormat format,
+    void CreateImage(VulkanDevice *device, uint32_t width, uint32_t height, VkFormat format,
                      VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
                      AllocatedImage &image);
-    void createImageSampler(VkDevice device, float maxAnisotropy, VkSampler &textureSampler);
+    void CreateImageSampler(VkDevice device, float maxAnisotropy, VkSampler &textureSampler);
 
     // pipelines
-    std::shared_ptr<Pipeline> createOpaquePipeline(VkDevice device, SwapChain &swapChain, ICMaterial &materialData);
+    std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain, ICMaterial &materialData);
 }

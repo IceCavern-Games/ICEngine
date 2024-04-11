@@ -6,32 +6,32 @@
 
 namespace IC::Renderer::Util
 {
-    void create_and_fill_buffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize, VkBufferUsageFlags buffer_usage_flags,
+    void CreateAndFillBuffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize, VkBufferUsageFlags buffer_usage_flags,
          VkMemoryPropertyFlags memory_property_flags,  AllocatedBuffer &allocatedBuffer)
     {
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
-        device.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        device.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                 VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                             stagingBuffer, stagingBufferMemory);
         void *data;
-        vkMapMemory(device.device(), stagingBufferMemory, 0, bufferSize, 0, &data);
+        vkMapMemory(device.Device(), stagingBufferMemory, 0, bufferSize, 0, &data);
         memcpy(data, srcData, (size_t)bufferSize);
-        vkUnmapMemory(device.device(), stagingBufferMemory);
+        vkUnmapMemory(device.Device(), stagingBufferMemory);
 
-        device.createBuffer(bufferSize,
+        device.CreateBuffer(bufferSize,
                             VK_BUFFER_USAGE_TRANSFER_DST_BIT | buffer_usage_flags,
                             memory_property_flags, allocatedBuffer.buffer, allocatedBuffer.memory);
 
-        device.copyBuffer(stagingBuffer, allocatedBuffer.buffer, bufferSize);
+        device.CopyBuffer(stagingBuffer, allocatedBuffer.buffer, bufferSize);
 
-        vkDestroyBuffer(device.device(), stagingBuffer, nullptr);
-        vkFreeMemory(device.device(), stagingBufferMemory, nullptr);
+        vkDestroyBuffer(device.Device(), stagingBuffer, nullptr);
+        vkFreeMemory(device.Device(), stagingBufferMemory, nullptr);
     }
 
-    VkDescriptorType material_input_type_mapping(MaterialInputType inputType)
+    VkDescriptorType MaterialInputTypeMapping(MaterialInputType inputType)
     {
         switch (inputType)
         {
@@ -44,7 +44,7 @@ namespace IC::Renderer::Util
         }
     }
 
-    void copy_image_to_image(VkCommandBuffer commandBuffer, VkImage source, VkImage destination,
+    void CopyImageToImage(VkCommandBuffer commandBuffer, VkImage source, VkImage destination,
                              VkExtent2D srcSize, VkExtent2D dstSize)
     {
         VkImageBlit2 blitRegion{.sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr};
@@ -79,7 +79,7 @@ namespace IC::Renderer::Util
         vkCmdBlitImage2(commandBuffer, &blitInfo);
     }
 
-    void transition_image_layout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format,
+    void TransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format,
                                  VkImageLayout oldLayout, VkImageLayout newLayout)
     {
         VkImageMemoryBarrier barrier{};
@@ -152,30 +152,30 @@ namespace IC::Renderer::Util
                             stagingBuffer, stagingBufferMemory);
 
         void *data;
-        vkMapMemory(device.device(), stagingBufferMemory, 0, imageSize, 0, &data);
+        vkMapMemory(device.Device(), stagingBufferMemory, 0, imageSize, 0, &data);
         memcpy(data, pixels, static_cast<size_t>(imageSize));
-        vkUnmapMemory(device.device(), stagingBufferMemory);
+        vkUnmapMemory(device.Device(), stagingBufferMemory);
         stbi_image_free(pixels);
 
-        VkCommandBuffer commandBuffer = device.beginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = device.BeginSingleTimeCommands();
         Init::createImage(&device, texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB,
                           VK_IMAGE_TILING_OPTIMAL,
                           VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                           VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, outImage);
-        transition_image_layout(commandBuffer, outImage.image, VK_FORMAT_R8G8B8A8_SRGB,
+        TransitionImageLayout(commandBuffer, outImage.image, VK_FORMAT_R8G8B8A8_SRGB,
                                 VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        device.endSingleTimeCommands(commandBuffer);
+        device.EndSingleTimeCommands(commandBuffer);
 
-        device.copyBufferToImage(stagingBuffer, outImage.image, static_cast<uint32_t>(texWidth),
+        device.CopyBufferToImage(stagingBuffer, outImage.image, static_cast<uint32_t>(texWidth),
                                  static_cast<uint32_t>(texHeight), 1);
-        commandBuffer = device.beginSingleTimeCommands();
-        transition_image_layout(commandBuffer, outImage.image, VK_FORMAT_R8G8B8A8_SRGB,
+        commandBuffer = device.BeginSingleTimeCommands();
+        TransitionImageLayout(commandBuffer, outImage.image, VK_FORMAT_R8G8B8A8_SRGB,
                                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        device.endSingleTimeCommands(commandBuffer);
+        device.EndSingleTimeCommands(commandBuffer);
 
-        vkDestroyBuffer(device.device(), stagingBuffer, nullptr);
-        vkFreeMemory(device.device(), stagingBufferMemory, nullptr);
+        vkDestroyBuffer(device.Device(), stagingBuffer, nullptr);
+        vkFreeMemory(device.Device(), stagingBufferMemory, nullptr);
     }
     */
 }

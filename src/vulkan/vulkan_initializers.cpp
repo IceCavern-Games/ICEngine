@@ -9,7 +9,7 @@
 
 namespace IC::Renderer::Init
 {
-    VkRenderingAttachmentInfo attachmentInfo(VkImageView view, VkClearValue *clear, VkImageLayout layout)
+    VkRenderingAttachmentInfo AttachmentInfo(VkImageView view, VkClearValue *clear, VkImageLayout layout)
     {
         VkRenderingAttachmentInfo info = {.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
         info.pNext = nullptr;
@@ -26,7 +26,7 @@ namespace IC::Renderer::Init
         return info;
     }
 
-    VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlags flags /*= 0*/)
+    VkCommandBufferBeginInfo CommandBufferBeginInfo(VkCommandBufferUsageFlags flags /*= 0*/)
     {
         VkCommandBufferBeginInfo info = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
         info.pNext = nullptr;
@@ -36,7 +36,7 @@ namespace IC::Renderer::Init
         return info;
     }
 
-    VkCommandBufferSubmitInfo commandBufferSubmitInfo(VkCommandBuffer cmd)
+    VkCommandBufferSubmitInfo CommandBufferSubmitInfo(VkCommandBuffer cmd)
     {
         VkCommandBufferSubmitInfo info = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO};
         info.pNext = nullptr;
@@ -46,7 +46,7 @@ namespace IC::Renderer::Init
         return info;
     }
 
-    VkRenderingInfo renderingInfo(VkExtent2D renderExtent, VkRenderingAttachmentInfo *colorAttachment, VkRenderingAttachmentInfo *depthAttachment)
+    VkRenderingInfo RenderingInfo(VkExtent2D renderExtent, VkRenderingAttachmentInfo *colorAttachment, VkRenderingAttachmentInfo *depthAttachment)
     {
         VkRenderingInfo info{.sType = VK_STRUCTURE_TYPE_RENDERING_INFO};
         info.pNext = nullptr;
@@ -60,7 +60,7 @@ namespace IC::Renderer::Init
         return info;
     }
 
-    VkSubmitInfo2 submitInfo(VkCommandBufferSubmitInfo *cmd, VkSemaphoreSubmitInfo *signalSemaphoreInfo, VkSemaphoreSubmitInfo *waitSemaphoreInfo)
+    VkSubmitInfo2 SubmitInfo(VkCommandBufferSubmitInfo *cmd, VkSemaphoreSubmitInfo *signalSemaphoreInfo, VkSemaphoreSubmitInfo *waitSemaphoreInfo)
     {
         VkSubmitInfo2 info = {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2};
         info.pNext = nullptr;
@@ -75,7 +75,7 @@ namespace IC::Renderer::Init
     }
 
     // images
-    void createImage(VulkanDevice *device, uint32_t width, uint32_t height, VkFormat format,
+    void CreateImage(VulkanDevice *device, uint32_t width, uint32_t height, VkFormat format,
                      VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
                      AllocatedImage &image)
     {
@@ -95,11 +95,11 @@ namespace IC::Renderer::Init
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imageInfo.flags = 0;
 
-        device->createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image.image, image.memory);
-        image.view = device->createImageView(image.image, format);
+        device->CreateImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image.image, image.memory);
+        image.view = device->CreateImageView(image.image, format);
     }
 
-    void createImageSampler(VkDevice device, float maxAnisotropy, VkSampler &textureSampler)
+    void CreateImageSampler(VkDevice device, float maxAnisotropy, VkSampler &textureSampler)
     {
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -126,14 +126,14 @@ namespace IC::Renderer::Init
     }
 
     // pipelines
-    std::shared_ptr<Pipeline> createOpaquePipeline(VkDevice device, SwapChain &swapChain, ICMaterial &materialData)
+    std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain, ICMaterial &materialData)
     {
         // descriptor sets
         DescriptorLayoutBuilder descriptorLayoutBuilder{};
-        descriptorLayoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // uniform buffer object
-        descriptorLayoutBuilder.add_binding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // constants buffer object
+        descriptorLayoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // uniform buffer object
+        descriptorLayoutBuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // constants buffer object
 
-        VkDescriptorSetLayout descriptorSetLayout = descriptorLayoutBuilder.build(device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+        VkDescriptorSetLayout descriptorSetLayout = descriptorLayoutBuilder.Build(device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
         // pipeline layout
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -147,21 +147,21 @@ namespace IC::Renderer::Init
         PipelineBuilder pipelineBuilder;
 
         pipelineBuilder.pipelineLayout = pipelineLayout;
-        VkShaderModule vertShaderModule = PipelineBuilder::createShaderModule(device, materialData.vertShaderData);
-        VkShaderModule fragShaderModule = PipelineBuilder::createShaderModule(device, materialData.fragShaderData);
+        VkShaderModule vertShaderModule = PipelineBuilder::CreateShaderModule(device, materialData.vertShaderData);
+        VkShaderModule fragShaderModule = PipelineBuilder::CreateShaderModule(device, materialData.fragShaderData);
 
-        pipelineBuilder.setShaders(vertShaderModule, fragShaderModule);
-        pipelineBuilder.setInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-        pipelineBuilder.setPolygonMode(VK_POLYGON_MODE_FILL);
-        pipelineBuilder.setCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
-        pipelineBuilder.setMultisamplingNone();
-        pipelineBuilder.disableBlending();
-        pipelineBuilder.enableDepthTest();
-        pipelineBuilder.setColorAttachmentFormat(swapChain.getSwapChainImageFormat());
-        pipelineBuilder.setDepthFormat(swapChain.getSwapChainDepthFormat());
+        pipelineBuilder.SetShaders(vertShaderModule, fragShaderModule);
+        pipelineBuilder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+        pipelineBuilder.SetPolygonMode(VK_POLYGON_MODE_FILL);
+        pipelineBuilder.SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+        pipelineBuilder.SetMultisamplingNone();
+        pipelineBuilder.DisableBlending();
+        pipelineBuilder.EnableDepthTest();
+        pipelineBuilder.SetColorAttachmentFormat(swapChain.GetSwapChainImageFormat());
+        pipelineBuilder.SetDepthFormat(swapChain.GetSwapChainDepthFormat());
 
         std::shared_ptr<Pipeline> pipeline = std::make_shared<Pipeline>();
-        pipeline->pipeline = pipelineBuilder.buildPipeline(device);
+        pipeline->pipeline = pipelineBuilder.BuildPipeline(device);
         pipeline->layout = pipelineLayout;
         pipeline->descriptorSetLayout = descriptorSetLayout;
         pipeline->shaderModules = {vertShaderModule, fragShaderModule};

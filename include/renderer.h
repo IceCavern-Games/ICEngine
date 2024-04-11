@@ -26,13 +26,13 @@ namespace IC::Renderer
     public:
         ICRenderer(RendererConfig config) { pWindow = config.pWindow; };
         ~ICRenderer() = default;
-        virtual void draw_frame() = 0;
-        virtual void add_mesh(ICMesh &meshData, ICMaterial &materialData) = 0;
+        virtual void DrawFrame() = 0;
+        virtual void AddMesh(ICMesh &meshData, ICMaterial &materialData) = 0;
 
     protected:
         GLFWwindow *pWindow;
 
-        static ICRenderer *make_vulkan(RendererConfig &renderer_config);
+        static ICRenderer *MakeVulkan(RendererConfig &renderer_config);
 
     public:
         static ICRenderer *make_renderer(RendererConfig &renderer_config)
@@ -40,7 +40,7 @@ namespace IC::Renderer
             switch (renderer_config.renderer_type)
             {
             case RendererType::Vulkan:
-                return make_vulkan(renderer_config);
+                return MakeVulkan(renderer_config);
             default:
                 return nullptr;
             }

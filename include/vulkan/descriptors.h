@@ -12,9 +12,9 @@ namespace IC::Renderer
     {
         std::vector<VkDescriptorSetLayoutBinding> bindings;
 
-        void add_binding(uint32_t binding, VkDescriptorType type);
-        void clear();
-        VkDescriptorSetLayout build(VkDevice device, VkShaderStageFlags shaderStages);
+        void AddBinding(uint32_t binding, VkDescriptorType type);
+        void Clear();
+        VkDescriptorSetLayout Build(VkDevice device, VkShaderStageFlags shaderStages);
     };
 
     struct DescriptorWriter
@@ -23,22 +23,22 @@ namespace IC::Renderer
         std::deque<VkDescriptorBufferInfo> bufferInfos;
         std::vector<VkWriteDescriptorSet> writes;
 
-        void write_image(int binding, VkImageView image, VkSampler sampler, VkImageLayout layout, VkDescriptorType type);
-        void write_buffer(int binding, VkBuffer buffer, size_t size, size_t offset, VkDescriptorType type);
+        void WriteImage(int binding, VkImageView image, VkSampler sampler, VkImageLayout layout, VkDescriptorType type);
+        void WriteBuffer(int binding, VkBuffer buffer, size_t size, size_t offset, VkDescriptorType type);
 
-        void clear();
-        void update_set(VkDevice device, VkDescriptorSet set);
+        void Clear();
+        void UpdateSet(VkDevice device, VkDescriptorSet set);
     };
 
     // Descriptor Pool Allocator
     struct DescriptorAllocator
     {
     public:
-        void createDescriptorPool(VkDevice device, std::vector<VkDescriptorPoolSize> poolSizes, uint32_t maxSets);
-        void allocateDescriptorSets(VkDevice device, VkDescriptorSetLayout layout, std::vector<VkDescriptorSet> &descriptorSets);
-        void destroyDescriptorPool(VkDevice device);
+        void CreateDescriptorPool(VkDevice device, std::vector<VkDescriptorPoolSize> poolSizes, uint32_t maxSets);
+        void AllocateDescriptorSets(VkDevice device, VkDescriptorSetLayout layout, std::vector<VkDescriptorSet> &descriptorSets);
+        void DestroyDescriptorPool(VkDevice device);
 
     private:
-        VkDescriptorPool pool;
+        VkDescriptorPool _pool;
     };
 }

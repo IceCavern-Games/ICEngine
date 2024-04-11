@@ -70,10 +70,10 @@ namespace IC::Renderer
         std::vector<VkDescriptorSet> descriptorSets;
         AllocatedBuffer vertexBuffer;
         AllocatedBuffer indexBuffer;
-        std::vector<AllocatedBuffer> mvp_buffers;
-        std::vector<AllocatedBuffer> constants_buffers;
+        std::vector<AllocatedBuffer> mvpBuffers;
+        std::vector<AllocatedBuffer> constantsBuffers;
 
-        void bind(VkCommandBuffer cBuffer, VkPipelineLayout pipelineLayout, size_t currentFrame)
+        void Bind(VkCommandBuffer cBuffer, VkPipelineLayout pipelineLayout, size_t currentFrame)
         {
             VkBuffer vertexBuffers[] = {vertexBuffer.buffer};
             VkDeviceSize offsets[] = {0};
@@ -82,18 +82,18 @@ namespace IC::Renderer
             vkCmdBindDescriptorSets(cBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
         }
 
-        void draw(VkCommandBuffer cBuffer)
+        void Draw(VkCommandBuffer cBuffer)
         {
             vkCmdDrawIndexed(cBuffer, meshData.index_count, 1, 0, 0, 0);
         }
 
-        void update_mvp_buffer(MVPObject uniformBuffer, uint32_t currentImage)
+        void UpdateMvpBuffer(MVPObject uniformBuffer, uint32_t currentImage)
         {
-            memcpy(mvp_buffers[currentImage].mapped_memory, &uniformBuffer, sizeof(uniformBuffer));
+            memcpy(mvpBuffers[currentImage].mapped_memory, &uniformBuffer, sizeof(uniformBuffer));
         }
     };
 
-    static VkVertexInputBindingDescription getVertexBindingDescription()
+    static VkVertexInputBindingDescription GetVertexBindingDescription()
     {
         VkVertexInputBindingDescription bindingDescription{};
         bindingDescription.binding = 0;
@@ -102,7 +102,7 @@ namespace IC::Renderer
         return bindingDescription;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 3> getVertexAttributeDescriptions()
+    static std::array<VkVertexInputAttributeDescription, 3> GetVertexAttributeDescriptions()
     {
         std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
         attributeDescriptions[0].binding = 0;

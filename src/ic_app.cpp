@@ -66,12 +66,12 @@ bool App::Run(const Config *c)
     material.vertShaderData = "resources/shaders/default_shader.vert.spv";
     material.constants.color = {1.0f, 0.0f, 0.0f, 1.0f};
 
-    renderer->add_mesh(mesh, material);
+    renderer->AddMesh(mesh, material);
 
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
-        renderer->draw_frame();
+        renderer->DrawFrame();
     }
 
     glfwDestroyWindow(window);

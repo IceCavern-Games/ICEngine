@@ -26,7 +26,7 @@ namespace IC::Renderer
         uint32_t presentFamily;
         bool graphicsFamilyHasValue = false;
         bool presentFamilyHasValue = false;
-        bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
+        bool IsComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
     };
 
     class VulkanDevice
@@ -47,71 +47,71 @@ namespace IC::Renderer
         VulkanDevice(VulkanDevice &&) = delete;
         VulkanDevice &operator=(VulkanDevice &&) = delete;
 
-        VkCommandPool getCommandPool() { return commandPool; }
-        VkDevice device() { return device_; }
-        VkPhysicalDevice physicalDevice() { return physicalDevice_; }
-        VkInstance instance() { return instance_; }
-        VkSurfaceKHR surface() { return surface_; }
-        VkQueue graphicsQueue() { return graphicsQueue_; }
-        VkQueue presentQueue() { return presentQueue_; }
+        VkCommandPool GetCommandPool() { return _commandPool; }
+        VkDevice Device() { return _device; }
+        VkPhysicalDevice PhysicalDevice() { return _physicalDevice; }
+        VkInstance Instance() { return _instance; }
+        VkSurfaceKHR Surface() { return _surface; }
+        VkQueue GraphicsQueue() { return _graphicsQueue; }
+        VkQueue PresentQueue() { return _presentQueue; }
 
-        SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physicalDevice_); }
-        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-        QueueFamilyIndices findPhysicalQueueFamilies() { return findQueueFamilies(physicalDevice_); }
-        VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
+        SwapChainSupportDetails GetSwapChainSupport() { return QuerySwapChainSupport(_physicalDevice); }
+        uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+        QueueFamilyIndices FindPhysicalQueueFamilies() { return FindQueueFamilies(_physicalDevice); }
+        VkFormat FindSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
                                      VkFormatFeatureFlags features);
 
         // Buffer Helper Functions
-        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
+        void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
                           VkBuffer &buffer, VkDeviceMemory &bufferMemory);
-        VkCommandBuffer beginSingleTimeCommands();
-        void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-        void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-        void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height,
+        VkCommandBuffer BeginSingleTimeCommands();
+        void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+        void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+        void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height,
                                uint32_t layerCount);
-        VkImageView createImageView(VkImage image, VkFormat format);
+        VkImageView CreateImageView(VkImage image, VkFormat format);
 
-        void createImageWithInfo(const VkImageCreateInfo &imageInfo, VkMemoryPropertyFlags properties,
+        void CreateImageWithInfo(const VkImageCreateInfo &imageInfo, VkMemoryPropertyFlags properties,
                                  VkImage &image, VkDeviceMemory &imageMemory);
 
         VkPhysicalDeviceProperties properties;
 
     private:
-        void createInstance();
-        void setupDebugMessenger();
-        void createSurface();
-        void pickPhysicalDevice();
-        void createLogicalDevice();
-        void createCommandPool();
+        void CreateInstance();
+        void SetupDebugMessenger();
+        void CreateSurface();
+        void PickPhysicalDevice();
+        void CreateLogicalDevice();
+        void CreateCommandPool();
 
         // helper functions
-        bool isDeviceSuitable(VkPhysicalDevice device);
-        std::vector<const char *> getRequiredExtensions();
-        bool checkValidationLayerSupport();
-        QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-        void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
-        void hasGflwRequiredInstanceExtensions();
-        bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-        SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+        bool IsDeviceSuitable(VkPhysicalDevice device);
+        std::vector<const char *> GetRequiredExtensions();
+        bool CheckValidationLayerSupport();
+        QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+        void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
+        void HasGflwRequiredInstanceExtensions();
+        bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+        SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 
-        VkDebugUtilsMessengerEXT debugMessenger;
-        GLFWwindow *window;
-        VkCommandPool commandPool;
+        VkDebugUtilsMessengerEXT _debugMessenger;
+        GLFWwindow *_window;
+        VkCommandPool _commandPool;
 
-        VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
-        VkInstance instance_;
-        VkDevice device_;
-        VkSurfaceKHR surface_;
-        VkQueue graphicsQueue_;
-        VkQueue presentQueue_;
+        VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
+        VkInstance _instance;
+        VkDevice _device;
+        VkSurfaceKHR _surface;
+        VkQueue _graphicsQueue;
+        VkQueue _presentQueue;
 
-        const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+        const std::vector<const char *> _validationLayers = {"VK_LAYER_KHRONOS_validation"};
 #ifdef IC_PLATFORM_MACOS
-        const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        const std::vector<const char *> _deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
                                                             VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
                                                             VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME};
 #else
-        const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        const std::vector<const char *> _deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
                                                             VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME};
 #endif
     };
