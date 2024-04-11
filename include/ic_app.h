@@ -1,35 +1,37 @@
 #pragma once
 
+#include <ic_renderer.h>
+
 namespace IC
 {
     // Application Configuration
     struct Config
     {
         // Application name.
-        const char *name = "ic";
+        const char *Name = "ic";
 
         // Starting width, in pixels.
         // Depending on the OS DPI, the true window size may be a multiple of this.
-        int width = 1280;
+        int Width = 1280;
 
         // Starting height, in pixels.
         // Depending on the OS DPI, the true window size may be a multiple of this.
-        int height = 720;
+        int Height = 720;
     };
 
     // Application
     namespace App
     {
         // Runs the application.
-        bool run(const Config *config);
+        bool Run(const Config *config);
 
         // Checks if the Application is running yet.
-        bool is_running();
+        bool IsRunning();
 
         // Exits the application.
-        void exit();
+        void Exit();
 
         // Gets the config data used to run the application.
-        const Config &config();
+        const Config &GetConfig();
     }
 }

@@ -6,6 +6,7 @@
 #include <vulkan/vulkan.h>
 #endif
 
+#include "vulkan/vulkan_renderer.h"
 #include <GLFW/glfw3.h>
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -19,40 +20,58 @@ using namespace IC;
 namespace
 {
     // Global App State
-    Config app_config;
-    bool app_is_running = false;
-    bool app_is_exiting = false;
+    Config _appConfig;
+    bool _appIsRunning = false;
+    bool _appIsExiting = false;
 }
 
-bool App::run(const Config *c)
+bool App::Run(const Config *c)
 {
     Log::Init();
 
-    // Copy config over.
-    app_config = *c;
+    IC::Renderer::RendererConfig rendererConfig{};
+    IC::Renderer::Renderer *renderer;
 
-    IC_CORE_INFO("Hello, {0}.", app_config.name);
+    // Copy config over.
+    _appConfig = *c;
+
+    IC_CORE_INFO("Hello, {0}.", _appConfig.Name);
 
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow *window = glfwCreateWindow(app_config.width, app_config.height, app_config.name, nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(_appConfig.Width, _appConfig.Height, _appConfig.Name, nullptr, nullptr);
+
+    rendererConfig.Window = window;
+    rendererConfig.Width = _appConfig.Width;
+    rendererConfig.Height = _appConfig.Height;
 
 #ifdef IC_RENDERER_VULKAN
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
     IC_CORE_INFO("{0} Vulkan extensions supported.", extensionCount);
+
+    rendererConfig.RendererType = IC::Renderer::RendererType::Vulkan;
 #endif
 
-    app_is_running = true;
+    _appIsRunning = true;
 
-    glm::mat4 matrix;
-    glm::vec4 vec;
-    auto test = matrix * vec;
+    renderer = new IC::Renderer::VulkanRenderer(rendererConfig);
+
+    Mesh mesh;
+    Material material{};
+
+    mesh.LoadFromFile("resources/models/cube.obj");
+    material.FragShaderData = "resources/shaders/default_shader.frag.spv";
+    material.VertShaderData = "resources/shaders/default_shader.vert.spv";
+    material.Constants.Color = {1.0f, 0.0f, 0.0f, 1.0f};
+
+    renderer->AddMesh(mesh, material);
 
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
+        renderer->DrawFrame();
     }
 
     glfwDestroyWindow(window);
@@ -61,18 +80,18 @@ bool App::run(const Config *c)
     return true;
 }
 
-bool App::is_running()
+bool App::IsRunning()
 {
-    return app_is_running;
+    return _appIsRunning;
 }
 
-void App::exit()
+void App::Exit()
 {
-    if (!app_is_exiting && app_is_running)
-        app_is_exiting = true;
+    if (!_appIsExiting && _appIsRunning)
+        _appIsExiting = true;
 }
 
-const Config &App::config()
+const Config &App::GetConfig()
 {
-    return app_config;
+    return _appConfig;
 }

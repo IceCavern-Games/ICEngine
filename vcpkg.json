@@ -1,3 +1,10 @@
 {
-    "dependencies": ["glfw3", "glm", "spdlog", "vulkan"]
+    "dependencies": [
+        "glfw3",
+        "glm",
+        "spdlog",
+        "tinyobjloader",
+        "vulkan",
+        "vulkan-utility-libraries"
+    ]
 }
