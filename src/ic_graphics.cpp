@@ -4,7 +4,7 @@
 
 namespace IC
 {
-    void ICMesh::load_from_file(std::string file_name)
+    void Mesh::LoadFromFile(std::string fileName)
     {
 
         tinyobj::attrib_t attrib;
@@ -12,12 +12,12 @@ namespace IC
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
 
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, file_name.c_str()))
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, fileName.c_str()))
         {
             throw std::runtime_error(warn + err);
         }
 
-        std::unordered_map<VertexData, uint32_t> unique_vertices{};
+        std::unordered_map<VertexData, uint32_t> uniqueVertices{};
 
         for (const auto &shape : shapes)
         {
@@ -25,27 +25,27 @@ namespace IC
             {
                 VertexData vertex{};
 
-                vertex.pos = {attrib.vertices[3 * index.vertex_index + 0],
+                vertex.Pos = {attrib.vertices[3 * index.vertex_index + 0],
                               attrib.vertices[3 * index.vertex_index + 1],
                               attrib.vertices[3 * index.vertex_index + 2]};
 
-                vertex.texCoord = {attrib.texcoords[2 * index.texcoord_index + 0],
+                vertex.TexCoord = {attrib.texcoords[2 * index.texcoord_index + 0],
                                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]};
 
-                vertex.color = {1.0f, 1.0f, 1.0f};
+                vertex.Color = {1.0f, 1.0f, 1.0f};
 
-                if (unique_vertices.count(vertex) == 0)
+                if (uniqueVertices.count(vertex) == 0)
                 {
-                    unique_vertices[vertex] = static_cast<uint32_t>(vertices.size());
-                    vertices.push_back(vertex);
+                    uniqueVertices[vertex] = static_cast<uint32_t>(Vertices.size());
+                    Vertices.push_back(vertex);
                 }
 
-                indices.push_back(unique_vertices[vertex]);
+                Indices.push_back(uniqueVertices[vertex]);
             }
         }
 
-        vertex_count = static_cast<uint32_t>(vertices.size());
-        index_count = static_cast<uint32_t>(indices.size());
-        assert(vertex_count >= 3 && "Vertex count must be at least 3");
+        VertexCount = static_cast<uint32_t>(Vertices.size());
+        IndexCount = static_cast<uint32_t>(Indices.size());
+        assert(VertexCount >= 3 && "Vertex count must be at least 3");
     }
 }

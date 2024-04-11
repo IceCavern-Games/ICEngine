@@ -30,5 +30,5 @@ namespace IC::Renderer::Init
     void CreateImageSampler(VkDevice device, float maxAnisotropy, VkSampler &textureSampler);
 
     // pipelines
-    std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain, ICMaterial &materialData);
+    std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain, Material &materialData);
 }

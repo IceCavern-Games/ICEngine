@@ -126,7 +126,7 @@ namespace IC::Renderer::Init
     }
 
     // pipelines
-    std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain, ICMaterial &materialData)
+    std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain, Material &materialData)
     {
         // descriptor sets
         DescriptorLayoutBuilder descriptorLayoutBuilder{};
@@ -147,8 +147,8 @@ namespace IC::Renderer::Init
         PipelineBuilder pipelineBuilder;
 
         pipelineBuilder.pipelineLayout = pipelineLayout;
-        VkShaderModule vertShaderModule = PipelineBuilder::CreateShaderModule(device, materialData.vertShaderData);
-        VkShaderModule fragShaderModule = PipelineBuilder::CreateShaderModule(device, materialData.fragShaderData);
+        VkShaderModule vertShaderModule = PipelineBuilder::CreateShaderModule(device, materialData.VertShaderData);
+        VkShaderModule fragShaderModule = PipelineBuilder::CreateShaderModule(device, materialData.FragShaderData);
 
         pipelineBuilder.SetShaders(vertShaderModule, fragShaderModule);
         pipelineBuilder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);

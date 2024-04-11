@@ -8,25 +8,25 @@
 
 namespace IC::Renderer
 {
-    class VulkanRenderer : public ICRenderer
+    class VulkanRenderer : public Renderer
     {
     public:
         VulkanRenderer(RendererConfig &config);
         ~VulkanRenderer();
 
         void DrawFrame();
-        void AddMesh(ICMesh &meshData, ICMaterial &materialData);
+        void AddMesh(Mesh &meshData, Material &materialData);
 
     private:
         void CreateCommandBuffers();
         void InitDescriptorAllocator();
 
-        static ICRenderer *MakeVulkan(RendererConfig renderer_config)
+        static Renderer *MakeVulkan(RendererConfig rendererConfig)
         {
-            return new VulkanRenderer(renderer_config);
+            return new VulkanRenderer(rendererConfig);
         }
 
-        VulkanDevice _vulkanDevice{pWindow};
+        VulkanDevice _vulkanDevice{Window};
         SwapChain _swapChain;
         PipelineManager _pipelineManager{};
         DescriptorAllocator _descriptorAllocator{};

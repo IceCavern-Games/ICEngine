@@ -50,10 +50,10 @@ namespace IC::Renderer
     class PipelineManager
     {
     public:
-        std::shared_ptr<Pipeline> FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain, ICMaterial &materialData);
+        std::shared_ptr<Pipeline> FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain, Material &materialData);
 
     private:
-        bool IsPipelineSuitable(Pipeline &pipeline, ICMaterial &materialData);
+        bool IsPipelineSuitable(Pipeline &pipeline, Material &materialData);
         std::vector<std::shared_ptr<Pipeline>> _createdPipelines;
     };
 } // namespace lve

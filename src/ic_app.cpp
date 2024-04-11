@@ -29,8 +29,8 @@ bool App::Run(const Config *c)
 {
     Log::Init();
 
-    IC::Renderer::RendererConfig renderer_config{};
-    IC::Renderer::ICRenderer *renderer;
+    IC::Renderer::RendererConfig rendererConfig{};
+    IC::Renderer::Renderer *renderer;
 
     // Copy config over.
     _appConfig = *c;
@@ -41,9 +41,9 @@ bool App::Run(const Config *c)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     GLFWwindow *window = glfwCreateWindow(_appConfig.Width, _appConfig.Height, _appConfig.Name, nullptr, nullptr);
 
-    renderer_config.pWindow = window;
-    renderer_config.width = _appConfig.Width;
-    renderer_config.height = _appConfig.Height;
+    rendererConfig.Window = window;
+    rendererConfig.Width = _appConfig.Width;
+    rendererConfig.Height = _appConfig.Height;
 
 #ifdef IC_RENDERER_VULKAN
     uint32_t extensionCount = 0;
@@ -51,20 +51,20 @@ bool App::Run(const Config *c)
 
     IC_CORE_INFO("{0} Vulkan extensions supported.", extensionCount);
 
-    renderer_config.renderer_type = IC::Renderer::RendererType::Vulkan;
+    rendererConfig.RendererType = IC::Renderer::RendererType::Vulkan;
 #endif
 
     _appIsRunning = true;
 
-    renderer = new IC::Renderer::VulkanRenderer(renderer_config);
+    renderer = new IC::Renderer::VulkanRenderer(rendererConfig);
 
-    ICMesh mesh;
-    ICMaterial material{};
+    Mesh mesh;
+    Material material{};
 
-    mesh.load_from_file("resources/models/cube.obj");
-    material.fragShaderData = "resources/shaders/default_shader.frag.spv";
-    material.vertShaderData = "resources/shaders/default_shader.vert.spv";
-    material.constants.color = {1.0f, 0.0f, 0.0f, 1.0f};
+    mesh.LoadFromFile("resources/models/cube.obj");
+    material.FragShaderData = "resources/shaders/default_shader.frag.spv";
+    material.VertShaderData = "resources/shaders/default_shader.vert.spv";
+    material.Constants.Color = {1.0f, 0.0f, 0.0f, 1.0f};
 
     renderer->AddMesh(mesh, material);
 

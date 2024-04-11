@@ -6,8 +6,8 @@
 
 namespace IC::Renderer::Util
 {
-    void CreateAndFillBuffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize, VkBufferUsageFlags buffer_usage_flags,
-         VkMemoryPropertyFlags memory_property_flags,  AllocatedBuffer &allocatedBuffer)
+    void CreateAndFillBuffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize, VkBufferUsageFlags bufferUsageFlags,
+                             VkMemoryPropertyFlags memoryPropertyFlags, AllocatedBuffer &allocatedBuffer)
     {
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -22,8 +22,8 @@ namespace IC::Renderer::Util
         vkUnmapMemory(device.Device(), stagingBufferMemory);
 
         device.CreateBuffer(bufferSize,
-                            VK_BUFFER_USAGE_TRANSFER_DST_BIT | buffer_usage_flags,
-                            memory_property_flags, allocatedBuffer.buffer, allocatedBuffer.memory);
+                            VK_BUFFER_USAGE_TRANSFER_DST_BIT | bufferUsageFlags,
+                            memoryPropertyFlags, allocatedBuffer.buffer, allocatedBuffer.memory);
 
         device.CopyBuffer(stagingBuffer, allocatedBuffer.buffer, bufferSize);
 
@@ -45,7 +45,7 @@ namespace IC::Renderer::Util
     }
 
     void CopyImageToImage(VkCommandBuffer commandBuffer, VkImage source, VkImage destination,
-                             VkExtent2D srcSize, VkExtent2D dstSize)
+                          VkExtent2D srcSize, VkExtent2D dstSize)
     {
         VkImageBlit2 blitRegion{.sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr};
 
@@ -80,7 +80,7 @@ namespace IC::Renderer::Util
     }
 
     void TransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format,
-                                 VkImageLayout oldLayout, VkImageLayout newLayout)
+                               VkImageLayout oldLayout, VkImageLayout newLayout)
     {
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -132,7 +132,7 @@ namespace IC::Renderer::Util
     }
     // todo
     /*
-    void load_texture_image(VulkanDevice &device, std::string texturePath, AllocatedImage &outImage)
+    void LoadTextureImage(VulkanDevice &device, std::string texturePath, AllocatedImage &outImage)
     {
         int texWidth, texHeight, texChannels;
         stbi_uc *pixels = stbi_load(texturePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);

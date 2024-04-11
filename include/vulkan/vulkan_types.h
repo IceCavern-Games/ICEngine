@@ -64,8 +64,8 @@ namespace IC::Renderer
 
     struct MeshRenderData
     {
-        ICMesh &meshData;
-        ICMaterial &materialData;
+        Mesh &meshData;
+        Material &materialData;
         std::shared_ptr<Pipeline> renderPipeline;
         std::vector<VkDescriptorSet> descriptorSets;
         AllocatedBuffer vertexBuffer;
@@ -84,7 +84,7 @@ namespace IC::Renderer
 
         void Draw(VkCommandBuffer cBuffer)
         {
-            vkCmdDrawIndexed(cBuffer, meshData.index_count, 1, 0, 0, 0);
+            vkCmdDrawIndexed(cBuffer, meshData.IndexCount, 1, 0, 0, 0);
         }
 
         void UpdateMvpBuffer(MVPObject uniformBuffer, uint32_t currentImage)
@@ -108,17 +108,17 @@ namespace IC::Renderer
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[0].offset = offsetof(VertexData, pos);
+        attributeDescriptions[0].offset = offsetof(VertexData, Pos);
 
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(VertexData, color);
+        attributeDescriptions[1].offset = offsetof(VertexData, Color);
 
         attributeDescriptions[2].binding = 0;
         attributeDescriptions[2].location = 2;
         attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[2].offset = offsetof(VertexData, texCoord);
+        attributeDescriptions[2].offset = offsetof(VertexData, TexCoord);
         return attributeDescriptions;
     }
 }

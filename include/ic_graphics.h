@@ -18,37 +18,37 @@ namespace IC
 
     struct MaterialConstants
     {
-        glm::vec4 color;
+        glm::vec4 Color;
     };
 
-    struct ICMaterial
+    struct Material
     {
-        std::string vertShaderData;
-        std::string fragShaderData;
+        std::string FragShaderData;
+        std::string VertShaderData;
 
-        MaterialConstants constants;
+        MaterialConstants Constants;
     };
 
     struct VertexData
     {
-        glm::vec3 pos;
-        glm::vec3 color;
-        glm::vec2 texCoord;
+        glm::vec3 Pos;
+        glm::vec3 Color;
+        glm::vec2 TexCoord;
 
         bool operator==(const VertexData &other) const
         {
-            return pos == other.pos && color == other.color && texCoord == other.texCoord;
+            return Pos == other.Pos && Color == other.Color && TexCoord == other.TexCoord;
         }
     };
 
-    struct ICMesh
+    struct Mesh
     {
-        std::vector<VertexData> vertices;
-        std::vector<uint32_t> indices;
-        uint32_t vertex_count;
-        uint32_t index_count;
+        std::vector<VertexData> Vertices;
+        std::vector<uint32_t> Indices;
+        uint32_t VertexCount;
+        uint32_t IndexCount;
 
-        void load_from_file(std::string file_name);
+        void LoadFromFile(std::string fileName);
     };
 }
 
@@ -60,8 +60,8 @@ namespace std
     {
         size_t operator()(IC::VertexData const &vertex) const
         {
-            return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-                   (hash<glm::vec2>()(vertex.texCoord) << 1);
+            return ((hash<glm::vec3>()(vertex.Pos) ^ (hash<glm::vec3>()(vertex.Color) << 1)) >> 1) ^
+                   (hash<glm::vec2>()(vertex.TexCoord) << 1);
         }
     };
 }

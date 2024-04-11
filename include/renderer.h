@@ -15,32 +15,32 @@ namespace IC::Renderer
 
     struct RendererConfig
     {
-        RendererType renderer_type;
-        GLFWwindow *pWindow;
-        int width;
-        int height;
+        RendererType RendererType;
+        GLFWwindow *Window;
+        int Width;
+        int Height;
     };
 
-    class ICRenderer
+    class Renderer
     {
-    public:
-        ICRenderer(RendererConfig config) { pWindow = config.pWindow; };
-        ~ICRenderer() = default;
-        virtual void DrawFrame() = 0;
-        virtual void AddMesh(ICMesh &meshData, ICMaterial &materialData) = 0;
-
     protected:
-        GLFWwindow *pWindow;
+        GLFWwindow *Window;
 
-        static ICRenderer *MakeVulkan(RendererConfig &renderer_config);
+        static Renderer *MakeVulkan(RendererConfig &rendererConfig);
 
     public:
-        static ICRenderer *make_renderer(RendererConfig &renderer_config)
+        Renderer(RendererConfig config) { Window = config.Window; };
+        ~Renderer() = default;
+
+        virtual void DrawFrame() = 0;
+        virtual void AddMesh(Mesh &meshData, Material &materialData) = 0;
+
+        static Renderer *MakeRenderer(RendererConfig &rendererConfig)
         {
-            switch (renderer_config.renderer_type)
+            switch (rendererConfig.RendererType)
             {
             case RendererType::Vulkan:
-                return MakeVulkan(renderer_config);
+                return MakeVulkan(rendererConfig);
             default:
                 return nullptr;
             }
