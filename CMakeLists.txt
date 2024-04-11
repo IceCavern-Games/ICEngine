@@ -12,6 +12,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 option(BUILD_IC_EDITOR "Build included editor tool" OFF)
 option(IC_RENDERER_VULKAN "Make Vulkan Renderer available" OFF)
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    add_compile_definitions(IC_PLATFORM_MACOS)
+endif()
+
 ##############################################
 # Declare Dependencies
 find_package(glfw3 CONFIG REQUIRED)
@@ -78,8 +82,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR__RENDERER})
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE ${LIBS}
-    PUBLIC spdlog::spdlog_header_only
-    tinyobjloader::tinyobjloader
+    PUBLIC
+        spdlog::spdlog_header_only
+        tinyobjloader::tinyobjloader
 )
 
 ##############################################

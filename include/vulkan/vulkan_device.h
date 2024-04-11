@@ -106,7 +106,7 @@ namespace IC::Renderer
         VkQueue presentQueue_;
 
         const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-#ifdef MACOS
+#ifdef IC_PLATFORM_MACOS
         const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
                                                             VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
                                                             VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME};

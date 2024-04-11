@@ -140,6 +140,7 @@ namespace IC::Renderer
     {
         std::vector<VkDescriptorPoolSize> poolSizes{};
         poolSizes.push_back({VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT)});
+        poolSizes.push_back({VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT)});
         poolSizes.push_back({VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT)});
 
         descriptorAllocator.createDescriptorPool(vulkanDevice.device(), poolSizes, 100);
