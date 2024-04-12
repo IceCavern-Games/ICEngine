@@ -2,10 +2,8 @@
 
 #include <glm/glm.hpp>
 
-namespace IC
-{
-    class Camera
-    {
+namespace IC {
+    class Camera {
     public:
         Camera();
         ~Camera();
@@ -17,4 +15,4 @@ namespace IC
         glm::vec3 _lookVector;
         glm::vec3 _position;
     };
-}
+} // namespace IC

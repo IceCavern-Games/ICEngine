@@ -4,10 +4,8 @@
 
 #include <spdlog/spdlog.h>
 
-namespace IC
-{
-    class Log
-    {
+namespace IC {
+    class Log {
     public:
         static void Init();
 
@@ -18,7 +16,7 @@ namespace IC
         static std::shared_ptr<spdlog::logger> _appLogger;
         static std::shared_ptr<spdlog::logger> _coreLogger;
     };
-}
+} // namespace IC
 
 // App Log Macros
 #define IC_APP_TRACE(...) ::IC::Log::GetAppLogger()->trace(__VA_ARGS__)

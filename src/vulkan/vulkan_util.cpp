@@ -4,11 +4,11 @@
 
 #include <cstring>
 
-namespace IC
-{
-    void CreateAndFillBuffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize, VkBufferUsageFlags bufferUsageFlags,
-                             VkMemoryPropertyFlags memoryPropertyFlags, AllocatedBuffer &allocatedBuffer)
-    {
+namespace IC {
+    void CreateAndFillBuffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize,
+                             VkBufferUsageFlags bufferUsageFlags,
+                             VkMemoryPropertyFlags memoryPropertyFlags,
+                             AllocatedBuffer &allocatedBuffer) {
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
@@ -21,8 +21,7 @@ namespace IC
         memcpy(data, srcData, (size_t)bufferSize);
         vkUnmapMemory(device.Device(), stagingBufferMemory);
 
-        device.CreateBuffer(bufferSize,
-                            VK_BUFFER_USAGE_TRANSFER_DST_BIT | bufferUsageFlags,
+        device.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | bufferUsageFlags,
                             memoryPropertyFlags, allocatedBuffer.buffer, allocatedBuffer.memory);
 
         device.CopyBuffer(stagingBuffer, allocatedBuffer.buffer, bufferSize);
@@ -31,10 +30,8 @@ namespace IC
         vkFreeMemory(device.Device(), stagingBufferMemory, nullptr);
     }
 
-    VkDescriptorType MaterialInputTypeMapping(MaterialInputType inputType)
-    {
-        switch (inputType)
-        {
+    VkDescriptorType MaterialInputTypeMapping(MaterialInputType inputType) {
+        switch (inputType) {
         case MaterialInputType::Color:
             return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         case MaterialInputType::Texture:
@@ -45,8 +42,7 @@ namespace IC
     }
 
     void CopyImageToImage(VkCommandBuffer commandBuffer, VkImage source, VkImage destination,
-                          VkExtent2D srcSize, VkExtent2D dstSize)
-    {
+                          VkExtent2D srcSize, VkExtent2D dstSize) {
         VkImageBlit2 blitRegion{.sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr};
 
         blitRegion.srcOffsets[1].x = srcSize.width;
@@ -80,8 +76,7 @@ namespace IC
     }
 
     void TransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format,
-                               VkImageLayout oldLayout, VkImageLayout newLayout)
-    {
+                               VkImageLayout oldLayout, VkImageLayout newLayout) {
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = oldLayout;
@@ -101,25 +96,20 @@ namespace IC
         VkPipelineStageFlags destinationStage;
 
         if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
-            newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-        {
+            newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
             barrier.srcAccessMask = 0;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
             sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
             destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        }
-        else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-                 newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-        {
+        } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+                   newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
             sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
             destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        }
-        else
-        {
+        } else {
             barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
 
@@ -127,16 +117,16 @@ namespace IC
             destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
         }
 
-        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1,
-                             &barrier);
+        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0,
+                             nullptr, 1, &barrier);
     }
     // todo
     /*
     void LoadTextureImage(VulkanDevice &device, std::string texturePath, AllocatedImage &outImage)
     {
         int texWidth, texHeight, texChannels;
-        stbi_uc *pixels = stbi_load(texturePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-        VkDeviceSize imageSize = texWidth * texHeight * 4;
+        stbi_uc *pixels = stbi_load(texturePath.c_str(), &texWidth, &texHeight, &texChannels,
+    STBI_rgb_alpha); VkDeviceSize imageSize = texWidth * texHeight * 4;
 
         if (!pixels)
         {
@@ -179,4 +169,4 @@ namespace IC
         vkFreeMemory(device.Device(), stagingBufferMemory, nullptr);
     }
     */
-}
+} // namespace IC

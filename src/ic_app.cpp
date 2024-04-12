@@ -1,33 +1,22 @@
 #include <ic_app.h>
+
 #include <ic_log.h>
+
 #include "ic_renderer.h"
-
-#ifdef IC_RENDERER_VULKAN
-#define GLFW_INCLUDE_VULKAN
-#endif
-
-#include <GLFW/glfw3.h>
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
 
 #include <iostream>
 
 using namespace IC;
 
-namespace
-{
+namespace {
     // Global App State
     Config _appConfig;
     bool _appIsRunning = false;
     bool _appIsExiting = false;
-    RendererConfig _rendererConfig{};
     Renderer *_appRendererApi;
-}
+} // namespace
 
-bool App::Run(const Config *c)
-{
+bool App::Run(const Config *c) {
     Log::Init();
 
     // Copy config over.
@@ -37,19 +26,20 @@ bool App::Run(const Config *c)
 
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow *window = glfwCreateWindow(_appConfig.Width, _appConfig.Height, _appConfig.Name, nullptr, nullptr);
+    GLFWwindow *window =
+        glfwCreateWindow(_appConfig.Width, _appConfig.Height, _appConfig.Name, nullptr, nullptr);
 
-    _rendererConfig.RendererType = _appConfig.RendererType;
-    _rendererConfig.Window = window;
-    _rendererConfig.Width = _appConfig.Width;
-    _rendererConfig.Height = _appConfig.Height;
+    RendererConfig rendererConfig{};
+    rendererConfig.RendererType = _appConfig.RendererType;
+    rendererConfig.Window = window;
+    rendererConfig.Width = _appConfig.Width;
+    rendererConfig.Height = _appConfig.Height;
 
     _appIsRunning = true;
 
-    _appRendererApi = Renderer::MakeRenderer(_rendererConfig);
+    _appRendererApi = Renderer::MakeRenderer(rendererConfig);
 
-    if (_appRendererApi == nullptr)
-    {
+    if (_appRendererApi == nullptr) {
         IC_CORE_ERROR("Render module was not found.");
 
         glfwDestroyWindow(window);
@@ -68,8 +58,7 @@ bool App::Run(const Config *c)
 
     _appRendererApi->AddMesh(mesh, material);
 
-    while (!glfwWindowShouldClose(window))
-    {
+    while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         _appRendererApi->DrawFrame();
     }
@@ -80,18 +69,11 @@ bool App::Run(const Config *c)
     return true;
 }
 
-bool App::IsRunning()
-{
-    return _appIsRunning;
-}
+bool App::IsRunning() { return _appIsRunning; }
 
-void App::Exit()
-{
+void App::Exit() {
     if (!_appIsExiting && _appIsRunning)
         _appIsExiting = true;
 }
 
-const Config &App::GetConfig()
-{
-    return _appConfig;
-}
+const Config &App::GetConfig() { return _appConfig; }

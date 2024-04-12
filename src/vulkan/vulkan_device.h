@@ -2,26 +2,21 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_beta.h>
 
-// std lib headers
 #include <string>
 #include <vector>
 
-namespace IC
-{
+namespace IC {
 
-    struct SwapChainSupportDetails
-    {
+    struct SwapChainSupportDetails {
         VkSurfaceCapabilitiesKHR capabilities;
         std::vector<VkSurfaceFormatKHR> formats;
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-    struct QueueFamilyIndices
-    {
+    struct QueueFamilyIndices {
         uint32_t graphicsFamily;
         uint32_t presentFamily;
         bool graphicsFamilyHasValue = false;
@@ -29,8 +24,7 @@ namespace IC
         bool IsComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
     };
 
-    class VulkanDevice
-    {
+    class VulkanDevice {
     public:
 #ifdef NDEBUG
         const bool enableValidationLayers = false;
@@ -55,15 +49,20 @@ namespace IC
         VkQueue GraphicsQueue() { return _graphicsQueue; }
         VkQueue PresentQueue() { return _presentQueue; }
 
-        SwapChainSupportDetails GetSwapChainSupport() { return QuerySwapChainSupport(_physicalDevice); }
+        SwapChainSupportDetails GetSwapChainSupport() {
+            return QuerySwapChainSupport(_physicalDevice);
+        }
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-        QueueFamilyIndices FindPhysicalQueueFamilies() { return FindQueueFamilies(_physicalDevice); }
+        QueueFamilyIndices FindPhysicalQueueFamilies() {
+            return FindQueueFamilies(_physicalDevice);
+        }
         VkFormat FindSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
                                      VkFormatFeatureFlags features);
 
         // Buffer Helper Functions
-        void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
-                          VkBuffer &buffer, VkDeviceMemory &bufferMemory);
+        void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
+                          VkMemoryPropertyFlags properties, VkBuffer &buffer,
+                          VkDeviceMemory &bufferMemory);
         VkCommandBuffer BeginSingleTimeCommands();
         void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -71,8 +70,9 @@ namespace IC
                                uint32_t layerCount);
         VkImageView CreateImageView(VkImage image, VkFormat format);
 
-        void CreateImageWithInfo(const VkImageCreateInfo &imageInfo, VkMemoryPropertyFlags properties,
-                                 VkImage &image, VkDeviceMemory &imageMemory);
+        void CreateImageWithInfo(const VkImageCreateInfo &imageInfo,
+                                 VkMemoryPropertyFlags properties, VkImage &image,
+                                 VkDeviceMemory &imageMemory);
 
         VkPhysicalDeviceProperties properties;
 
@@ -107,13 +107,13 @@ namespace IC
 
         const std::vector<const char *> _validationLayers = {"VK_LAYER_KHRONOS_validation"};
 #ifdef IC_PLATFORM_MACOS
-        const std::vector<const char *> _deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                                                             VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
-                                                             VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME};
+        const std::vector<const char *> _deviceExtensions = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+            VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME};
 #else
-        const std::vector<const char *> _deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                                                             VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME};
+        const std::vector<const char *> _deviceExtensions = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME};
 #endif
     };
 
-} // namespace render
+} // namespace IC

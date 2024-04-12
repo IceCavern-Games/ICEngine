@@ -2,8 +2,7 @@
 
 using namespace IC;
 
-int main()
-{
+int main() {
     Config config;
     config.Name = "ICEditor";
     config.Width = 1280;

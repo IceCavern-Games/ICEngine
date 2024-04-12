@@ -1,10 +1,9 @@
 #include "descriptors.h"
+
 #include "swap_chain.h"
 
-namespace IC
-{
-    void DescriptorLayoutBuilder::AddBinding(uint32_t binding, VkDescriptorType type)
-    {
+namespace IC {
+    void DescriptorLayoutBuilder::AddBinding(uint32_t binding, VkDescriptorType type) {
         VkDescriptorSetLayoutBinding newBinding{};
         newBinding.binding = binding;
         newBinding.descriptorCount = 1;
@@ -13,19 +12,16 @@ namespace IC
         bindings.push_back(newBinding);
     }
 
-    void DescriptorLayoutBuilder::Clear()
-    {
-        bindings.clear();
-    }
+    void DescriptorLayoutBuilder::Clear() { bindings.clear(); }
 
-    VkDescriptorSetLayout DescriptorLayoutBuilder::Build(VkDevice device, VkShaderStageFlags shaderStages)
-    {
-        for (VkDescriptorSetLayoutBinding &binding : bindings)
-        {
+    VkDescriptorSetLayout DescriptorLayoutBuilder::Build(VkDevice device,
+                                                         VkShaderStageFlags shaderStages) {
+        for (VkDescriptorSetLayoutBinding &binding : bindings) {
             binding.stageFlags |= shaderStages;
         }
 
-        VkDescriptorSetLayoutCreateInfo info = {.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
+        VkDescriptorSetLayoutCreateInfo info = {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
         info.pNext = nullptr;
 
         info.pBindings = bindings.data();
@@ -38,12 +34,10 @@ namespace IC
         return set;
     }
 
-    void DescriptorWriter::WriteImage(int binding, VkImageView image, VkSampler sampler, VkImageLayout layout, VkDescriptorType type)
-    {
-        VkDescriptorImageInfo info = imageInfos.emplace_back(VkDescriptorImageInfo{
-            .sampler = sampler,
-            .imageView = image,
-            .imageLayout = layout});
+    void DescriptorWriter::WriteImage(int binding, VkImageView image, VkSampler sampler,
+                                      VkImageLayout layout, VkDescriptorType type) {
+        VkDescriptorImageInfo info = imageInfos.emplace_back(
+            VkDescriptorImageInfo{.sampler = sampler, .imageView = image, .imageLayout = layout});
 
         VkWriteDescriptorSet write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
 
@@ -56,12 +50,10 @@ namespace IC
         writes.push_back(write);
     }
 
-    void DescriptorWriter::WriteBuffer(int binding, VkBuffer buffer, size_t size, size_t offset, VkDescriptorType type)
-    {
-        VkDescriptorBufferInfo &info = bufferInfos.emplace_back(VkDescriptorBufferInfo{
-            .buffer = buffer,
-            .offset = offset,
-            .range = size});
+    void DescriptorWriter::WriteBuffer(int binding, VkBuffer buffer, size_t size, size_t offset,
+                                       VkDescriptorType type) {
+        VkDescriptorBufferInfo &info = bufferInfos.emplace_back(
+            VkDescriptorBufferInfo{.buffer = buffer, .offset = offset, .range = size});
 
         VkWriteDescriptorSet write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
 
@@ -74,25 +66,23 @@ namespace IC
         writes.push_back(write);
     }
 
-    void DescriptorWriter::Clear()
-    {
+    void DescriptorWriter::Clear() {
         imageInfos.clear();
         writes.clear();
         bufferInfos.clear();
     }
 
-    void DescriptorWriter::UpdateSet(VkDevice device, VkDescriptorSet set)
-    {
-        for (VkWriteDescriptorSet &write : writes)
-        {
+    void DescriptorWriter::UpdateSet(VkDevice device, VkDescriptorSet set) {
+        for (VkWriteDescriptorSet &write : writes) {
             write.dstSet = set;
         }
 
         vkUpdateDescriptorSets(device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
     }
 
-    void DescriptorAllocator::CreateDescriptorPool(VkDevice device, std::vector<VkDescriptorPoolSize> poolSizes, uint32_t maxSets)
-    {
+    void DescriptorAllocator::CreateDescriptorPool(VkDevice device,
+                                                   std::vector<VkDescriptorPoolSize> poolSizes,
+                                                   uint32_t maxSets) {
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
@@ -102,8 +92,8 @@ namespace IC
         VK_CHECK(vkCreateDescriptorPool(device, &poolInfo, nullptr, &_pool));
     }
 
-    void DescriptorAllocator::AllocateDescriptorSets(VkDevice device, VkDescriptorSetLayout layout, std::vector<VkDescriptorSet> &descriptorSets)
-    {
+    void DescriptorAllocator::AllocateDescriptorSets(VkDevice device, VkDescriptorSetLayout layout,
+                                                     std::vector<VkDescriptorSet> &descriptorSets) {
         std::vector<VkDescriptorSetLayout> layouts(SwapChain::MAX_FRAMES_IN_FLIGHT, layout);
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -115,8 +105,7 @@ namespace IC
         VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()));
     }
 
-    void DescriptorAllocator::DestroyDescriptorPool(VkDevice device)
-    {
+    void DescriptorAllocator::DestroyDescriptorPool(VkDevice device) {
         vkDestroyDescriptorPool(device, _pool, nullptr);
     }
-}
+} // namespace IC

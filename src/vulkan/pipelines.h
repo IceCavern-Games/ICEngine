@@ -1,15 +1,13 @@
 #pragma once
 
+#include "swap_chain.h"
 #include "vulkan_device.h"
 #include "vulkan_types.h"
-#include "swap_chain.h"
 
 #include <memory>
 
-namespace IC
-{
-    class PipelineBuilder
-    {
+namespace IC {
+    class PipelineBuilder {
     public:
         std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
@@ -47,13 +45,13 @@ namespace IC
                                                                      VkShaderModule module);
     };
 
-    class PipelineManager
-    {
+    class PipelineManager {
     public:
-        std::shared_ptr<Pipeline> FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain, Material &materialData);
+        std::shared_ptr<Pipeline>
+        FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain, Material &materialData);
 
     private:
         bool IsPipelineSuitable(Pipeline &pipeline, Material &materialData);
         std::vector<std::shared_ptr<Pipeline>> _createdPipelines;
     };
-} // namespace lve
+} // namespace IC

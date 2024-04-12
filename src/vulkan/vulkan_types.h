@@ -1,12 +1,12 @@
 #pragma once
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/mat4x4.hpp>
-#include <glm/vec4.hpp>
-
 #include <ic_graphics.h>
 #include <ic_log.h>
+
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_RADIANS
+#include <glm/mat4x4.hpp>
+#include <glm/vec4.hpp>
 #include <vulkan/vk_enum_string_helper.h>
 
 #include <array>
@@ -15,57 +15,48 @@
 #include <stdexcept>
 #include <vector>
 
-#define VK_CHECK(x)                                         \
-    do                                                      \
-    {                                                       \
-        VkResult err = x;                                   \
-        if (err)                                            \
-        {                                                   \
-            IC_CORE_ERROR("{0}", string_VkResult(err));     \
-            throw std::runtime_error(string_VkResult(err)); \
-            abort();                                        \
-        }                                                   \
+#define VK_CHECK(x)                                                                                \
+    do {                                                                                           \
+        VkResult err = x;                                                                          \
+        if (err) {                                                                                 \
+            IC_CORE_ERROR("{0}", string_VkResult(err));                                            \
+            throw std::runtime_error(string_VkResult(err));                                        \
+            abort();                                                                               \
+        }                                                                                          \
     } while (0)
 
-namespace IC
-{
-    struct AllocatedBuffer
-    {
+namespace IC {
+    struct AllocatedBuffer {
         VkBuffer buffer;
         VkDeviceMemory memory;
         void *mapped_memory;
     };
 
-    struct AllocatedImage
-    {
+    struct AllocatedImage {
         VkImage image;
         VkImageView view;
         VkDeviceMemory memory;
     };
 
-    struct MVPObject
-    {
+    struct MVPObject {
         glm::mat4 model;
         glm::mat4 view;
         glm::mat4 proj;
     };
 
-    struct Pipeline
-    {
+    struct Pipeline {
         VkPipeline pipeline;
         VkPipelineLayout layout;
         std::vector<VkShaderModule> shaderModules;
         VkDescriptorSetLayout descriptorSetLayout;
         bool transparent = false;
 
-        bool operator<(const Pipeline &other) const
-        {
+        bool operator<(const Pipeline &other) const {
             return pipeline < other.pipeline && transparent <= other.transparent;
         }
     };
 
-    struct MeshRenderData
-    {
+    struct MeshRenderData {
         Mesh &meshData;
         Material &materialData;
         std::shared_ptr<Pipeline> renderPipeline;
@@ -75,28 +66,25 @@ namespace IC
         std::vector<AllocatedBuffer> mvpBuffers;
         std::vector<AllocatedBuffer> constantsBuffers;
 
-        void Bind(VkCommandBuffer cBuffer, VkPipelineLayout pipelineLayout, size_t currentFrame)
-        {
+        void Bind(VkCommandBuffer cBuffer, VkPipelineLayout pipelineLayout, size_t currentFrame) {
             VkBuffer vertexBuffers[] = {vertexBuffer.buffer};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(cBuffer, 0, 1, vertexBuffers, offsets);
             vkCmdBindIndexBuffer(cBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-            vkCmdBindDescriptorSets(cBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
+            vkCmdBindDescriptorSets(cBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                                    &descriptorSets[currentFrame], 0, nullptr);
         }
 
-        void Draw(VkCommandBuffer cBuffer)
-        {
+        void Draw(VkCommandBuffer cBuffer) {
             vkCmdDrawIndexed(cBuffer, meshData.IndexCount, 1, 0, 0, 0);
         }
 
-        void UpdateMvpBuffer(MVPObject uniformBuffer, uint32_t currentImage)
-        {
+        void UpdateMvpBuffer(MVPObject uniformBuffer, uint32_t currentImage) {
             memcpy(mvpBuffers[currentImage].mapped_memory, &uniformBuffer, sizeof(uniformBuffer));
         }
     };
 
-    static VkVertexInputBindingDescription GetVertexBindingDescription()
-    {
+    static VkVertexInputBindingDescription GetVertexBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
         bindingDescription.binding = 0;
         bindingDescription.stride = sizeof(VertexData);
@@ -104,8 +92,7 @@ namespace IC
         return bindingDescription;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 3> GetVertexAttributeDescriptions()
-    {
+    static std::array<VkVertexInputAttributeDescription, 3> GetVertexAttributeDescriptions() {
         std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
@@ -123,4 +110,4 @@ namespace IC
         attributeDescriptions[2].offset = offsetof(VertexData, TexCoord);
         return attributeDescriptions;
     }
-}
+} // namespace IC

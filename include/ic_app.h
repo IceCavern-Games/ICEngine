@@ -2,11 +2,9 @@
 
 #include <ic_graphics.h>
 
-namespace IC
-{
+namespace IC {
     // Application Configuration
-    struct Config
-    {
+    struct Config {
         // Application name.
         const char *Name = "ic";
 
@@ -27,8 +25,7 @@ namespace IC
     };
 
     // Application
-    namespace App
-    {
+    namespace App {
         // Runs the application.
         bool Run(const Config *config);
 
@@ -40,5 +37,5 @@ namespace IC
 
         // Gets the config data used to run the application.
         const Config &GetConfig();
-    }
-}
+    } // namespace App
+} // namespace IC

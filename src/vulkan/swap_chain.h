@@ -2,19 +2,14 @@
 
 #include "vulkan_device.h"
 
-// vulkan headers
 #include <vulkan/vulkan.h>
 
-// std lib headers
 #include <functional>
 #include <string>
 #include <vector>
 
-namespace IC
-{
-
-    class SwapChain
-    {
+namespace IC {
+    class SwapChain {
     public:
         static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -38,8 +33,7 @@ namespace IC
         uint32_t Width() { return _swapChainExtent.width; }
         uint32_t Height() { return _swapChainExtent.height; }
 
-        float ExtentAspectRatio()
-        {
+        float ExtentAspectRatio() {
             return static_cast<float>(_swapChainExtent.width) /
                    static_cast<float>(_swapChainExtent.height);
         }
@@ -93,4 +87,4 @@ namespace IC
         VkFence _immFence;
     };
 
-} // namespace render
+} // namespace IC

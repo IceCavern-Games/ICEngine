@@ -1,22 +1,20 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
 #include <ic_graphics.h>
+
+#include <GLFW/glfw3.h>
 
 #include <vector>
 
-namespace IC
-{
-    struct RendererConfig
-    {
+namespace IC {
+    struct RendererConfig {
         RendererType RendererType;
         GLFWwindow *Window;
         int Width;
         int Height;
     };
 
-    class Renderer
-    {
+    class Renderer {
     public:
         Renderer(RendererConfig config) { Window = config.Window; };
         ~Renderer() = default;
@@ -31,17 +29,12 @@ namespace IC
 #ifdef IC_RENDERER_VULKAN
         static Renderer *MakeVulkan(RendererConfig &rendererConfig);
 #else
-        static Renderer *MakeVulkan(RendererConfig &rendererConfig)
-        {
-            return nullptr;
-        }
+        static Renderer *MakeVulkan(RendererConfig &rendererConfig) { return nullptr; }
 #endif
 
     public:
-        static Renderer *MakeRenderer(RendererConfig &rendererConfig)
-        {
-            switch (rendererConfig.RendererType)
-            {
+        static Renderer *MakeRenderer(RendererConfig &rendererConfig) {
+            switch (rendererConfig.RendererType) {
             case RendererType::Vulkan:
                 return MakeVulkan(rendererConfig);
             default:
@@ -49,4 +42,4 @@ namespace IC
             }
         }
     };
-}
+} // namespace IC
