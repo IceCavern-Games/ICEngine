@@ -10,36 +10,36 @@ using namespace IC;
 
 namespace {
     // Global App State
-    Config _appConfig;
-    bool _appIsRunning = false;
-    bool _appIsExiting = false;
-    Renderer *_appRendererApi;
+    Config appConfig;
+    bool appIsRunning = false;
+    bool appIsExiting = false;
+    Renderer *appRendererApi;
 } // namespace
 
 bool App::Run(const Config *c) {
     Log::Init();
 
     // Copy config over.
-    _appConfig = *c;
+    appConfig = *c;
 
-    IC_CORE_INFO("Hello, {0}.", _appConfig.Name);
+    IC_CORE_INFO("Hello, {0}.", appConfig.name);
 
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     GLFWwindow *window =
-        glfwCreateWindow(_appConfig.Width, _appConfig.Height, _appConfig.Name, nullptr, nullptr);
+        glfwCreateWindow(appConfig.width, appConfig.height, appConfig.name, nullptr, nullptr);
 
     RendererConfig rendererConfig{};
-    rendererConfig.RendererType = _appConfig.RendererType;
-    rendererConfig.Window = window;
-    rendererConfig.Width = _appConfig.Width;
-    rendererConfig.Height = _appConfig.Height;
+    rendererConfig.rendererType = appConfig.rendererType;
+    rendererConfig.window = window;
+    rendererConfig.width = appConfig.width;
+    rendererConfig.height = appConfig.height;
 
-    _appIsRunning = true;
+    appIsRunning = true;
 
-    _appRendererApi = Renderer::MakeRenderer(rendererConfig);
+    appRendererApi = Renderer::MakeRenderer(rendererConfig);
 
-    if (_appRendererApi == nullptr) {
+    if (appRendererApi == nullptr) {
         IC_CORE_ERROR("Render module was not found.");
 
         glfwDestroyWindow(window);
@@ -52,15 +52,15 @@ bool App::Run(const Config *c) {
     Material material{};
 
     mesh.LoadFromFile("resources/models/cube.obj");
-    material.FragShaderData = "resources/shaders/default_shader.frag.spv";
-    material.VertShaderData = "resources/shaders/default_shader.vert.spv";
-    material.Constants.Color = {1.0f, 0.0f, 0.0f, 1.0f};
+    material.fragShaderData = "resources/shaders/default_shader.frag.spv";
+    material.vertShaderData = "resources/shaders/default_shader.vert.spv";
+    material.constants.color = {1.0f, 0.0f, 0.0f, 1.0f};
 
-    _appRendererApi->AddMesh(mesh, material);
+    appRendererApi->AddMesh(mesh, material);
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
-        _appRendererApi->DrawFrame();
+        appRendererApi->DrawFrame();
     }
 
     glfwDestroyWindow(window);
@@ -69,11 +69,15 @@ bool App::Run(const Config *c) {
     return true;
 }
 
-bool App::IsRunning() { return _appIsRunning; }
-
-void App::Exit() {
-    if (!_appIsExiting && _appIsRunning)
-        _appIsExiting = true;
+bool App::IsRunning() {
+    return appIsRunning;
 }
 
-const Config &App::GetConfig() { return _appConfig; }
+void App::Exit() {
+    if (!appIsExiting && appIsRunning)
+        appIsExiting = true;
+}
+
+const Config &App::GetConfig() {
+    return appConfig;
+}

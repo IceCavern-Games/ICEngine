@@ -150,9 +150,9 @@ namespace IC {
 
         pipelineBuilder.pipelineLayout = pipelineLayout;
         VkShaderModule vertShaderModule =
-            PipelineBuilder::CreateShaderModule(device, materialData.VertShaderData);
+            PipelineBuilder::CreateShaderModule(device, materialData.vertShaderData);
         VkShaderModule fragShaderModule =
-            PipelineBuilder::CreateShaderModule(device, materialData.FragShaderData);
+            PipelineBuilder::CreateShaderModule(device, materialData.fragShaderData);
 
         pipelineBuilder.SetShaders(vertShaderModule, fragShaderModule);
         pipelineBuilder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);

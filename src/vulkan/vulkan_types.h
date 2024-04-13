@@ -76,7 +76,7 @@ namespace IC {
         }
 
         void Draw(VkCommandBuffer cBuffer) {
-            vkCmdDrawIndexed(cBuffer, meshData.IndexCount, 1, 0, 0, 0);
+            vkCmdDrawIndexed(cBuffer, meshData.indexCount, 1, 0, 0, 0);
         }
 
         void UpdateMvpBuffer(MVPObject uniformBuffer, uint32_t currentImage) {
@@ -97,17 +97,17 @@ namespace IC {
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[0].offset = offsetof(VertexData, Pos);
+        attributeDescriptions[0].offset = offsetof(VertexData, pos);
 
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(VertexData, Color);
+        attributeDescriptions[1].offset = offsetof(VertexData, color);
 
         attributeDescriptions[2].binding = 0;
         attributeDescriptions[2].location = 2;
         attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[2].offset = offsetof(VertexData, TexCoord);
+        attributeDescriptions[2].offset = offsetof(VertexData, texCoord);
         return attributeDescriptions;
     }
 } // namespace IC

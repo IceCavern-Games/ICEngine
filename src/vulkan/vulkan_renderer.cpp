@@ -17,7 +17,7 @@ namespace IC {
     VulkanRenderer::VulkanRenderer(RendererConfig &config)
         : Renderer{config},
           _swapChain{_vulkanDevice,
-                     {static_cast<uint32_t>(config.Width), static_cast<uint32_t>(config.Height)}} {
+                     {static_cast<uint32_t>(config.width), static_cast<uint32_t>(config.height)}} {
         CreateCommandBuffers();
         InitDescriptorAllocator();
     }
@@ -174,12 +174,12 @@ namespace IC {
             _vulkanDevice.Device(), _swapChain, materialData);
 
         // buffers
-        CreateAndFillBuffer(_vulkanDevice, meshData.Vertices.data(),
-                            sizeof(meshData.Vertices[0]) * meshData.VertexCount,
+        CreateAndFillBuffer(_vulkanDevice, meshData.vertices.data(),
+                            sizeof(meshData.vertices[0]) * meshData.vertexCount,
                             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                             meshRenderData.vertexBuffer);
-        CreateAndFillBuffer(_vulkanDevice, meshData.Indices.data(),
-                            sizeof(meshData.Indices[0]) * meshData.IndexCount,
+        CreateAndFillBuffer(_vulkanDevice, meshData.indices.data(),
+                            sizeof(meshData.indices[0]) * meshData.indexCount,
                             VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                             meshRenderData.indexBuffer);
 
@@ -191,7 +191,7 @@ namespace IC {
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                 meshRenderData.mvpBuffers[i].buffer, meshRenderData.mvpBuffers[i].memory);
 
-            CreateAndFillBuffer(_vulkanDevice, &materialData.Constants, sizeof(MaterialConstants),
+            CreateAndFillBuffer(_vulkanDevice, &materialData.constants, sizeof(MaterialConstants),
                                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                                 meshRenderData.constantsBuffers[i]);

@@ -12,7 +12,9 @@ namespace IC {
         bindings.push_back(newBinding);
     }
 
-    void DescriptorLayoutBuilder::Clear() { bindings.clear(); }
+    void DescriptorLayoutBuilder::Clear() {
+        bindings.clear();
+    }
 
     VkDescriptorSetLayout DescriptorLayoutBuilder::Build(VkDevice device,
                                                          VkShaderStageFlags shaderStages) {

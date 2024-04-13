@@ -23,26 +23,26 @@ namespace IC {
             for (const auto &index : shape.mesh.indices) {
                 VertexData vertex{};
 
-                vertex.Pos = {attrib.vertices[3 * index.vertex_index + 0],
+                vertex.pos = {attrib.vertices[3 * index.vertex_index + 0],
                               attrib.vertices[3 * index.vertex_index + 1],
                               attrib.vertices[3 * index.vertex_index + 2]};
 
-                vertex.TexCoord = {attrib.texcoords[2 * index.texcoord_index + 0],
+                vertex.texCoord = {attrib.texcoords[2 * index.texcoord_index + 0],
                                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]};
 
-                vertex.Color = {1.0f, 1.0f, 1.0f};
+                vertex.color = {1.0f, 1.0f, 1.0f};
 
                 if (uniqueVertices.count(vertex) == 0) {
-                    uniqueVertices[vertex] = static_cast<uint32_t>(Vertices.size());
-                    Vertices.push_back(vertex);
+                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+                    vertices.push_back(vertex);
                 }
 
-                Indices.push_back(uniqueVertices[vertex]);
+                indices.push_back(uniqueVertices[vertex]);
             }
         }
 
-        VertexCount = static_cast<uint32_t>(Vertices.size());
-        IndexCount = static_cast<uint32_t>(Indices.size());
-        assert(VertexCount >= 3 && "Vertex count must be at least 3");
+        vertexCount = static_cast<uint32_t>(vertices.size());
+        indexCount = static_cast<uint32_t>(indices.size());
+        assert(vertexCount >= 3 && "Vertex count must be at least 3");
     }
 } // namespace IC

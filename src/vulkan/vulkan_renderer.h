@@ -20,7 +20,7 @@ namespace IC {
         void CreateCommandBuffers();
         void InitDescriptorAllocator();
 
-        VulkanDevice _vulkanDevice{Window};
+        VulkanDevice _vulkanDevice{window};
         SwapChain _swapChain;
         PipelineManager _pipelineManager{};
         DescriptorAllocator _descriptorAllocator{};

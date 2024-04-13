@@ -8,22 +8,22 @@
 
 namespace IC {
     struct RendererConfig {
-        RendererType RendererType;
-        GLFWwindow *Window;
-        int Width;
-        int Height;
+        RendererType rendererType;
+        GLFWwindow *window;
+        int width;
+        int height;
     };
 
     class Renderer {
     public:
-        Renderer(RendererConfig config) { Window = config.Window; };
+        Renderer(RendererConfig config) { window = config.window; };
         ~Renderer() = default;
 
         virtual void DrawFrame() = 0;
         virtual void AddMesh(Mesh &meshData, Material &materialData) = 0;
 
     protected:
-        GLFWwindow *Window;
+        GLFWwindow *window;
 
     private:
 #ifdef IC_RENDERER_VULKAN
@@ -34,7 +34,7 @@ namespace IC {
 
     public:
         static Renderer *MakeRenderer(RendererConfig &rendererConfig) {
-            switch (rendererConfig.RendererType) {
+            switch (rendererConfig.rendererType) {
             case RendererType::Vulkan:
                 return MakeVulkan(rendererConfig);
             default:

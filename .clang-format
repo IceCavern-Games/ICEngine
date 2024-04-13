@@ -1,6 +1,8 @@
 BasedOnStyle: LLVM
 
 AccessModifierOffset: -4
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: false
 BreakBeforeBraces: Attach
 ColumnLimit: 100
