@@ -10,8 +10,7 @@
 #include <iostream>
 
 namespace IC {
-    VkRenderingAttachmentInfo AttachmentInfo(VkImageView view, VkClearValue *clear,
-                                             VkImageLayout layout) {
+    VkRenderingAttachmentInfo AttachmentInfo(VkImageView view, VkClearValue *clear, VkImageLayout layout) {
         VkRenderingAttachmentInfo info = {.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
         info.pNext = nullptr;
 
@@ -44,8 +43,7 @@ namespace IC {
         return info;
     }
 
-    VkRenderingInfo RenderingInfo(VkExtent2D renderExtent,
-                                  VkRenderingAttachmentInfo *colorAttachment,
+    VkRenderingInfo RenderingInfo(VkExtent2D renderExtent, VkRenderingAttachmentInfo *colorAttachment,
                                   VkRenderingAttachmentInfo *depthAttachment) {
         VkRenderingInfo info{.sType = VK_STRUCTURE_TYPE_RENDERING_INFO};
         info.pNext = nullptr;
@@ -59,8 +57,7 @@ namespace IC {
         return info;
     }
 
-    VkSubmitInfo2 SubmitInfo(VkCommandBufferSubmitInfo *cmd,
-                             VkSemaphoreSubmitInfo *signalSemaphoreInfo,
+    VkSubmitInfo2 SubmitInfo(VkCommandBufferSubmitInfo *cmd, VkSemaphoreSubmitInfo *signalSemaphoreInfo,
                              VkSemaphoreSubmitInfo *waitSemaphoreInfo) {
         VkSubmitInfo2 info = {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2};
         info.pNext = nullptr;
@@ -75,9 +72,8 @@ namespace IC {
     }
 
     // images
-    void CreateImage(VulkanDevice *device, uint32_t width, uint32_t height, VkFormat format,
-                     VkImageTiling tiling, VkImageUsageFlags usage,
-                     VkMemoryPropertyFlags properties, AllocatedImage &image) {
+    void CreateImage(VulkanDevice *device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+                     VkImageUsageFlags usage, VkMemoryPropertyFlags properties, AllocatedImage &image) {
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -94,8 +90,7 @@ namespace IC {
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imageInfo.flags = 0;
 
-        device->CreateImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image.image,
-                                    image.memory);
+        device->CreateImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image.image, image.memory);
         image.view = device->CreateImageView(image.image, format);
     }
 
@@ -125,17 +120,14 @@ namespace IC {
     }
 
     // pipelines
-    std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain,
-                                                   Material &materialData) {
+    std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain, Material &materialData) {
         // descriptor sets
         DescriptorLayoutBuilder descriptorLayoutBuilder{};
-        descriptorLayoutBuilder.AddBinding(
-            0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // uniform buffer object
-        descriptorLayoutBuilder.AddBinding(
-            1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // constants buffer object
+        descriptorLayoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // uniform buffer object
+        descriptorLayoutBuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // constants buffer object
 
-        VkDescriptorSetLayout descriptorSetLayout = descriptorLayoutBuilder.Build(
-            device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+        VkDescriptorSetLayout descriptorSetLayout =
+            descriptorLayoutBuilder.Build(device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
         // pipeline layout
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -149,10 +141,8 @@ namespace IC {
         PipelineBuilder pipelineBuilder;
 
         pipelineBuilder.pipelineLayout = pipelineLayout;
-        VkShaderModule vertShaderModule =
-            PipelineBuilder::CreateShaderModule(device, materialData.vertShaderData);
-        VkShaderModule fragShaderModule =
-            PipelineBuilder::CreateShaderModule(device, materialData.fragShaderData);
+        VkShaderModule vertShaderModule = PipelineBuilder::CreateShaderModule(device, materialData.vertShaderData);
+        VkShaderModule fragShaderModule = PipelineBuilder::CreateShaderModule(device, materialData.fragShaderData);
 
         pipelineBuilder.SetShaders(vertShaderModule, fragShaderModule);
         pipelineBuilder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);

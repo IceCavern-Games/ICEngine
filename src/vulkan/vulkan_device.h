@@ -31,7 +31,6 @@ namespace IC {
 #else
         const bool enableValidationLayers = true;
 #endif
-
         VulkanDevice(GLFWwindow *window);
         ~VulkanDevice();
 
@@ -41,13 +40,27 @@ namespace IC {
         VulkanDevice(VulkanDevice &&) = delete;
         VulkanDevice &operator=(VulkanDevice &&) = delete;
 
-        VkCommandPool GetCommandPool() { return _commandPool; }
-        VkDevice Device() { return _device; }
-        VkPhysicalDevice PhysicalDevice() { return _physicalDevice; }
-        VkInstance Instance() { return _instance; }
-        VkSurfaceKHR Surface() { return _surface; }
-        VkQueue GraphicsQueue() { return _graphicsQueue; }
-        VkQueue PresentQueue() { return _presentQueue; }
+        VkCommandPool GetCommandPool() {
+            return _commandPool;
+        }
+        VkDevice Device() {
+            return _device;
+        }
+        VkPhysicalDevice PhysicalDevice() {
+            return _physicalDevice;
+        }
+        VkInstance Instance() {
+            return _instance;
+        }
+        VkSurfaceKHR Surface() {
+            return _surface;
+        }
+        VkQueue GraphicsQueue() {
+            return _graphicsQueue;
+        }
+        VkQueue PresentQueue() {
+            return _presentQueue;
+        }
 
         SwapChainSupportDetails GetSwapChainSupport() {
             return QuerySwapChainSupport(_physicalDevice);
@@ -60,18 +73,15 @@ namespace IC {
                                      VkFormatFeatureFlags features);
 
         // Buffer Helper Functions
-        void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
-                          VkMemoryPropertyFlags properties, VkBuffer &buffer,
-                          VkDeviceMemory &bufferMemory);
+        void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
+                          VkBuffer &buffer, VkDeviceMemory &bufferMemory);
         VkCommandBuffer BeginSingleTimeCommands();
         void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-        void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height,
-                               uint32_t layerCount);
+        void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
         VkImageView CreateImageView(VkImage image, VkFormat format);
 
-        void CreateImageWithInfo(const VkImageCreateInfo &imageInfo,
-                                 VkMemoryPropertyFlags properties, VkImage &image,
+        void CreateImageWithInfo(const VkImageCreateInfo &imageInfo, VkMemoryPropertyFlags properties, VkImage &image,
                                  VkDeviceMemory &imageMemory);
 
         VkPhysicalDeviceProperties properties;
@@ -107,12 +117,12 @@ namespace IC {
 
         const std::vector<const char *> _validationLayers = {"VK_LAYER_KHRONOS_validation"};
 #ifdef IC_PLATFORM_MACOS
-        const std::vector<const char *> _deviceExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
-            VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME};
+        const std::vector<const char *> _deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+                                                             VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+                                                             VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME};
 #else
-        const std::vector<const char *> _deviceExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME};
+        const std::vector<const char *> _deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+                                                             VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME};
 #endif
     };
 

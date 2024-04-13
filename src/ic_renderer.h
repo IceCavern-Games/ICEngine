@@ -29,7 +29,9 @@ namespace IC {
 #ifdef IC_RENDERER_VULKAN
         static Renderer *MakeVulkan(RendererConfig &rendererConfig);
 #else
-        static Renderer *MakeVulkan(RendererConfig &rendererConfig) { return nullptr; }
+        static Renderer *MakeVulkan(RendererConfig &rendererConfig) {
+            return nullptr;
+        }
 #endif
 
     public:

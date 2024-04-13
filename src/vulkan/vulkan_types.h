@@ -15,14 +15,14 @@
 #include <stdexcept>
 #include <vector>
 
-#define VK_CHECK(x)                                                                                \
-    do {                                                                                           \
-        VkResult err = x;                                                                          \
-        if (err) {                                                                                 \
-            IC_CORE_ERROR("{0}", string_VkResult(err));                                            \
-            throw std::runtime_error(string_VkResult(err));                                        \
-            abort();                                                                               \
-        }                                                                                          \
+#define VK_CHECK(x)                                                                                                    \
+    do {                                                                                                               \
+        VkResult err = x;                                                                                              \
+        if (err) {                                                                                                     \
+            IC_CORE_ERROR("{0}", string_VkResult(err));                                                                \
+            throw std::runtime_error(string_VkResult(err));                                                            \
+            abort();                                                                                                   \
+        }                                                                                                              \
     } while (0)
 
 namespace IC {
@@ -75,9 +75,7 @@ namespace IC {
                                     &descriptorSets[currentFrame], 0, nullptr);
         }
 
-        void Draw(VkCommandBuffer cBuffer) {
-            vkCmdDrawIndexed(cBuffer, meshData.indexCount, 1, 0, 0, 0);
-        }
+        void Draw(VkCommandBuffer cBuffer) { vkCmdDrawIndexed(cBuffer, meshData.indexCount, 1, 0, 0, 0); }
 
         void UpdateMvpBuffer(MVPObject uniformBuffer, uint32_t currentImage) {
             memcpy(mvpBuffers[currentImage].mapped_memory, &uniformBuffer, sizeof(uniformBuffer));

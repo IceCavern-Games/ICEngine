@@ -20,10 +20,8 @@ namespace IC {
         std::deque<VkDescriptorBufferInfo> bufferInfos;
         std::vector<VkWriteDescriptorSet> writes;
 
-        void WriteImage(int binding, VkImageView image, VkSampler sampler, VkImageLayout layout,
-                        VkDescriptorType type);
-        void WriteBuffer(int binding, VkBuffer buffer, size_t size, size_t offset,
-                         VkDescriptorType type);
+        void WriteImage(int binding, VkImageView image, VkSampler sampler, VkImageLayout layout, VkDescriptorType type);
+        void WriteBuffer(int binding, VkBuffer buffer, size_t size, size_t offset, VkDescriptorType type);
 
         void Clear();
         void UpdateSet(VkDevice device, VkDescriptorSet set);
@@ -32,8 +30,7 @@ namespace IC {
     // Descriptor Pool Allocator
     struct DescriptorAllocator {
     public:
-        void CreateDescriptorPool(VkDevice device, std::vector<VkDescriptorPoolSize> poolSizes,
-                                  uint32_t maxSets);
+        void CreateDescriptorPool(VkDevice device, std::vector<VkDescriptorPoolSize> poolSizes, uint32_t maxSets);
         void AllocateDescriptorSets(VkDevice device, VkDescriptorSetLayout layout,
                                     std::vector<VkDescriptorSet> &descriptorSets);
         void DestroyDescriptorPool(VkDevice device);

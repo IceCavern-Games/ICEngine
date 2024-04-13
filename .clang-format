@@ -5,7 +5,7 @@ AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: false
 BreakBeforeBraces: Attach
-ColumnLimit: 100
+ColumnLimit: 120
 IndentCaseLabels: false
 IndentWidth: 4
 NamespaceIndentation: All

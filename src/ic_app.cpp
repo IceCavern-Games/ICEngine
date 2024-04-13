@@ -26,8 +26,7 @@ bool App::Run(const Config *c) {
 
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow *window =
-        glfwCreateWindow(appConfig.width, appConfig.height, appConfig.name, nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(appConfig.width, appConfig.height, appConfig.name, nullptr, nullptr);
 
     RendererConfig rendererConfig{};
     rendererConfig.rendererType = appConfig.rendererType;

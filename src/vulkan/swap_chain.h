@@ -34,8 +34,7 @@ namespace IC {
         uint32_t Height() { return _swapChainExtent.height; }
 
         float ExtentAspectRatio() {
-            return static_cast<float>(_swapChainExtent.width) /
-                   static_cast<float>(_swapChainExtent.height);
+            return static_cast<float>(_swapChainExtent.width) / static_cast<float>(_swapChainExtent.height);
         }
         VkFormat FindDepthFormat();
 
@@ -54,10 +53,8 @@ namespace IC {
         void CreateSyncObjects();
 
         // Helper functions
-        VkSurfaceFormatKHR
-        ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
-        VkPresentModeKHR
-        ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+        VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
         VkFormat _swapChainImageFormat;

@@ -6,23 +6,21 @@
 
 namespace IC {
     void CreateAndFillBuffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize,
-                             VkBufferUsageFlags bufferUsageFlags,
-                             VkMemoryPropertyFlags memoryPropertyFlags,
+                             VkBufferUsageFlags bufferUsageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
                              AllocatedBuffer &allocatedBuffer) {
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
         device.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                            stagingBuffer, stagingBufferMemory);
+                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
+                            stagingBufferMemory);
         void *data;
         vkMapMemory(device.Device(), stagingBufferMemory, 0, bufferSize, 0, &data);
         memcpy(data, srcData, (size_t)bufferSize);
         vkUnmapMemory(device.Device(), stagingBufferMemory);
 
-        device.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | bufferUsageFlags,
-                            memoryPropertyFlags, allocatedBuffer.buffer, allocatedBuffer.memory);
+        device.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | bufferUsageFlags, memoryPropertyFlags,
+                            allocatedBuffer.buffer, allocatedBuffer.memory);
 
         device.CopyBuffer(stagingBuffer, allocatedBuffer.buffer, bufferSize);
 
@@ -41,8 +39,8 @@ namespace IC {
         }
     }
 
-    void CopyImageToImage(VkCommandBuffer commandBuffer, VkImage source, VkImage destination,
-                          VkExtent2D srcSize, VkExtent2D dstSize) {
+    void CopyImageToImage(VkCommandBuffer commandBuffer, VkImage source, VkImage destination, VkExtent2D srcSize,
+                          VkExtent2D dstSize) {
         VkImageBlit2 blitRegion{.sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr};
 
         blitRegion.srcOffsets[1].x = srcSize.width;
@@ -75,8 +73,8 @@ namespace IC {
         vkCmdBlitImage2(commandBuffer, &blitInfo);
     }
 
-    void TransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format,
-                               VkImageLayout oldLayout, VkImageLayout newLayout) {
+    void TransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout,
+                               VkImageLayout newLayout) {
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = oldLayout;
@@ -95,8 +93,7 @@ namespace IC {
         VkPipelineStageFlags sourceStage;
         VkPipelineStageFlags destinationStage;
 
-        if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
-            newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+        if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
             barrier.srcAccessMask = 0;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
@@ -117,8 +114,7 @@ namespace IC {
             destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
         }
 
-        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0,
-                             nullptr, 1, &barrier);
+        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
     }
     // todo
     /*

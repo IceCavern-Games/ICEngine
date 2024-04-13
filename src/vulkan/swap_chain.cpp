@@ -13,8 +13,7 @@
 #include <stdexcept>
 
 namespace IC {
-    SwapChain::SwapChain(VulkanDevice &deviceRef, VkExtent2D extent)
-        : _device{deviceRef}, _windowExtent{extent} {
+    SwapChain::SwapChain(VulkanDevice &deviceRef, VkExtent2D extent) : _device{deviceRef}, _windowExtent{extent} {
         CreateSwapChain();
         CreateImageViews();
         CreateRenderPass();
@@ -60,10 +59,10 @@ namespace IC {
         vkWaitForFences(_device.Device(), 1, &_inFlightFences[_currentFrame], VK_TRUE,
                         std::numeric_limits<uint64_t>::max());
 
-        VkResult result = vkAcquireNextImageKHR(
-            _device.Device(), _swapChain, std::numeric_limits<uint64_t>::max(),
-            _imageAvailableSemaphores[_currentFrame], // must be a not signaled semaphore
-            VK_NULL_HANDLE, imageIndex);
+        VkResult result =
+            vkAcquireNextImageKHR(_device.Device(), _swapChain, std::numeric_limits<uint64_t>::max(),
+                                  _imageAvailableSemaphores[_currentFrame], // must be a not signaled semaphore
+                                  VK_NULL_HANDLE, imageIndex);
 
         return result;
     }
@@ -88,8 +87,7 @@ namespace IC {
         submitInfo.pSignalSemaphores = signalSemaphores;
 
         vkResetFences(_device.Device(), 1, &_inFlightFences[_currentFrame]);
-        VK_CHECK(
-            vkQueueSubmit(_device.GraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]));
+        VK_CHECK(vkQueueSubmit(_device.GraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]));
 
         VkPresentInfoKHR presentInfo = {};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -112,19 +110,16 @@ namespace IC {
 
     void SwapChain::WaitForFrameFence(uint32_t *imageIndex) {
         if (_imagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
-            vkWaitForFences(_device.Device(), 1, &_imagesInFlight[*imageIndex], VK_TRUE,
-                            UINT64_MAX);
+            vkWaitForFences(_device.Device(), 1, &_imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
         }
     }
 
-    void
-    SwapChain::ImmediateSubmitCommandBuffers(const VkCommandBuffer buffer,
-                                             std::function<void(VkCommandBuffer cmd)> &&function) {
+    void SwapChain::ImmediateSubmitCommandBuffers(const VkCommandBuffer buffer,
+                                                  std::function<void(VkCommandBuffer cmd)> &&function) {
         VK_CHECK(vkResetFences(_device.Device(), 1, &_immFence));
         VK_CHECK(vkResetCommandBuffer(buffer, 0));
 
-        VkCommandBufferBeginInfo beginInfo =
-            CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+        VkCommandBufferBeginInfo beginInfo = CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
         VK_CHECK(vkBeginCommandBuffer(buffer, &beginInfo));
 
@@ -162,8 +157,7 @@ namespace IC {
         createInfo.imageColorSpace = surfaceFormat.colorSpace;
         createInfo.imageExtent = extent;
         createInfo.imageArrayLayers = 1;
-        createInfo.imageUsage =
-            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
         QueueFamilyIndices indices = _device.FindPhysicalQueueFamilies();
         uint32_t queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
@@ -203,8 +197,7 @@ namespace IC {
     void SwapChain::CreateImageViews() {
         _swapChainImageViews.resize(_swapChainImages.size());
         for (size_t i = 0; i < _swapChainImages.size(); i++) {
-            _swapChainImageViews[i] =
-                _device.CreateImageView(_swapChainImages[i], _swapChainImageFormat);
+            _swapChainImageViews[i] = _device.CreateImageView(_swapChainImages[i], _swapChainImageFormat);
         }
     }
 
@@ -246,13 +239,12 @@ namespace IC {
         VkSubpassDependency dependency = {};
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
         dependency.srcAccessMask = 0;
-        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-                                  VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependency.srcStageMask =
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         dependency.dstSubpass = 0;
-        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-                                  VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        dependency.dstAccessMask =
-            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        dependency.dstStageMask =
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
         std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
         VkRenderPassCreateInfo renderPassInfo = {};
@@ -282,8 +274,7 @@ namespace IC {
             framebufferInfo.height = swapChainExtent.height;
             framebufferInfo.layers = 1;
 
-            VK_CHECK(vkCreateFramebuffer(_device.Device(), &framebufferInfo, nullptr,
-                                         &_swapChainFramebuffers[i]));
+            VK_CHECK(vkCreateFramebuffer(_device.Device(), &framebufferInfo, nullptr, &_swapChainFramebuffers[i]));
         }
     }
 
@@ -312,8 +303,8 @@ namespace IC {
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0;
 
-            _device.CreateImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                        _depthImages[i], _depthImageMemorys[i]);
+            _device.CreateImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _depthImages[i],
+                                        _depthImageMemorys[i]);
 
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -344,12 +335,11 @@ namespace IC {
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            if (vkCreateSemaphore(_device.Device(), &semaphoreInfo, nullptr,
-                                  &_imageAvailableSemaphores[i]) != VK_SUCCESS ||
-                vkCreateSemaphore(_device.Device(), &semaphoreInfo, nullptr,
-                                  &_renderFinishedSemaphores[i]) != VK_SUCCESS ||
-                vkCreateFence(_device.Device(), &fenceInfo, nullptr, &_inFlightFences[i]) !=
-                    VK_SUCCESS) {
+            if (vkCreateSemaphore(_device.Device(), &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]) !=
+                    VK_SUCCESS ||
+                vkCreateSemaphore(_device.Device(), &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]) !=
+                    VK_SUCCESS ||
+                vkCreateFence(_device.Device(), &fenceInfo, nullptr, &_inFlightFences[i]) != VK_SUCCESS) {
                 IC_CORE_ERROR("Failed to create synchronization objects for a frame.");
                 throw std::runtime_error("Failed to create synchronization objects for a frame.");
             }
@@ -359,8 +349,7 @@ namespace IC {
         VK_CHECK(vkCreateFence(_device.Device(), &fenceInfo, nullptr, &_immFence));
     }
 
-    VkSurfaceFormatKHR
-    SwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
+    VkSurfaceFormatKHR SwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
         for (const auto &availableFormat : availableFormats) {
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
                 availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -371,8 +360,7 @@ namespace IC {
         return availableFormats[0];
     }
 
-    VkPresentModeKHR
-    SwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
+    VkPresentModeKHR SwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
         for (const auto &availablePresentMode : availablePresentModes) {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
                 IC_CORE_INFO("Present mode: Mailbox");
@@ -396,12 +384,10 @@ namespace IC {
             return capabilities.currentExtent;
         } else {
             VkExtent2D actualExtent = _windowExtent;
-            actualExtent.width =
-                std::max(capabilities.minImageExtent.width,
-                         std::min(capabilities.maxImageExtent.width, actualExtent.width));
-            actualExtent.height =
-                std::max(capabilities.minImageExtent.height,
-                         std::min(capabilities.maxImageExtent.height, actualExtent.height));
+            actualExtent.width = std::max(capabilities.minImageExtent.width,
+                                          std::min(capabilities.maxImageExtent.width, actualExtent.width));
+            actualExtent.height = std::max(capabilities.minImageExtent.height,
+                                           std::min(capabilities.maxImageExtent.height, actualExtent.height));
 
             return actualExtent;
         }
@@ -409,8 +395,8 @@ namespace IC {
 
     VkFormat SwapChain::FindDepthFormat() {
         return _device.FindSupportedFormat(
-            {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
-            VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+            {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL,
+            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     }
 
 } // namespace IC

@@ -47,8 +47,8 @@ namespace IC {
 
     class PipelineManager {
     public:
-        std::shared_ptr<Pipeline>
-        FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain, Material &materialData);
+        std::shared_ptr<Pipeline> FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain,
+                                                               Material &materialData);
 
     private:
         bool IsPipelineSuitable(Pipeline &pipeline, Material &materialData);
