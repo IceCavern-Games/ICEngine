@@ -2,14 +2,12 @@
 
 #include "vulkan_types.h"
 
-#include <vector>
 #include <deque>
+#include <vector>
 
-namespace IC::Renderer
-{
+namespace IC {
     // Builds Descriptor Set Layouts
-    struct DescriptorLayoutBuilder
-    {
+    struct DescriptorLayoutBuilder {
         std::vector<VkDescriptorSetLayoutBinding> bindings;
 
         void AddBinding(uint32_t binding, VkDescriptorType type);
@@ -17,8 +15,7 @@ namespace IC::Renderer
         VkDescriptorSetLayout Build(VkDevice device, VkShaderStageFlags shaderStages);
     };
 
-    struct DescriptorWriter
-    {
+    struct DescriptorWriter {
         std::deque<VkDescriptorImageInfo> imageInfos;
         std::deque<VkDescriptorBufferInfo> bufferInfos;
         std::vector<VkWriteDescriptorSet> writes;
@@ -31,14 +28,14 @@ namespace IC::Renderer
     };
 
     // Descriptor Pool Allocator
-    struct DescriptorAllocator
-    {
+    struct DescriptorAllocator {
     public:
         void CreateDescriptorPool(VkDevice device, std::vector<VkDescriptorPoolSize> poolSizes, uint32_t maxSets);
-        void AllocateDescriptorSets(VkDevice device, VkDescriptorSetLayout layout, std::vector<VkDescriptorSet> &descriptorSets);
+        void AllocateDescriptorSets(VkDevice device, VkDescriptorSetLayout layout,
+                                    std::vector<VkDescriptorSet> &descriptorSets);
         void DestroyDescriptorPool(VkDevice device);
 
     private:
         VkDescriptorPool _pool;
     };
-}
+} // namespace IC

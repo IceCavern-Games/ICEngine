@@ -2,12 +2,11 @@
 
 using namespace IC;
 
-int main()
-{
+int main() {
     Config config;
-    config.Name = "ICEditor";
-    config.Width = 1280;
-    config.Height = 720;
+    config.name = "ICEditor";
+    config.width = 1280;
+    config.height = 720;
 
     App::Run(&config);
 }

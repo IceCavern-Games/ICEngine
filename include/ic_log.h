@@ -4,21 +4,19 @@
 
 #include <spdlog/spdlog.h>
 
-namespace IC
-{
-    class Log
-    {
-    private:
-        static std::shared_ptr<spdlog::logger> _appLogger;
-        static std::shared_ptr<spdlog::logger> _coreLogger;
-
+namespace IC {
+    class Log {
     public:
         static void Init();
 
         inline static std::shared_ptr<spdlog::logger> &GetAppLogger() { return _appLogger; }
         inline static std::shared_ptr<spdlog::logger> &GetCoreLogger() { return _coreLogger; }
+
+    private:
+        static std::shared_ptr<spdlog::logger> _appLogger;
+        static std::shared_ptr<spdlog::logger> _coreLogger;
     };
-}
+} // namespace IC
 
 // App Log Macros
 #define IC_APP_TRACE(...) ::IC::Log::GetAppLogger()->trace(__VA_ARGS__)

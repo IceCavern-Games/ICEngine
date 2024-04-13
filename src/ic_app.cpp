@@ -1,77 +1,65 @@
 #include <ic_app.h>
+
 #include <ic_log.h>
 
-#ifdef IC_RENDERER_VULKAN
-#define GLFW_INCLUDE_VULKAN
-#include <vulkan/vulkan.h>
-#endif
-
-#include "vulkan/vulkan_renderer.h"
-#include <GLFW/glfw3.h>
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
+#include "ic_renderer.h"
 
 #include <iostream>
 
 using namespace IC;
 
-namespace
-{
+namespace {
     // Global App State
-    Config _appConfig;
-    bool _appIsRunning = false;
-    bool _appIsExiting = false;
-}
+    Config appConfig;
+    bool appIsRunning = false;
+    bool appIsExiting = false;
+    Renderer *appRendererApi;
+} // namespace
 
-bool App::Run(const Config *c)
-{
+bool App::Run(const Config *c) {
     Log::Init();
 
-    IC::Renderer::RendererConfig rendererConfig{};
-    IC::Renderer::Renderer *renderer;
-
     // Copy config over.
-    _appConfig = *c;
+    appConfig = *c;
 
-    IC_CORE_INFO("Hello, {0}.", _appConfig.Name);
+    IC_CORE_INFO("Hello, {0}.", appConfig.name);
 
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow *window = glfwCreateWindow(_appConfig.Width, _appConfig.Height, _appConfig.Name, nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(appConfig.width, appConfig.height, appConfig.name, nullptr, nullptr);
 
-    rendererConfig.Window = window;
-    rendererConfig.Width = _appConfig.Width;
-    rendererConfig.Height = _appConfig.Height;
+    RendererConfig rendererConfig{};
+    rendererConfig.rendererType = appConfig.rendererType;
+    rendererConfig.window = window;
+    rendererConfig.width = appConfig.width;
+    rendererConfig.height = appConfig.height;
 
-#ifdef IC_RENDERER_VULKAN
-    uint32_t extensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+    appIsRunning = true;
 
-    IC_CORE_INFO("{0} Vulkan extensions supported.", extensionCount);
+    appRendererApi = Renderer::MakeRenderer(rendererConfig);
 
-    rendererConfig.RendererType = IC::Renderer::RendererType::Vulkan;
-#endif
+    if (appRendererApi == nullptr) {
+        IC_CORE_ERROR("Render module was not found.");
 
-    _appIsRunning = true;
+        glfwDestroyWindow(window);
+        glfwTerminate();
 
-    renderer = new IC::Renderer::VulkanRenderer(rendererConfig);
+        return false;
+    }
 
     Mesh mesh;
     Material material{};
 
     mesh.LoadFromFile("resources/models/cube.obj");
-    material.FragShaderData = "resources/shaders/default_shader.frag.spv";
-    material.VertShaderData = "resources/shaders/default_shader.vert.spv";
-    material.Constants.Color = {1.0f, 0.0f, 0.0f, 1.0f};
+    material.fragShaderData = "resources/shaders/default_shader.frag.spv";
+    material.vertShaderData = "resources/shaders/default_shader.vert.spv";
+    material.constants.color = {1.0f, 0.0f, 0.0f, 1.0f};
 
-    renderer->AddMesh(mesh, material);
+    appRendererApi->AddMesh(mesh, material);
 
-    while (!glfwWindowShouldClose(window))
-    {
+    while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
-        renderer->DrawFrame();
+        appRendererApi->DrawFrame();
     }
 
     glfwDestroyWindow(window);
@@ -80,18 +68,15 @@ bool App::Run(const Config *c)
     return true;
 }
 
-bool App::IsRunning()
-{
-    return _appIsRunning;
+bool App::IsRunning() {
+    return appIsRunning;
 }
 
-void App::Exit()
-{
-    if (!_appIsExiting && _appIsRunning)
-        _appIsExiting = true;
+void App::Exit() {
+    if (!appIsExiting && appIsRunning)
+        appIsExiting = true;
 }
 
-const Config &App::GetConfig()
-{
-    return _appConfig;
+const Config &App::GetConfig() {
+    return appConfig;
 }

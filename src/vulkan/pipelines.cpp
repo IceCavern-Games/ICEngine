@@ -1,18 +1,17 @@
 #include "pipelines.h"
 
+#include <ic_log.h>
+
 #include "swap_chain.h"
 #include "vulkan_initializers.h"
 #include "vulkan_types.h"
 
-// std
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 
-namespace IC::Renderer
-{
-    void PipelineBuilder::clear()
-    {
+namespace IC {
+    void PipelineBuilder::clear() {
         inputAssembly = {.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO};
         rasterizer = {.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO};
         colorBlendAttachment = {};
@@ -23,14 +22,12 @@ namespace IC::Renderer
         shaderStages.clear();
     }
 
-    VkShaderModule PipelineBuilder::CreateShaderModule(VkDevice device, const std::string &filePath)
-    {
+    VkShaderModule PipelineBuilder::CreateShaderModule(VkDevice device, const std::string &filePath) {
         std::ifstream file{filePath, std::ios::ate | std::ios::binary};
 
-        if (!file.is_open())
-        {
-            throw std::runtime_error("failed to open file: " + filePath);
-            return VK_NULL_HANDLE;
+        if (!file.is_open()) {
+            IC_CORE_ERROR("Failed to open file {0}.", filePath);
+            throw std::runtime_error("Failed to open file " + filePath + ".");
         }
 
         size_t fileSize = static_cast<size_t>(file.tellg());
@@ -48,17 +45,15 @@ namespace IC::Renderer
 
         VkShaderModule shaderModule;
 
-        if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
-        {
-            throw std::runtime_error("Failed to create shader module");
-            return VK_NULL_HANDLE;
+        if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+            IC_CORE_ERROR("Failed to create shader module.");
+            throw std::runtime_error("Failed to create shader module.");
         }
 
         return shaderModule;
     }
 
-    VkPipeline PipelineBuilder::BuildPipeline(VkDevice device)
-    {
+    VkPipeline PipelineBuilder::BuildPipeline(VkDevice device) {
         VkPipelineViewportStateCreateInfo viewportState = {};
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewportState.pNext = nullptr;
@@ -77,14 +72,12 @@ namespace IC::Renderer
         auto attributeDescriptions = GetVertexAttributeDescriptions();
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexAttributeDescriptionCount =
-            static_cast<uint32_t>(attributeDescriptions.size());
+        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
         vertexInputInfo.vertexBindingDescriptionCount = 1;
         vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
         vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
 
-        VkGraphicsPipelineCreateInfo pipelineInfo = {
-            .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
+        VkGraphicsPipelineCreateInfo pipelineInfo = {.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
         pipelineInfo.pNext = &renderInfo;
 
         pipelineInfo.stageCount = (uint32_t)shaderStages.size();
@@ -100,73 +93,61 @@ namespace IC::Renderer
 
         VkDynamicState state[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
-        VkPipelineDynamicStateCreateInfo dynamicInfo = {
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO};
+        VkPipelineDynamicStateCreateInfo dynamicInfo = {.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO};
         dynamicInfo.pDynamicStates = &state[0];
         dynamicInfo.dynamicStateCount = 2;
 
         pipelineInfo.pDynamicState = &dynamicInfo;
 
         VkPipeline newPipeline;
-        if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
-                                      &newPipeline) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to create graphics pipeline");
-            return VK_NULL_HANDLE;
+        if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &newPipeline) != VK_SUCCESS) {
+            IC_CORE_ERROR("Failed to create graphics pipeline.");
+            throw std::runtime_error("Failed to create graphics pipeline.");
         }
 
         return newPipeline;
     }
 
-    VkPipeline PipelineBuilder::BuildComputePipeline(VkDevice device)
-    {
-        VkComputePipelineCreateInfo pipelineInfo{.sType =
-                                                     VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO};
+    VkPipeline PipelineBuilder::BuildComputePipeline(VkDevice device) {
+        VkComputePipelineCreateInfo pipelineInfo{.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO};
         pipelineInfo.pNext = nullptr;
         pipelineInfo.stage = shaderStages[0];
         pipelineInfo.layout = pipelineLayout;
 
         VkPipeline newPipeline;
-        if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &newPipeline) !=
-            VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to create compute pipeline");
+        if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &newPipeline) != VK_SUCCESS) {
+            IC_CORE_ERROR("Failed to create compute pipeline.");
+            throw std::runtime_error("Failed to create compute pipeline.");
         }
         return newPipeline;
     }
 
-    void PipelineBuilder::SetShaders(VkShaderModule vertexShader, VkShaderModule fragmentShader)
-    {
+    void PipelineBuilder::SetShaders(VkShaderModule vertexShader, VkShaderModule fragmentShader) {
         shaderStages.clear();
         shaderStages.push_back(ShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, vertexShader));
         shaderStages.push_back(ShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragmentShader));
     }
 
-    void PipelineBuilder::SetComputeShader(VkShaderModule computeShader)
-    {
+    void PipelineBuilder::SetComputeShader(VkShaderModule computeShader) {
         shaderStages.push_back(ShaderStageCreateInfo(VK_SHADER_STAGE_COMPUTE_BIT, computeShader));
     }
 
-    void PipelineBuilder::SetInputTopology(VkPrimitiveTopology topology)
-    {
+    void PipelineBuilder::SetInputTopology(VkPrimitiveTopology topology) {
         inputAssembly.topology = topology;
         inputAssembly.primitiveRestartEnable = VK_FALSE;
     }
 
-    void PipelineBuilder::SetPolygonMode(VkPolygonMode mode)
-    {
+    void PipelineBuilder::SetPolygonMode(VkPolygonMode mode) {
         rasterizer.polygonMode = mode;
         rasterizer.lineWidth = 1.f;
     }
 
-    void PipelineBuilder::SetCullMode(VkCullModeFlags cullMode, VkFrontFace frontFace)
-    {
+    void PipelineBuilder::SetCullMode(VkCullModeFlags cullMode, VkFrontFace frontFace) {
         rasterizer.cullMode = cullMode;
         rasterizer.frontFace = frontFace;
     }
 
-    void PipelineBuilder::SetMultisamplingNone()
-    {
+    void PipelineBuilder::SetMultisamplingNone() {
         multisampling.sampleShadingEnable = VK_FALSE;
         multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
         multisampling.minSampleShading = 1.0f;
@@ -175,17 +156,15 @@ namespace IC::Renderer
         multisampling.alphaToOneEnable = VK_FALSE;
     }
 
-    void PipelineBuilder::DisableBlending()
-    {
-        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                              VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    void PipelineBuilder::DisableBlending() {
+        colorBlendAttachment.colorWriteMask =
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         colorBlendAttachment.blendEnable = VK_FALSE;
     }
 
-    void PipelineBuilder::EnableBlending()
-    {
-        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                              VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    void PipelineBuilder::EnableBlending() {
+        colorBlendAttachment.colorWriteMask =
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         colorBlendAttachment.blendEnable = VK_TRUE;
         colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
         colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_SUBTRACT;
@@ -195,17 +174,17 @@ namespace IC::Renderer
         colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
     }
 
-    void PipelineBuilder::SetColorAttachmentFormat(VkFormat format)
-    {
+    void PipelineBuilder::SetColorAttachmentFormat(VkFormat format) {
         colorAttachmentformat = format;
         renderInfo.colorAttachmentCount = 1;
         renderInfo.pColorAttachmentFormats = &colorAttachmentformat;
     }
 
-    void PipelineBuilder::SetDepthFormat(VkFormat format) { renderInfo.depthAttachmentFormat = format; }
+    void PipelineBuilder::SetDepthFormat(VkFormat format) {
+        renderInfo.depthAttachmentFormat = format;
+    }
 
-    void PipelineBuilder::DisableDepthTest()
-    {
+    void PipelineBuilder::DisableDepthTest() {
         depthStencil.depthTestEnable = VK_FALSE;
         depthStencil.depthWriteEnable = VK_FALSE;
         depthStencil.depthCompareOp = VK_COMPARE_OP_NEVER;
@@ -217,8 +196,7 @@ namespace IC::Renderer
         depthStencil.maxDepthBounds = 1.f;
     }
 
-    void PipelineBuilder::EnableDepthTest()
-    {
+    void PipelineBuilder::EnableDepthTest() {
         depthStencil.depthTestEnable = VK_TRUE;
         depthStencil.depthWriteEnable = VK_TRUE;
         depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
@@ -231,10 +209,8 @@ namespace IC::Renderer
     }
 
     VkPipelineShaderStageCreateInfo PipelineBuilder::ShaderStageCreateInfo(VkShaderStageFlagBits flags,
-                                                                           VkShaderModule module)
-    {
-        VkPipelineShaderStageCreateInfo createInfo{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
+                                                                           VkShaderModule module) {
+        VkPipelineShaderStageCreateInfo createInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
         createInfo.stage = flags;
         createInfo.module = module;
         createInfo.pName = "main";
@@ -242,21 +218,18 @@ namespace IC::Renderer
     }
 
     // pipeline manager
-    std::shared_ptr<Pipeline> PipelineManager::FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain, Material &materialData)
-    {
-        for (auto pipeline : _createdPipelines)
-        {
-            if (IsPipelineSuitable(*pipeline, materialData))
-            {
+    std::shared_ptr<Pipeline> PipelineManager::FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain,
+                                                                            Material &materialData) {
+        for (auto pipeline : _createdPipelines) {
+            if (IsPipelineSuitable(*pipeline, materialData)) {
                 return pipeline;
             }
         }
-        return Init::CreateOpaquePipeline(device, swapChain, materialData);
+        return CreateOpaquePipeline(device, swapChain, materialData);
     }
 
-    bool PipelineManager::IsPipelineSuitable(Pipeline &pipeline, Material &materialData)
-    {
+    bool PipelineManager::IsPipelineSuitable(Pipeline &pipeline, Material &materialData) {
         // todo: code this
         return true;
     }
-}
+} // namespace IC

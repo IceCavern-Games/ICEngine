@@ -2,19 +2,17 @@
 
 #include <glm/glm.hpp>
 
-namespace IC
-{
-    class ICCamera
-    {
-    private:
-        glm::vec3 _lookVector;
-        glm::vec3 _position;
-
+namespace IC {
+    class Camera {
     public:
-        ICCamera();
-        ~ICCamera();
+        Camera();
+        ~Camera();
 
         glm::vec3 GetLookVector() { return _lookVector; }
         glm::vec3 GetPosition() { return _position; }
+
+    private:
+        glm::vec3 _lookVector;
+        glm::vec3 _position;
     };
-}
+} // namespace IC

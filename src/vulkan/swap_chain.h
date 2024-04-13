@@ -2,19 +2,14 @@
 
 #include "vulkan_device.h"
 
-// vulkan headers
 #include <vulkan/vulkan.h>
 
-// std lib headers
 #include <functional>
 #include <string>
 #include <vector>
 
-namespace IC::Renderer
-{
-
-    class SwapChain
-    {
+namespace IC {
+    class SwapChain {
     public:
         static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -38,10 +33,8 @@ namespace IC::Renderer
         uint32_t Width() { return _swapChainExtent.width; }
         uint32_t Height() { return _swapChainExtent.height; }
 
-        float ExtentAspectRatio()
-        {
-            return static_cast<float>(_swapChainExtent.width) /
-                   static_cast<float>(_swapChainExtent.height);
+        float ExtentAspectRatio() {
+            return static_cast<float>(_swapChainExtent.width) / static_cast<float>(_swapChainExtent.height);
         }
         VkFormat FindDepthFormat();
 
@@ -49,7 +42,7 @@ namespace IC::Renderer
         VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
         void WaitForFrameFence(uint32_t *imageIndex);
         void ImmediateSubmitCommandBuffers(const VkCommandBuffer buffer,
-                                      std::function<void(VkCommandBuffer cmd)> &&function);
+                                           std::function<void(VkCommandBuffer cmd)> &&function);
 
     private:
         void CreateSwapChain();
@@ -60,10 +53,8 @@ namespace IC::Renderer
         void CreateSyncObjects();
 
         // Helper functions
-        VkSurfaceFormatKHR
-        ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
-        VkPresentModeKHR
-        ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+        VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
         VkFormat _swapChainImageFormat;
@@ -93,4 +84,4 @@ namespace IC::Renderer
         VkFence _immFence;
     };
 
-} // namespace render
+} // namespace IC
