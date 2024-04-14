@@ -182,7 +182,5 @@ namespace IC {
         initInfo.ColorAttachmentFormat = imageFormat;
 
         ImGui_ImplVulkan_Init(&initInfo, VK_NULL_HANDLE);
-        ImGui_ImplVulkan_CreateFontsTexture();
-        ImGui_ImplVulkan_DestroyFontsTexture();
     }
 } // namespace IC

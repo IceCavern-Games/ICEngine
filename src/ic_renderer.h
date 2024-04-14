@@ -23,9 +23,7 @@ namespace IC {
         ~Renderer() = default;
 
         void AddImguiFunction(ImGuiFunction function) { imGuiFunctions.push_back(function); }
-        void RemoveImguiFunction(ImGuiFunction function) {
-            imGuiFunctions.erase(std::find(imGuiFunctions.begin(), imGuiFunctions.end(), function));
-        }
+        void RemoveImguiFunction(ImGuiFunction function) { std::erase(imGuiFunctions, function); }
 
         virtual void AddMesh(Mesh &meshData, Material &materialData) = 0;
         virtual void DrawFrame() = 0;
