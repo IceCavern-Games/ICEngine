@@ -37,6 +37,9 @@ _deps
 *.dylib
 *.dll
 
+# Compiled Shaders
+*.spv
+
 # Fortran module files
 *.mod
 *.smod
