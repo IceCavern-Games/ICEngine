@@ -2,7 +2,6 @@
 
 #include <ic_graphics.h>
 
-#include <algorithm>
 #include <vector>
 
 struct GLFWwindow;

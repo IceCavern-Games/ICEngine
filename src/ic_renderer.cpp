@@ -2,6 +2,8 @@
 
 #include "vulkan/vulkan_renderer.h"
 
+#include <algorithm>
+
 namespace IC {
     Renderer::Renderer(const RendererConfig &config) : window(config.window) {}
 
