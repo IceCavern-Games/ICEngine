@@ -23,7 +23,7 @@ namespace IC {
         void RenderImGui(VkCommandBuffer cBuffer, VkImageView targetImageView);
 
         PFN_vkCmdBeginRenderingKHR VulkanBeginRendering{};
-        PFN_vkCmdEndRendering VulkanEndRendering{};
+        PFN_vkCmdEndRenderingKHR VulkanEndRendering{};
 
         VulkanDevice _vulkanDevice;
         SwapChain _swapChain;
