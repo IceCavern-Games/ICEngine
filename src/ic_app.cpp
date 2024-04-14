@@ -65,6 +65,8 @@ bool App::Run(const Config *c) {
         appRendererApi->DrawFrame();
     }
 
+    delete appRendererApi;
+    appRendererApi = nullptr;
     glfwDestroyWindow(window);
     glfwTerminate();
 
