@@ -2,10 +2,10 @@
 
 #include <ic_graphics.h>
 
-#include <GLFW/glfw3.h>
-
 #include <algorithm>
 #include <vector>
+
+struct GLFWwindow;
 
 namespace IC {
     typedef void (*ImGuiFunction)(void);
@@ -19,36 +19,23 @@ namespace IC {
 
     class Renderer {
     public:
-        Renderer(RendererConfig config) { window = config.window; }
-        ~Renderer() = default;
+        Renderer(const RendererConfig& config);
+        virtual ~Renderer();
 
-        void AddImguiFunction(ImGuiFunction function) { imGuiFunctions.push_back(function); }
-        void RemoveImguiFunction(ImGuiFunction function) { std::erase(imGuiFunctions, function); }
+        static Renderer *MakeRenderer(const RendererConfig& rendererConfig);
 
         virtual void AddMesh(Mesh &meshData, Material &materialData) = 0;
         virtual void DrawFrame() = 0;
+
+        void AddImguiFunction(ImGuiFunction function);
+        void RemoveImguiFunction(ImGuiFunction function);
 
     protected:
         std::vector<ImGuiFunction> imGuiFunctions;
         GLFWwindow *window;
 
     private:
-#ifdef IC_RENDERER_VULKAN
-        static Renderer *MakeVulkan(RendererConfig &rendererConfig);
-#else
-        static Renderer *MakeVulkan(RendererConfig &rendererConfig) {
-            return nullptr;
-        }
-#endif
-
-    public:
-        static Renderer *MakeRenderer(RendererConfig &rendererConfig) {
-            switch (rendererConfig.rendererType) {
-            case RendererType::Vulkan:
-                return MakeVulkan(rendererConfig);
-            default:
-                return nullptr;
-            }
-        }
+        Renderer(const Renderer&) = delete;
+        Renderer& operator=(const Renderer&) = delete;
     };
 } // namespace IC
