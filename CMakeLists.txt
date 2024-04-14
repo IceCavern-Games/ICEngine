@@ -22,6 +22,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
 
 # Tracks which libraries we need to link, depending on the options above.
 set(LIBS glfw glm::glm)
@@ -86,6 +87,7 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC
         spdlog::spdlog_header_only
         tinyobjloader::tinyobjloader
+        imgui::imgui
 )
 
 ##############################################

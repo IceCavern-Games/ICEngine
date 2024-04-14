@@ -30,10 +30,13 @@ namespace IC {
     // Descriptor Pool Allocator
     struct DescriptorAllocator {
     public:
-        void CreateDescriptorPool(VkDevice device, std::vector<VkDescriptorPoolSize> poolSizes, uint32_t maxSets);
+        void CreateDescriptorPool(VkDevice device, std::vector<VkDescriptorPoolSize> poolSizes, uint32_t maxSets,
+                                  VkDescriptorPoolCreateFlags flags = 0);
         void AllocateDescriptorSets(VkDevice device, VkDescriptorSetLayout layout,
                                     std::vector<VkDescriptorSet> &descriptorSets);
         void DestroyDescriptorPool(VkDevice device);
+
+        VkDescriptorPool GetDescriptorPool() { return _pool; };
 
     private:
         VkDescriptorPool _pool;

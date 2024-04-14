@@ -1,5 +1,9 @@
 #pragma once
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
+
 #include "swap_chain.h"
 #include "vulkan_device.h"
 #include "vulkan_types.h"
@@ -30,4 +34,7 @@ namespace IC {
 
     // pipelines
     std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain, Material &materialData);
+
+    // ImGui
+    void InitImGui(VulkanDevice &device, GLFWwindow *window, VkDescriptorPool descriptorPool, VkFormat imageFormat);
 } // namespace IC

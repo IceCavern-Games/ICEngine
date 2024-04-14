@@ -1,9 +1,7 @@
 #include "vulkan_renderer.h"
 
-#include <ic_log.h>
-
-#include "vulkan_initializers.h"
 #include "vulkan_util.h"
+#include <ic_log.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -17,12 +15,22 @@ namespace IC {
     VulkanRenderer::VulkanRenderer(RendererConfig &config)
         : Renderer{config}, _swapChain{_vulkanDevice,
                                        {static_cast<uint32_t>(config.width), static_cast<uint32_t>(config.height)}} {
+        // find rendering functions
+        VulkanBeginRendering =
+            (PFN_vkCmdBeginRenderingKHR)vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdBeginRenderingKHR");
+        VulkanEndRendering =
+            (PFN_vkCmdEndRenderingKHR)vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdEndRenderingKHR");
+
         CreateCommandBuffers();
-        InitDescriptorAllocator();
+        InitDescriptorAllocators();
+        InitImGui(_vulkanDevice, window, _imGuiDescriptorAllocator.GetDescriptorPool(),
+                  _swapChain.GetSwapChainImageFormat());
     }
 
     VulkanRenderer::~VulkanRenderer() {
-        _descriptorAllocator.DestroyDescriptorPool(_vulkanDevice.Device());
+        ImGui_ImplVulkan_Shutdown();
+        _meshDescriptorAllocator.DestroyDescriptorPool(_vulkanDevice.Device());
+        _imGuiDescriptorAllocator.DestroyDescriptorPool(_vulkanDevice.Device());
     }
 
     void VulkanRenderer::CreateCommandBuffers() {
@@ -38,6 +46,14 @@ namespace IC {
     }
 
     void VulkanRenderer::DrawFrame() {
+        ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        for (auto function : imGuiFunctions) {
+            function();
+        }
+        ImGui::Render();
+
         static float rotation = 0.0f;
         rotation += 0.01f;
 
@@ -106,8 +122,7 @@ namespace IC {
                               _swapChain.GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED,
                               VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-        auto function = vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdBeginRenderingKHR");
-        ((PFN_vkCmdBeginRenderingKHR)function)(_cBuffers[imageIndex], &renderingInfo);
+        VulkanBeginRendering(_cBuffers[imageIndex], &renderingInfo);
 
         for (MeshRenderData data : _renderData) {
             // bind pipeline todo: only bind if different
@@ -127,8 +142,9 @@ namespace IC {
             data.Draw(_cBuffers[imageIndex]);
         }
 
-        auto function2 = vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdEndRenderingKHR");
-        ((PFN_vkCmdEndRenderingKHR)function2)(_cBuffers[imageIndex]);
+        VulkanEndRendering(_cBuffers[imageIndex]);
+
+        RenderImGui(_cBuffers[imageIndex], _swapChain.GetImageView(imageIndex));
 
         TransitionImageLayout(_cBuffers[imageIndex], _swapChain.GetImage(imageIndex),
                               _swapChain.GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -146,7 +162,8 @@ namespace IC {
         }
     }
 
-    void VulkanRenderer::InitDescriptorAllocator() {
+    void VulkanRenderer::InitDescriptorAllocators() {
+        // mesh descriptor pool
         std::vector<VkDescriptorPoolSize> poolSizes{};
         poolSizes.push_back(
             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT)});
@@ -155,7 +172,24 @@ namespace IC {
         poolSizes.push_back(
             {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT)});
 
-        _descriptorAllocator.CreateDescriptorPool(_vulkanDevice.Device(), poolSizes, 100);
+        _meshDescriptorAllocator.CreateDescriptorPool(_vulkanDevice.Device(), poolSizes, 100);
+
+        // imgui descriptor pool
+        std::vector<VkDescriptorPoolSize> guiPoolSizes{};
+        guiPoolSizes.push_back({VK_DESCRIPTOR_TYPE_SAMPLER, 1000});
+        guiPoolSizes.push_back({VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000});
+        guiPoolSizes.push_back({VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000});
+        guiPoolSizes.push_back({VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000});
+        guiPoolSizes.push_back({VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000});
+        guiPoolSizes.push_back({VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000});
+        guiPoolSizes.push_back({VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000});
+        guiPoolSizes.push_back({VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000});
+        guiPoolSizes.push_back({VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000});
+        guiPoolSizes.push_back({VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000});
+        guiPoolSizes.push_back({VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000});
+
+        _imGuiDescriptorAllocator.CreateDescriptorPool(_vulkanDevice.Device(), guiPoolSizes, 1000,
+                                                       VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
     }
 
     // Adds a mesh and associated material to list of renderable objects
@@ -191,7 +225,7 @@ namespace IC {
         }
 
         // write descriptor sets
-        _descriptorAllocator.AllocateDescriptorSets(
+        _meshDescriptorAllocator.AllocateDescriptorSets(
             _vulkanDevice.Device(), meshRenderData.renderPipeline->descriptorSetLayout, meshRenderData.descriptorSets);
         DescriptorWriter writer{};
         for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
@@ -204,5 +238,16 @@ namespace IC {
         }
 
         _renderData.push_back(meshRenderData);
+    }
+
+    void VulkanRenderer::RenderImGui(VkCommandBuffer cBuffer, VkImageView targetImageView) {
+        VkRenderingAttachmentInfo colorAttachment = AttachmentInfo(targetImageView, nullptr, VK_IMAGE_LAYOUT_GENERAL);
+        VkRenderingInfo renderInfo = RenderingInfo(_swapChain.GetSwapChainExtent(), &colorAttachment, nullptr);
+
+        VulkanBeginRendering(cBuffer, &renderInfo);
+
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cBuffer);
+
+        VulkanEndRendering(cBuffer);
     }
 } // namespace IC
