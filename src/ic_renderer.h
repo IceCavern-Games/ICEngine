@@ -19,10 +19,10 @@ namespace IC {
 
     class Renderer {
     public:
-        Renderer(RendererConfig config) { window = config.window; };
+        Renderer(RendererConfig config) { window = config.window; }
         ~Renderer() = default;
 
-        void AddImguiFunction(ImGuiFunction function) { imGuiFunctions.push_back(function); };
+        void AddImguiFunction(ImGuiFunction function) { imGuiFunctions.push_back(function); }
         void RemoveImguiFunction(ImGuiFunction function) {
             imGuiFunctions.erase(std::find(imGuiFunctions.begin(), imGuiFunctions.end(), function));
         }

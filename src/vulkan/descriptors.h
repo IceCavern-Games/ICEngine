@@ -36,7 +36,7 @@ namespace IC {
                                     std::vector<VkDescriptorSet> &descriptorSets);
         void DestroyDescriptorPool(VkDevice device);
 
-        VkDescriptorPool GetDescriptorPool() { return _pool; };
+        VkDescriptorPool GetDescriptorPool() { return _pool; }
 
     private:
         VkDescriptorPool _pool;
