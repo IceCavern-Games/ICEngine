@@ -163,4 +163,24 @@ namespace IC {
 
         return pipeline;
     }
+
+    // ImGui
+    void InitImGui(VulkanDevice &device, GLFWwindow *window, VkDescriptorPool descriptorPool, VkFormat imageFormat) {
+        ImGui::CreateContext();
+        ImGui_ImplGlfw_InitForVulkan(window, true);
+
+        ImGui_ImplVulkan_InitInfo initInfo = {};
+        initInfo.Instance = device.Instance();
+        initInfo.PhysicalDevice = device.PhysicalDevice();
+        initInfo.Device = device.Device();
+        initInfo.Queue = device.GraphicsQueue();
+        initInfo.DescriptorPool = descriptorPool;
+        initInfo.MinImageCount = 3;
+        initInfo.ImageCount = 3;
+        initInfo.UseDynamicRendering = true;
+        initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+        initInfo.ColorAttachmentFormat = imageFormat;
+
+        ImGui_ImplVulkan_Init(&initInfo, VK_NULL_HANDLE);
+    }
 } // namespace IC

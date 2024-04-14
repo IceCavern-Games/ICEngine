@@ -4,9 +4,12 @@
 
 #include <GLFW/glfw3.h>
 
+#include <algorithm>
 #include <vector>
 
 namespace IC {
+    typedef void (*ImGuiFunction)(void);
+
     struct RendererConfig {
         RendererType rendererType;
         GLFWwindow *window;
@@ -16,13 +19,17 @@ namespace IC {
 
     class Renderer {
     public:
-        Renderer(RendererConfig config) { window = config.window; };
+        Renderer(RendererConfig config) { window = config.window; }
         ~Renderer() = default;
 
-        virtual void DrawFrame() = 0;
+        void AddImguiFunction(ImGuiFunction function) { imGuiFunctions.push_back(function); }
+        void RemoveImguiFunction(ImGuiFunction function) { std::erase(imGuiFunctions, function); }
+
         virtual void AddMesh(Mesh &meshData, Material &materialData) = 0;
+        virtual void DrawFrame() = 0;
 
     protected:
+        std::vector<ImGuiFunction> imGuiFunctions;
         GLFWwindow *window;
 
     private:

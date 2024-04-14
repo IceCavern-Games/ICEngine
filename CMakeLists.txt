@@ -20,6 +20,7 @@ endif()
 # Declare Dependencies
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
 
@@ -84,6 +85,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR__RENDERER})
 target_link_libraries(${PROJECT_NAME}
     PRIVATE ${LIBS}
     PUBLIC
+        imgui::imgui
         spdlog::spdlog_header_only
         tinyobjloader::tinyobjloader
 )

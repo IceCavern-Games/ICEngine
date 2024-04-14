@@ -5,6 +5,14 @@
         "spdlog",
         "tinyobjloader",
         "vulkan",
-        "vulkan-utility-libraries"
+        "vulkan-utility-libraries",
+        {
+            "name": "imgui",
+            "version>=": "1.90.2",
+            "features": [
+                "glfw-binding",
+                "vulkan-binding"
+            ]
+        }
     ]
 }

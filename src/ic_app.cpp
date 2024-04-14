@@ -4,6 +4,8 @@
 
 #include "ic_renderer.h"
 
+#include <imgui.h>
+
 #include <iostream>
 
 using namespace IC;
@@ -56,6 +58,7 @@ bool App::Run(const Config *c) {
     material.constants.color = {1.0f, 0.0f, 0.0f, 1.0f};
 
     appRendererApi->AddMesh(mesh, material);
+    appRendererApi->AddImguiFunction(ImGuiFunction(ImGui::ShowDemoWindow));
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();

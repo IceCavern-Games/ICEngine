@@ -1,6 +1,7 @@
 #include "vulkan_device.h"
 
-#include "ic_log.h"
+#include <ic_log.h>
+
 #include "vulkan_types.h"
 
 #include <cstring>
