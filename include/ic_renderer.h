@@ -19,10 +19,10 @@ namespace IC {
 
     class Renderer {
     public:
-        Renderer(const RendererConfig& config);
+        Renderer(const RendererConfig &config);
         virtual ~Renderer();
 
-        static Renderer *MakeRenderer(const RendererConfig& rendererConfig);
+        static Renderer *MakeRenderer(const RendererConfig &rendererConfig);
 
         virtual void AddMesh(Mesh &meshData, Material &materialData) = 0;
         virtual void DrawFrame() = 0;
@@ -35,7 +35,7 @@ namespace IC {
         GLFWwindow *window;
 
     private:
-        Renderer(const Renderer&) = delete;
-        Renderer& operator=(const Renderer&) = delete;
+        Renderer(const Renderer &) = delete;
+        Renderer &operator=(const Renderer &) = delete;
     };
 } // namespace IC

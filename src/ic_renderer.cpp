@@ -3,15 +3,11 @@
 #include "vulkan/vulkan_renderer.h"
 
 namespace IC {
-    Renderer::Renderer(const RendererConfig& config) : window(config.window) {
+    Renderer::Renderer(const RendererConfig &config) : window(config.window) {}
 
-    }
+    Renderer::~Renderer() {}
 
-    Renderer::~Renderer() {
-
-    }
-
-    Renderer *Renderer::MakeRenderer(const RendererConfig& rendererConfig) {
+    Renderer *Renderer::MakeRenderer(const RendererConfig &rendererConfig) {
         switch (rendererConfig.rendererType) {
         case RendererType::Vulkan:
 #ifdef IC_RENDERER_VULKAN

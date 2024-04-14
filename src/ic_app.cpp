@@ -3,8 +3,8 @@
 #include <ic_log.h>
 #include <ic_renderer.h>
 
-#include <imgui.h>
 #include <GLFW/glfw3.h>
+#include <imgui.h>
 
 #include <iostream>
 

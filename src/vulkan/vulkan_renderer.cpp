@@ -9,9 +9,8 @@
 #include <iostream>
 
 namespace IC {
-    VulkanRenderer::VulkanRenderer(const RendererConfig& config)
-        : Renderer(config),
-          _vulkanDevice(config.window),
+    VulkanRenderer::VulkanRenderer(const RendererConfig &config)
+        : Renderer(config), _vulkanDevice(config.window),
           _swapChain{_vulkanDevice, {static_cast<uint32_t>(config.width), static_cast<uint32_t>(config.height)}} {
         // find rendering functions
         VulkanBeginRendering =

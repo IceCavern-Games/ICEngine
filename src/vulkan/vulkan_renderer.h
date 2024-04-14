@@ -11,7 +11,7 @@
 namespace IC {
     class VulkanRenderer : public Renderer {
     public:
-        VulkanRenderer(const RendererConfig& config);
+        VulkanRenderer(const RendererConfig &config);
         virtual ~VulkanRenderer();
 
         void AddMesh(Mesh &meshData, Material &materialData) override;
