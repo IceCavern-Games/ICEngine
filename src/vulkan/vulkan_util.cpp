@@ -165,4 +165,19 @@ namespace IC {
         vkFreeMemory(device.Device(), stagingBufferMemory, nullptr);
     }
     */
+
+    // destructors
+    void DestroyPipeline(VkDevice device, const Pipeline &pipeline) {
+        vkDestroyPipeline(device, pipeline.pipeline, nullptr);
+        vkDestroyPipelineLayout(device, pipeline.layout, nullptr);
+        vkDestroyDescriptorSetLayout(device, pipeline.descriptorSetLayout, nullptr);
+        for (auto shader : pipeline.shaderModules) {
+            vkDestroyShaderModule(device, shader, nullptr);
+        }
+    }
+
+    void DestroyAllocatedBuffer(VkDevice device, const AllocatedBuffer &buffer) {
+        vkDestroyBuffer(device, buffer.buffer, nullptr);
+        vkFreeMemory(device, buffer.memory, nullptr);
+    }
 } // namespace IC

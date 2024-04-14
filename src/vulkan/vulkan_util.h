@@ -15,4 +15,8 @@ namespace IC {
                                VkImageLayout newLayout);
     // void LoadTextureImage(VulkanDevice &device, std::string texturePath, AllocatedImage
     // &outImage);
+
+    // destructors
+    void DestroyPipeline(VkDevice device, const Pipeline &pipeline);
+    void DestroyAllocatedBuffer(VkDevice device, const AllocatedBuffer &buffer);
 } // namespace IC

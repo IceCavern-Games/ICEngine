@@ -9,13 +9,9 @@
 #include <iostream>
 
 namespace IC {
-    Renderer *Renderer::MakeVulkan(RendererConfig &rendererConfig) {
-        return new VulkanRenderer(rendererConfig);
-    }
-
-    VulkanRenderer::VulkanRenderer(RendererConfig &config)
-        : Renderer{config},
-          _swapChain{_vulkanDevice, {static_cast<uint32_t>(config.width), static_cast<uint32_t>(config.height)}} {
+    VulkanRenderer::VulkanRenderer(const RendererConfig &config)
+        : Renderer(config), _vulkanDevice(config.window),
+          _swapChain(_vulkanDevice, {static_cast<uint32_t>(config.width), static_cast<uint32_t>(config.height)}) {
         // find rendering functions
         VulkanBeginRendering =
             (PFN_vkCmdBeginRenderingKHR)vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdBeginRenderingKHR");
@@ -32,6 +28,17 @@ namespace IC {
         ImGui_ImplVulkan_Shutdown();
         _meshDescriptorAllocator.DestroyDescriptorPool(_vulkanDevice.Device());
         _imGuiDescriptorAllocator.DestroyDescriptorPool(_vulkanDevice.Device());
+        _pipelineManager.DestroyPipelines(_vulkanDevice.Device());
+
+        for (auto mesh : _renderData) {
+            DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.vertexBuffer);
+            DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.indexBuffer);
+
+            for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+                DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.constantsBuffers[i]);
+                DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.mvpBuffers[i]);
+            }
+        }
     }
 
     void VulkanRenderer::CreateCommandBuffers() {
@@ -161,6 +168,8 @@ namespace IC {
             IC_CORE_ERROR("Failed to present swap chain image.");
             throw std::runtime_error("Failed to present swap chain image.");
         }
+
+        vkDeviceWaitIdle(_vulkanDevice.Device());
     }
 
     void VulkanRenderer::InitDescriptorAllocators() {
