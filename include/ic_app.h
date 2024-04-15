@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ic_graphics.h>
+#include "ic_graphics.h"
 
 namespace IC {
     // Application Configuration
