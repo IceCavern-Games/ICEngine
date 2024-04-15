@@ -135,6 +135,11 @@ namespace IC {
         pipelineLayoutInfo.setLayoutCount = 1;
         pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 
+        // push constants
+        VkPushConstantRange pushConstants = PushConstants<TransformationPushConstants>(VK_SHADER_STAGE_VERTEX_BIT);
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstants;
+
         VkPipelineLayout pipelineLayout;
         VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
 

@@ -117,8 +117,6 @@ namespace IC {
 
         vkCmdSetScissor(_cBuffers[imageIndex], 0, 1, &scissor);
 
-        // transitioning to COLOR_ATTACHMENT_OPTIMAL for imgui, imgui expects image to be in this
-        // format todo: actually implement imgui
         TransitionImageLayout(_cBuffers[imageIndex], _swapChain.GetImage(imageIndex),
                               _swapChain.GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED,
                               VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -129,16 +127,15 @@ namespace IC {
             // bind pipeline todo: only bind if different
             vkCmdBindPipeline(_cBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, data.renderPipeline->pipeline);
 
-            MVPObject ubo{};
-            // hard coded for now
-            ubo.model = glm::rotate(glm::scale(glm::mat4(1.0f), {0.2f, 0.2f, 0.2f}), rotation, {0.0f, 0.0f, 1.0f});
-            ubo.view =
-                glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-            ubo.proj = glm::perspective(
-                glm::radians(45.0f),
-                (float)_swapChain.GetSwapChainExtent().width / _swapChain.GetSwapChainExtent().height, 0.1f, 10.0f);
+            TransformationPushConstants pushConstants{};
+            pushConstants.model = glm::translate(glm::mat4(1.0f), data.meshData.pos) *
+                                  glm::rotate(glm::mat4(1.0f), rotation, {0.0f, 0.0f, 1.0f}) *
+                                  glm::scale(glm::mat4(1.0f), data.meshData.scale);
+            pushConstants.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-            data.UpdateMvpBuffer(ubo, _swapChain.GetCurrentFrame());
+            vkCmdPushConstants(_cBuffers[imageIndex], data.renderPipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
+                               sizeof(TransformationPushConstants), &pushConstants);
+
             data.Bind(_cBuffers[imageIndex], data.renderPipeline->layout, _swapChain.GetCurrentFrame());
             data.Draw(_cBuffers[imageIndex]);
         }
@@ -211,15 +208,22 @@ namespace IC {
         meshRenderData.mvpBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
         meshRenderData.constantsBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
         for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-            _vulkanDevice.CreateBuffer(sizeof(MVPObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                       meshRenderData.mvpBuffers[i].buffer, meshRenderData.mvpBuffers[i].memory);
+            // hard coded for now
+            CameraDescriptors projection{};
+            projection.proj = glm::perspective(
+                glm::radians(45.0f),
+                (float)_swapChain.GetSwapChainExtent().width / _swapChain.GetSwapChainExtent().height, 0.1f, 10.0f);
+
+            CreateAndFillBuffer(_vulkanDevice, &projection, sizeof(CameraDescriptors),
+                                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                meshRenderData.mvpBuffers[i]);
 
             CreateAndFillBuffer(_vulkanDevice, &materialData.constants, sizeof(MaterialConstants),
                                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                                 meshRenderData.constantsBuffers[i]);
 
-            vkMapMemory(_vulkanDevice.Device(), meshRenderData.mvpBuffers[i].memory, 0, sizeof(MVPObject), 0,
+            vkMapMemory(_vulkanDevice.Device(), meshRenderData.mvpBuffers[i].memory, 0, sizeof(CameraDescriptors), 0,
                         &meshRenderData.mvpBuffers[i].mapped_memory);
             vkMapMemory(_vulkanDevice.Device(), meshRenderData.constantsBuffers[i].memory, 0, sizeof(MaterialConstants),
                         0, &meshRenderData.constantsBuffers[i].mapped_memory);
@@ -230,7 +234,7 @@ namespace IC {
             _vulkanDevice.Device(), meshRenderData.renderPipeline->descriptorSetLayout, meshRenderData.descriptorSets);
         DescriptorWriter writer{};
         for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-            writer.WriteBuffer(0, meshRenderData.mvpBuffers[i].buffer, sizeof(MVPObject), 0,
+            writer.WriteBuffer(0, meshRenderData.mvpBuffers[i].buffer, sizeof(CameraDescriptors), 0,
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
             writer.WriteBuffer(1, meshRenderData.constantsBuffers[i].buffer, sizeof(MaterialConstants), 0,
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);

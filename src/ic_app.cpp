@@ -54,6 +54,9 @@ bool App::Run(const Config *c) {
     Material material{};
 
     mesh.LoadFromFile("resources/models/cube.obj");
+    mesh.pos = glm::vec3(0.0f);
+    mesh.rotation = glm::vec3(0.0f);
+    mesh.scale = glm::vec3(0.5f);
     material.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
     material.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
     material.constants.color = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -63,7 +66,9 @@ bool App::Run(const Config *c) {
     Mesh lightMesh;
     Material lightMaterial{};
 
-    light.pos = {1.0f, 1.0f, 1.0f};
+    lightMesh.pos = glm::vec3(1.0f);
+    lightMesh.rotation = glm::vec3(0.0f);
+    lightMesh.scale = glm::vec3(0.2f);
     light.color = {1.0f, 1.0f, 1.0f};
 
     lightMesh.LoadFromFile("resources/models/sphere.obj");

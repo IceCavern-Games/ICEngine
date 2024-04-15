@@ -46,21 +46,23 @@ namespace IC {
         std::vector<uint32_t> indices;
         uint32_t vertexCount;
         uint32_t indexCount;
+        glm::vec3 pos;
+        glm::vec3 scale;
+        glm::vec3 rotation;
 
         void LoadFromFile(std::string fileName);
     };
 
     // lights
     struct PointLight {
-        // todo: move position, mesh and material to gameobject/gameobject components
-        glm::vec3 pos;
+        // todo: move mesh and material to gameobject/gameobject components
         glm::vec3 color;
         Mesh lightPreviewMesh;
         Material lightPreviewMaterial;
 
         void ParameterGui() {
             ImGui::Begin("Point Light Parameters");
-            ImGui::DragFloat3("Light Position", (float *)&pos, 0.01, FLT_MIN, FLT_MAX);
+            ImGui::DragFloat3("Light Position", (float *)&lightPreviewMesh.pos, 0.01, FLT_MIN, FLT_MAX);
             ImGui::ColorEdit3("Light Color", (float *)&color);
             ImGui::End();
         }

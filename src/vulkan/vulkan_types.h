@@ -38,10 +38,14 @@ namespace IC {
         VkDeviceMemory memory;
     };
 
-    struct MVPObject {
+    struct CameraDescriptors {
+        glm::mat4 proj;
+    };
+
+    // size = 128 bytes
+    struct TransformationPushConstants {
         glm::mat4 model;
         glm::mat4 view;
-        glm::mat4 proj;
     };
 
     struct Pipeline {
@@ -77,7 +81,7 @@ namespace IC {
 
         void Draw(VkCommandBuffer cBuffer) { vkCmdDrawIndexed(cBuffer, meshData.indexCount, 1, 0, 0, 0); }
 
-        void UpdateMvpBuffer(MVPObject uniformBuffer, uint32_t currentImage) {
+        void UpdateMvpBuffer(CameraDescriptors uniformBuffer, uint32_t currentImage) {
             memcpy(mvpBuffers[currentImage].mapped_memory, &uniformBuffer, sizeof(uniformBuffer));
         }
     };
