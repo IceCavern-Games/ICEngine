@@ -27,6 +27,7 @@ namespace IC {
         static Renderer *MakeRenderer(const RendererConfig &rendererConfig);
 
         virtual void AddMesh(Mesh &meshData, Material &materialData) = 0;
+        virtual void AddLight(PointLight &light) = 0;
         virtual void DrawFrame() = 0;
 
         void AddImguiFunction(std::function<void()> function);

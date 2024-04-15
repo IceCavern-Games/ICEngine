@@ -57,12 +57,12 @@ namespace IC {
     struct PointLight {
         // todo: move mesh and material to gameobject/gameobject components
         glm::vec3 color;
-        Mesh lightPreviewMesh;
-        Material lightPreviewMaterial;
+        Mesh previewMesh;
+        Material previewMaterial;
 
         void ParameterGui() {
             ImGui::Begin("Point Light Parameters");
-            ImGui::DragFloat3("Light Position", (float *)&lightPreviewMesh.pos, 0.01, FLT_MIN, FLT_MAX);
+            ImGui::DragFloat3("Light Position", (float *)&previewMesh.pos, 0.01, FLT_MIN, FLT_MAX);
             ImGui::ColorEdit3("Light Color", (float *)&color);
             ImGui::End();
         }

@@ -254,6 +254,10 @@ namespace IC {
         _renderData.push_back(meshRenderData);
     }
 
+    void VulkanRenderer::AddLight(PointLight &light) {
+        AddMesh(light.previewMesh, light.previewMaterial);
+    }
+
     void VulkanRenderer::RenderImGui(VkCommandBuffer cBuffer, VkImageView targetImageView) {
         VkRenderingAttachmentInfo colorAttachment = AttachmentInfo(targetImageView, nullptr, VK_IMAGE_LAYOUT_GENERAL);
         VkRenderingInfo renderInfo = RenderingInfo(_swapChain.GetSwapChainExtent(), &colorAttachment, nullptr);

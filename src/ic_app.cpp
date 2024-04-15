@@ -59,7 +59,7 @@ bool App::Run(const Config *c) {
     mesh.scale = glm::vec3(0.5f);
     material.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
     material.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
-    material.constants.color = {1.0f, 0.0f, 0.0f, 1.0f};
+    material.constants.color = {0.8f, 0.8f, 0.8f, 1.0f};
 
     // test light
     PointLight light{};
@@ -68,7 +68,7 @@ bool App::Run(const Config *c) {
 
     lightMesh.pos = glm::vec3(1.0f);
     lightMesh.rotation = glm::vec3(0.0f);
-    lightMesh.scale = glm::vec3(0.2f);
+    lightMesh.scale = glm::vec3(0.1f);
     light.color = {1.0f, 1.0f, 1.0f};
 
     lightMesh.LoadFromFile("resources/models/sphere.obj");
@@ -76,10 +76,11 @@ bool App::Run(const Config *c) {
     lightMaterial.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
     lightMaterial.constants.color = {light.color.r, light.color.g, light.color.b, 1.0f};
 
-    light.lightPreviewMesh = lightMesh;
-    light.lightPreviewMaterial = lightMaterial;
+    light.previewMesh = lightMesh;
+    light.previewMaterial = lightMaterial;
 
     appRendererApi->AddMesh(mesh, material);
+    appRendererApi->AddLight(light);
     appRendererApi->AddImguiFunction(std::bind(&PointLight::ParameterGui, &light));
 
     while (!glfwWindowShouldClose(window)) {

@@ -15,6 +15,7 @@ namespace IC {
         virtual ~VulkanRenderer();
 
         void AddMesh(Mesh &meshData, Material &materialData) override;
+        void AddLight(PointLight &light) override;
         void DrawFrame() override;
 
     private:
