@@ -6,6 +6,7 @@
 
 #include <imgui.h>
 
+#include <functional>
 #include <iostream>
 
 using namespace IC;
@@ -53,12 +54,28 @@ bool App::Run(const Config *c) {
     Material material{};
 
     mesh.LoadFromFile("resources/models/cube.obj");
-    material.fragShaderData = "resources/shaders/default_shader.frag.spv";
-    material.vertShaderData = "resources/shaders/default_shader.vert.spv";
+    material.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
+    material.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
     material.constants.color = {1.0f, 0.0f, 0.0f, 1.0f};
 
+    // test light
+    PointLight light{};
+    Mesh lightMesh;
+    Material lightMaterial{};
+
+    light.pos = {1.0f, 1.0f, 1.0f};
+    light.color = {1.0f, 1.0f, 1.0f};
+
+    lightMesh.LoadFromFile("resources/models/sphere.obj");
+    lightMaterial.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
+    lightMaterial.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
+    lightMaterial.constants.color = {light.color.r, light.color.g, light.color.b, 1.0f};
+
+    light.lightPreviewMesh = lightMesh;
+    light.lightPreviewMaterial = lightMaterial;
+
     appRendererApi->AddMesh(mesh, material);
-    appRendererApi->AddImguiFunction(ImGuiFunction(ImGui::ShowDemoWindow));
+    appRendererApi->AddImguiFunction(std::bind(&PointLight::ParameterGui, &light));
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();

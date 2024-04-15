@@ -3,6 +3,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
+#include <imgui.h>
 
 #include <stdexcept>
 #include <string>
@@ -47,6 +48,22 @@ namespace IC {
         uint32_t indexCount;
 
         void LoadFromFile(std::string fileName);
+    };
+
+    // lights
+    struct PointLight {
+        // todo: move position, mesh and material to gameobject/gameobject components
+        glm::vec3 pos;
+        glm::vec3 color;
+        Mesh lightPreviewMesh;
+        Material lightPreviewMaterial;
+
+        void ParameterGui() {
+            ImGui::Begin("Point Light Parameters");
+            ImGui::DragFloat3("Light Position", (float *)&pos, 0.01, FLT_MIN, FLT_MAX);
+            ImGui::ColorEdit3("Light Color", (float *)&color);
+            ImGui::End();
+        }
     };
 } // namespace IC
 
