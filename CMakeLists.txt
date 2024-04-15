@@ -54,8 +54,9 @@ endif()
 add_library(${PROJECT_NAME}
     src/ic_app.cpp
     src/ic_camera.cpp
-    src/ic_log.cpp
     src/ic_graphics.cpp
+    src/ic_log.cpp
+    src/ic_renderer.cpp
 )
 
 # Renderer sources

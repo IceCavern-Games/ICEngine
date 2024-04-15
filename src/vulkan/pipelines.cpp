@@ -5,6 +5,7 @@
 #include "swap_chain.h"
 #include "vulkan_initializers.h"
 #include "vulkan_types.h"
+#include "vulkan_util.h"
 
 #include <fstream>
 #include <iostream>
@@ -218,6 +219,12 @@ namespace IC {
     }
 
     // pipeline manager
+    void PipelineManager::DestroyPipelines(VkDevice device) {
+        for (auto pipeline : _createdPipelines) {
+            DestroyPipeline(device, *pipeline);
+        }
+    }
+
     std::shared_ptr<Pipeline> PipelineManager::FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain,
                                                                             Material &materialData) {
         for (auto pipeline : _createdPipelines) {
@@ -225,7 +232,9 @@ namespace IC {
                 return pipeline;
             }
         }
-        return CreateOpaquePipeline(device, swapChain, materialData);
+        std::shared_ptr<Pipeline> pipeline = CreateOpaquePipeline(device, swapChain, materialData);
+        _createdPipelines.push_back(pipeline);
+        return pipeline;
     }
 
     bool PipelineManager::IsPipelineSuitable(Pipeline &pipeline, Material &materialData) {

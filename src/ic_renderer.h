@@ -8,6 +8,8 @@
 #include <functional>
 #include <vector>
 
+struct GLFWwindow;
+
 namespace IC {
 
     struct RendererConfig {
@@ -19,36 +21,23 @@ namespace IC {
 
     class Renderer {
     public:
-        Renderer(RendererConfig config) { window = config.window; }
-        ~Renderer() = default;
+        Renderer(const RendererConfig &config);
+        virtual ~Renderer();
 
-        void AddImguiFunction(std::function<void()> function) { imGuiFunctions.push_back(function); }
-        // void RemoveImguiFunction(std::function<void()> function) { std::erase(imGuiFunctions, function); }
+        static Renderer *MakeRenderer(const RendererConfig &rendererConfig);
 
         virtual void AddMesh(Mesh &meshData, Material &materialData) = 0;
         virtual void DrawFrame() = 0;
+
+        void AddImguiFunction(std::function<void()> function);
+        void RemoveImguiFunction(std::function<void()> function);
 
     protected:
         std::vector<std::function<void()>> imGuiFunctions;
         GLFWwindow *window;
 
     private:
-#ifdef IC_RENDERER_VULKAN
-        static Renderer *MakeVulkan(RendererConfig &rendererConfig);
-#else
-        static Renderer *MakeVulkan(RendererConfig &rendererConfig) {
-            return nullptr;
-        }
-#endif
-
-    public:
-        static Renderer *MakeRenderer(RendererConfig &rendererConfig) {
-            switch (rendererConfig.rendererType) {
-            case RendererType::Vulkan:
-                return MakeVulkan(rendererConfig);
-            default:
-                return nullptr;
-            }
-        }
+        Renderer(const Renderer &) = delete;
+        Renderer &operator=(const Renderer &) = delete;
     };
 } // namespace IC

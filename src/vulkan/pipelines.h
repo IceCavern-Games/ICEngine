@@ -47,6 +47,7 @@ namespace IC {
 
     class PipelineManager {
     public:
+        void DestroyPipelines(VkDevice device);
         std::shared_ptr<Pipeline> FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain,
                                                                Material &materialData);
 

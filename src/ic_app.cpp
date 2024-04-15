@@ -1,9 +1,9 @@
 #include <ic_app.h>
 
+#include "ic_renderer.h"
 #include <ic_log.h>
 
-#include "ic_renderer.h"
-
+#include <GLFW/glfw3.h>
 #include <imgui.h>
 
 #include <functional>
@@ -87,6 +87,8 @@ bool App::Run(const Config *c) {
         appRendererApi->DrawFrame();
     }
 
+    delete appRendererApi;
+    appRendererApi = nullptr;
     glfwDestroyWindow(window);
     glfwTerminate();
 
