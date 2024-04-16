@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <vector>
 
 struct GLFWwindow;
@@ -27,7 +28,7 @@ namespace IC {
         static Renderer *MakeRenderer(const RendererConfig &rendererConfig);
 
         virtual void AddMesh(Mesh &meshData, Material &materialData) = 0;
-        virtual void AddLight(PointLight &light) = 0;
+        virtual void AddLight(std::shared_ptr<PointLight> light) = 0;
         virtual void DrawFrame() = 0;
 
         void AddImguiFunction(std::function<void()> function);

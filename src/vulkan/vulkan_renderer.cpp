@@ -38,6 +38,10 @@ namespace IC {
                 DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.constantsBuffers[i]);
                 DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.mvpBuffers[i]);
             }
+
+            for (auto buffer : mesh.lightsBuffers) {
+                DestroyAllocatedBuffer(_vulkanDevice.Device(), buffer);
+            }
         }
     }
 
@@ -129,7 +133,6 @@ namespace IC {
                               VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
         VulkanBeginRendering(_cBuffers[imageIndex], &renderingInfo);
-
         for (MeshRenderData data : _renderData) {
             // bind pipeline todo: only bind if different
             vkCmdBindPipeline(_cBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, data.renderPipeline->pipeline);
@@ -142,6 +145,16 @@ namespace IC {
 
             vkCmdPushConstants(_cBuffers[imageIndex], data.renderPipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
                                sizeof(TransformationPushConstants), &pushConstants);
+
+            // update light data
+            LightDescriptors descriptors;
+            descriptors.pos = _lightData->previewMesh.pos;
+            descriptors.ambientStrength = _lightData->ambientStrength;
+            descriptors.color = _lightData->color;
+            if (data.materialData.flags & MaterialFlags::Lit) {
+                data.UpdateUniformBuffer<LightDescriptors>(descriptors,
+                                                           data.lightsBuffers[_swapChain.GetCurrentFrame()]);
+            }
 
             data.Bind(_cBuffers[imageIndex], data.renderPipeline->layout, _swapChain.GetCurrentFrame());
             data.Draw(_cBuffers[imageIndex]);
@@ -177,6 +190,8 @@ namespace IC {
         poolSizes.push_back(
             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT)});
         poolSizes.push_back(
+            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT)});
+        poolSizes.push_back(
             {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT)});
 
         _meshDescriptorAllocator.CreateDescriptorPool(_vulkanDevice.Device(), poolSizes, 100);
@@ -206,7 +221,7 @@ namespace IC {
         meshRenderData.renderPipeline =
             _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), _swapChain, materialData);
 
-        // buffers
+        // vertex buffers
         CreateAndFillBuffer(_vulkanDevice, meshData.vertices.data(),
                             sizeof(meshData.vertices[0]) * meshData.vertexCount, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, meshRenderData.vertexBuffer);
@@ -214,48 +229,31 @@ namespace IC {
                             VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                             meshRenderData.indexBuffer);
 
-        meshRenderData.mvpBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
-        meshRenderData.constantsBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
-        for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-            // hard coded for now
-            CameraDescriptors projection{};
-            projection.proj = glm::perspective(
-                glm::radians(45.0f),
-                (float)_swapChain.GetSwapChainExtent().width / _swapChain.GetSwapChainExtent().height, 0.1f, 10.0f);
-
-            CreateAndFillBuffer(_vulkanDevice, &projection, sizeof(CameraDescriptors),
-                                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                meshRenderData.mvpBuffers[i]);
-
-            CreateAndFillBuffer(_vulkanDevice, &materialData.constants, sizeof(MaterialConstants),
-                                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                                meshRenderData.constantsBuffers[i]);
-
-            vkMapMemory(_vulkanDevice.Device(), meshRenderData.mvpBuffers[i].memory, 0, sizeof(CameraDescriptors), 0,
-                        &meshRenderData.mvpBuffers[i].mapped_memory);
-            vkMapMemory(_vulkanDevice.Device(), meshRenderData.constantsBuffers[i].memory, 0, sizeof(MaterialConstants),
-                        0, &meshRenderData.constantsBuffers[i].mapped_memory);
-        }
-
         // write descriptor sets
         _meshDescriptorAllocator.AllocateDescriptorSets(
             _vulkanDevice.Device(), meshRenderData.renderPipeline->descriptorSetLayout, meshRenderData.descriptorSets);
-        DescriptorWriter writer{};
-        for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-            writer.WriteBuffer(0, meshRenderData.mvpBuffers[i].buffer, sizeof(CameraDescriptors), 0,
-                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-            writer.WriteBuffer(1, meshRenderData.constantsBuffers[i].buffer, sizeof(MaterialConstants), 0,
-                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
+        DescriptorWriter writer{};
+        WriteCommonDescriptors(_vulkanDevice, _swapChain, writer, meshRenderData);
+        if (materialData.flags & MaterialFlags::Lit) {
+            LightDescriptors descriptors;
+            descriptors.pos = _lightData->previewMesh.pos;
+            descriptors.ambientStrength = _lightData->ambientStrength;
+            descriptors.color = _lightData->color;
+            WriteLightDescriptors(_vulkanDevice, SwapChain::MAX_FRAMES_IN_FLIGHT, descriptors, writer,
+                                  meshRenderData.lightsBuffers);
+        }
+
+        for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
             writer.UpdateSet(_vulkanDevice.Device(), meshRenderData.descriptorSets[i]);
         }
 
         _renderData.push_back(meshRenderData);
     }
 
-    void VulkanRenderer::AddLight(PointLight &light) {
-        AddMesh(light.previewMesh, light.previewMaterial);
+    void VulkanRenderer::AddLight(std::shared_ptr<PointLight> light) {
+        _lightData = light;
+        AddMesh(light->previewMesh, light->previewMaterial);
     }
 
     void VulkanRenderer::RenderImGui(VkCommandBuffer cBuffer, VkImageView targetImageView) {

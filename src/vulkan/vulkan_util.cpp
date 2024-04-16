@@ -28,17 +28,6 @@ namespace IC {
         vkFreeMemory(device.Device(), stagingBufferMemory, nullptr);
     }
 
-    VkDescriptorType MaterialInputTypeMapping(MaterialInputType inputType) {
-        switch (inputType) {
-        case MaterialInputType::Color:
-            return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        case MaterialInputType::Texture:
-            return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        default:
-            return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        }
-    }
-
     void CopyImageToImage(VkCommandBuffer commandBuffer, VkImage source, VkImage destination, VkExtent2D srcSize,
                           VkExtent2D dstSize) {
         VkImageBlit2 blitRegion{.sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr};

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "descriptors.h"
 #include "swap_chain.h"
 #include "vulkan_device.h"
 #include "vulkan_types.h"
@@ -26,6 +27,12 @@ namespace IC {
         pushConstant.stageFlags = flags;
         return pushConstant;
     }
+
+    // descriptors
+    void WriteCommonDescriptors(VulkanDevice &device, SwapChain &swapChain, DescriptorWriter &writer,
+                                MeshRenderData &renderData);
+    void WriteLightDescriptors(VulkanDevice &device, size_t maxFrames, LightDescriptors &lightData,
+                               DescriptorWriter &writer, std::vector<AllocatedBuffer> &lightBuffers);
 
     // images
     void CreateImage(VulkanDevice *device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,

@@ -29,7 +29,7 @@ namespace IC {
     struct AllocatedBuffer {
         VkBuffer buffer;
         VkDeviceMemory memory;
-        void *mapped_memory;
+        void *mappedMemory;
     };
 
     struct AllocatedImage {
@@ -48,15 +48,23 @@ namespace IC {
         glm::mat4 view;
     };
 
+    struct LightDescriptors {
+        glm::vec3 pos;
+        glm::float32 ambientStrength;
+        glm::vec3 color;
+        glm::float32 padding;
+    };
+
     struct Pipeline {
         VkPipeline pipeline;
         VkPipelineLayout layout;
         std::vector<VkShaderModule> shaderModules;
         VkDescriptorSetLayout descriptorSetLayout;
-        bool transparent = false;
+        MaterialFlags materialFlags;
 
         bool operator<(const Pipeline &other) const {
-            return pipeline < other.pipeline && transparent <= other.transparent;
+            return pipeline < other.pipeline &&
+                   materialFlags & MaterialFlags::Transparent <= other.materialFlags & MaterialFlags::Transparent;
         }
     };
 
@@ -69,6 +77,7 @@ namespace IC {
         AllocatedBuffer indexBuffer;
         std::vector<AllocatedBuffer> mvpBuffers;
         std::vector<AllocatedBuffer> constantsBuffers;
+        std::vector<AllocatedBuffer> lightsBuffers;
 
         void Bind(VkCommandBuffer cBuffer, VkPipelineLayout pipelineLayout, size_t currentFrame) {
             VkBuffer vertexBuffers[] = {vertexBuffer.buffer};
@@ -82,7 +91,11 @@ namespace IC {
         void Draw(VkCommandBuffer cBuffer) { vkCmdDrawIndexed(cBuffer, meshData.indexCount, 1, 0, 0, 0); }
 
         void UpdateMvpBuffer(CameraDescriptors uniformBuffer, uint32_t currentImage) {
-            memcpy(mvpBuffers[currentImage].mapped_memory, &uniformBuffer, sizeof(uniformBuffer));
+            memcpy(mvpBuffers[currentImage].mappedMemory, &uniformBuffer, sizeof(uniformBuffer));
+        }
+
+        template <typename T> void UpdateUniformBuffer(T data, AllocatedBuffer &buffer) {
+            memcpy(buffer.mappedMemory, &data, sizeof(T));
         }
     };
 

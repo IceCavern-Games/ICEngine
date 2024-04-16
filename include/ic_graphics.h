@@ -15,9 +15,9 @@ namespace IC {
         Vulkan
     };
 
-    enum class MaterialInputType {
-        Texture,
-        Color
+    enum MaterialFlags {
+        Lit = 1 << 0,
+        Transparent = 1 << 1
     };
 
     struct MaterialConstants {
@@ -25,6 +25,8 @@ namespace IC {
     };
 
     struct Material {
+        MaterialFlags flags;
+
         std::string fragShaderData;
         std::string vertShaderData;
 
@@ -57,13 +59,16 @@ namespace IC {
     struct PointLight {
         // todo: move mesh and material to gameobject/gameobject components
         glm::vec3 color;
+        float ambientStrength;
+
         Mesh previewMesh;
         Material previewMaterial;
 
         void ParameterGui() {
             ImGui::Begin("Point Light Parameters");
-            ImGui::DragFloat3("Light Position", (float *)&previewMesh.pos, 0.01, FLT_MIN, FLT_MAX);
+            ImGui::DragFloat3("Light Position", (float *)&previewMesh.pos, 0.01, FLT_MIN, FLT_MAX, "%.3f", 0);
             ImGui::ColorEdit3("Light Color", (float *)&color);
+            ImGui::DragFloat("Ambient Strength", &ambientStrength, 0.01, 0, 1.0, "%.3f", 0);
             ImGui::End();
         }
     };

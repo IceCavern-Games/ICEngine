@@ -57,31 +57,33 @@ bool App::Run(const Config *c) {
     mesh.pos = glm::vec3(0.0f);
     mesh.rotation = glm::vec3(0.0f);
     mesh.scale = glm::vec3(0.5f);
-    material.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
-    material.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
+    material.fragShaderData = "resources/shaders/default_lit_shader.frag.spv";
+    material.vertShaderData = "resources/shaders/default_lit_shader.vert.spv";
     material.constants.color = {0.8f, 0.8f, 0.8f, 1.0f};
+    material.flags = MaterialFlags::Lit;
 
     // test light
-    PointLight light{};
+    std::shared_ptr<PointLight> light = std::make_shared<PointLight>();
     Mesh lightMesh;
     Material lightMaterial{};
 
     lightMesh.pos = glm::vec3(1.0f);
     lightMesh.rotation = glm::vec3(0.0f);
     lightMesh.scale = glm::vec3(0.1f);
-    light.color = {1.0f, 1.0f, 1.0f};
+    light->color = {1.0f, 1.0f, 1.0f};
+    light->ambientStrength = 0.5f;
 
     lightMesh.LoadFromFile("resources/models/sphere.obj");
     lightMaterial.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
     lightMaterial.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
-    lightMaterial.constants.color = {light.color.r, light.color.g, light.color.b, 1.0f};
+    lightMaterial.constants.color = {light->color.r, light->color.g, light->color.b, 1.0f};
 
-    light.previewMesh = lightMesh;
-    light.previewMaterial = lightMaterial;
+    light->previewMesh = lightMesh;
+    light->previewMaterial = lightMaterial;
 
-    appRendererApi->AddMesh(mesh, material);
     appRendererApi->AddLight(light);
-    appRendererApi->AddImguiFunction(std::bind(&PointLight::ParameterGui, &light));
+    appRendererApi->AddMesh(mesh, material);
+    appRendererApi->AddImguiFunction(std::bind(&PointLight::ParameterGui, light.get()));
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
