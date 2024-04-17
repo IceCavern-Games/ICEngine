@@ -35,11 +35,12 @@ namespace IC {
 
     struct VertexData {
         glm::vec3 pos;
+        glm::vec3 normal;
         glm::vec3 color;
         glm::vec2 texCoord;
 
         bool operator==(const VertexData &other) const {
-            return pos == other.pos && color == other.color && texCoord == other.texCoord;
+            return pos == other.pos && normal == other.normal && color == other.color && texCoord == other.texCoord;
         }
     };
 
