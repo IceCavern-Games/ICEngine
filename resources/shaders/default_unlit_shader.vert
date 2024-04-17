@@ -28,6 +28,6 @@ layout(location = 2) out vec2 fragTexCoord;
 void main() {
     gl_Position = proj.proj * mv.view * mv.model * vec4(inPosition, 1.0);
     normal = normalize((mv.model * vec4(inNormal, 0.0)).xyz);
-    fragColor = vec4(normal * constants.color.rgb, 1.0);
+    fragColor = constants.color;
     fragTexCoord = inTexCoord;
 }
