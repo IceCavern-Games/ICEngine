@@ -10,6 +10,7 @@ layout(binding = 1) uniform MaterialConstants {
 }
 constants;
 
+
 layout(push_constant) uniform PushConstants {
     mat4 model;
     mat4 view;
@@ -28,8 +29,8 @@ layout(location = 3) out vec2 fragTexCoord;
 
 void main() {
     gl_Position = proj.proj * mv.view * mv.model * vec4(inPosition, 1.0);
-    normal = normalize((mv.model * vec4(inNormal, 0.0)).xyz);
+    normal = normalize(mat3(transpose(inverse(mv.view * mv.model))) * inNormal);
     fragColor = constants.color;
-    fragPos = vec3(mv.model * vec4(inPosition, 1.0));
+    fragPos = vec3(mv.view * mv.model * vec4(inPosition, 1.0));
     fragTexCoord = inTexCoord;
 }

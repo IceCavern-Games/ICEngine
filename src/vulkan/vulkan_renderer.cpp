@@ -143,7 +143,8 @@ namespace IC {
                                   glm::scale(glm::mat4(1.0f), data.meshData.scale);
             pushConstants.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-            vkCmdPushConstants(_cBuffers[imageIndex], data.renderPipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
+            vkCmdPushConstants(_cBuffers[imageIndex], data.renderPipeline->layout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                                sizeof(TransformationPushConstants), &pushConstants);
 
             // update light data

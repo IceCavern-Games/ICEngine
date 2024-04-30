@@ -53,7 +53,7 @@ bool App::Run(const Config *c) {
     Mesh mesh;
     Material material{};
 
-    mesh.LoadFromFile("resources/models/cube.obj");
+    mesh.LoadFromFile("resources/models/sphere.obj");
     mesh.pos = glm::vec3(0.0f);
     mesh.rotation = glm::vec3(0.0f);
     mesh.scale = glm::vec3(0.5f);
@@ -101,7 +101,7 @@ bool App::Run(const Config *c) {
     light2->previewMaterial = lightMaterial2;
 
     appRendererApi->AddLight(light);
-    appRendererApi->AddLight(light2);
+    // appRendererApi->AddLight(light2);
     appRendererApi->AddMesh(mesh, material);
     appRendererApi->AddImguiFunction(std::bind(&PointLight::ParameterGui, light.get()));
 
