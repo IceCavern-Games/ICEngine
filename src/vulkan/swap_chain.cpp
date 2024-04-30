@@ -18,7 +18,7 @@ namespace IC {
         Init(previous);
     }
 
-    void SwapChain::Init(std::shared_ptr<SwapChain> previous) {
+    void SwapChain::Init(std::shared_ptr<SwapChain> &previous) {
         CreateSwapChain(previous);
         CreateImageViews();
         CreateRenderPass();
@@ -140,7 +140,7 @@ namespace IC {
         VK_CHECK(vkWaitForFences(_device.Device(), 1, &_immFence, VK_TRUE, 999999999));
     }
 
-    void SwapChain::CreateSwapChain(std::shared_ptr<SwapChain> previous) {
+    void SwapChain::CreateSwapChain(std::shared_ptr<SwapChain> &previous) {
         SwapChainSupportDetails swapChainSupport = _device.GetSwapChainSupport();
 
         VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);

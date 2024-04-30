@@ -46,13 +46,13 @@ namespace IC {
                                            std::function<void(VkCommandBuffer cmd)> &&function);
 
     private:
-        void CreateSwapChain(std::shared_ptr<SwapChain> previous);
+        void CreateSwapChain(std::shared_ptr<SwapChain> &previous);
         void CreateImageViews();
         void CreateDepthResources();
         void CreateRenderPass();
         void CreateFramebuffers();
         void CreateSyncObjects();
-        void Init(std::shared_ptr<SwapChain> previous);
+        void Init(std::shared_ptr<SwapChain> &previous);
 
         // Helper functions
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
