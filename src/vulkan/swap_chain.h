@@ -5,6 +5,7 @@
 #include <vulkan/vulkan.h>
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,7 @@ namespace IC {
         static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
         SwapChain(VulkanDevice &deviceRef, VkExtent2D windowExtent);
+        SwapChain(VulkanDevice &deviceRef, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous);
         ~SwapChain();
 
         SwapChain(const SwapChain &) = delete;
@@ -51,6 +53,7 @@ namespace IC {
         void CreateRenderPass();
         void CreateFramebuffers();
         void CreateSyncObjects();
+        void Init();
 
         // Helper functions
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
@@ -74,6 +77,7 @@ namespace IC {
         VkExtent2D _windowExtent;
 
         VkSwapchainKHR _swapChain;
+        std::shared_ptr<SwapChain> _oldSwapChain;
 
         std::vector<VkSemaphore> _imageAvailableSemaphores;
         std::vector<VkSemaphore> _renderFinishedSemaphores;
