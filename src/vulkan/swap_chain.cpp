@@ -14,6 +14,18 @@
 
 namespace IC {
     SwapChain::SwapChain(VulkanDevice &deviceRef, VkExtent2D extent) : _device{deviceRef}, _windowExtent{extent} {
+        Init();
+    }
+
+    SwapChain::SwapChain(VulkanDevice &deviceRef, VkExtent2D extent, std::shared_ptr<SwapChain> previous)
+        : _device{deviceRef}, _windowExtent{extent}, _oldSwapChain{previous} {
+        Init();
+
+        // clean up old swap chain as it's no longer needed
+        _oldSwapChain = nullptr;
+    }
+
+    void SwapChain::Init() {
         CreateSwapChain();
         CreateImageViews();
         CreateRenderPass();
@@ -178,7 +190,7 @@ namespace IC {
         createInfo.presentMode = presentMode;
         createInfo.clipped = VK_TRUE;
 
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
+        createInfo.oldSwapchain = _oldSwapChain == nullptr ? VK_NULL_HANDLE : _oldSwapChain->_swapChain;
 
         VK_CHECK(vkCreateSwapchainKHR(_device.Device(), &createInfo, nullptr, &_swapChain));
 
@@ -363,7 +375,9 @@ namespace IC {
     VkPresentModeKHR SwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
         for (const auto &availablePresentMode : availablePresentModes) {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-                IC_CORE_INFO("Present mode: Mailbox");
+                if (_oldSwapChain == nullptr) {
+                    IC_CORE_INFO("Present mode: Mailbox");
+                }
                 return availablePresentMode;
             }
         }
@@ -374,8 +388,9 @@ namespace IC {
         //     return availablePresentMode;
         //   }
         // }
-
-        IC_CORE_INFO("Present mode: V-Sync");
+        if (_oldSwapChain == nullptr) {
+            IC_CORE_INFO("Present mode: V-Sync");
+        }
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
