@@ -33,7 +33,7 @@ namespace IC {
         DescriptorAllocator _imGuiDescriptorAllocator{};
 
         std::vector<MeshRenderData> _renderData{};
-        std::shared_ptr<PointLight> _lightData;
+        std::vector<std::shared_ptr<PointLight>> _lightData;
 
         std::vector<VkCommandBuffer> _cBuffers{};
 

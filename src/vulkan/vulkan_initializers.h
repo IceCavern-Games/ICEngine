@@ -31,7 +31,7 @@ namespace IC {
     // descriptors
     void WriteCommonDescriptors(VulkanDevice &device, SwapChain &swapChain, DescriptorWriter &writer,
                                 MeshRenderData &renderData);
-    void WriteLightDescriptors(VulkanDevice &device, size_t maxFrames, LightDescriptors &lightData,
+    void WriteLightDescriptors(VulkanDevice &device, size_t maxFrames, SceneLightDescriptors &lightData,
                                DescriptorWriter &writer, std::vector<AllocatedBuffer> &lightBuffers);
 
     // images

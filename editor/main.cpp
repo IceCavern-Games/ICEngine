@@ -5,8 +5,8 @@ using namespace IC;
 int main() {
     Config config;
     config.name = "ICEditor";
-    config.width = 1280;
-    config.height = 720;
+    config.width = 1600;
+    config.height = 900;
 
     App::Run(&config);
 }

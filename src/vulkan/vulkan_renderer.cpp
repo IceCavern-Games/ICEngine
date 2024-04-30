@@ -147,13 +147,25 @@ namespace IC {
                                sizeof(TransformationPushConstants), &pushConstants);
 
             // update light data
-            LightDescriptors descriptors;
-            descriptors.pos = _lightData->previewMesh.pos;
-            descriptors.ambientStrength = _lightData->ambientStrength;
-            descriptors.color = _lightData->color;
+            SceneLightDescriptors descriptors;
+            descriptors.directionalLight = {};
+            for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
+                if (i >= _lightData.size()) {
+                    descriptors.pointLights[i] = {
+                        .pos = glm::vec3(0.0f), .ambientStrength = 0.0f, .color = glm::vec3(0.0f)};
+                    continue;
+                }
+                PointLightDescriptors pointLightDescriptors{};
+                pointLightDescriptors.pos = _lightData[i]->previewMesh.pos;
+                pointLightDescriptors.ambientStrength = _lightData[i]->ambientStrength;
+                pointLightDescriptors.color = _lightData[i]->color;
+
+                descriptors.pointLights[i] = pointLightDescriptors;
+            }
+
             if (data.materialData.flags & MaterialFlags::Lit) {
-                data.UpdateUniformBuffer<LightDescriptors>(descriptors,
-                                                           data.lightsBuffers[_swapChain.GetCurrentFrame()]);
+                data.UpdateUniformBuffer<SceneLightDescriptors>(descriptors,
+                                                                data.lightsBuffers[_swapChain.GetCurrentFrame()]);
             }
 
             data.Bind(_cBuffers[imageIndex], data.renderPipeline->layout, _swapChain.GetCurrentFrame());
@@ -180,7 +192,7 @@ namespace IC {
         }
 
         vkDeviceWaitIdle(_vulkanDevice.Device());
-    }
+    } // namespace IC
 
     void VulkanRenderer::InitDescriptorAllocators() {
         // mesh descriptor pool
@@ -236,10 +248,22 @@ namespace IC {
         DescriptorWriter writer{};
         WriteCommonDescriptors(_vulkanDevice, _swapChain, writer, meshRenderData);
         if (materialData.flags & MaterialFlags::Lit) {
-            LightDescriptors descriptors;
-            descriptors.pos = _lightData->previewMesh.pos;
-            descriptors.ambientStrength = _lightData->ambientStrength;
-            descriptors.color = _lightData->color;
+            DirectionalLightDescriptors directional{};
+            SceneLightDescriptors descriptors;
+            descriptors.directionalLight = directional;
+            for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
+                if (i >= _lightData.size()) {
+                    descriptors.pointLights[i] = {
+                        .pos = glm::vec3(0.0f), .ambientStrength = 0.0f, .color = glm::vec3(0.0f)};
+                    continue;
+                }
+                PointLightDescriptors pointLightDescriptors{};
+                pointLightDescriptors.pos = _lightData[i]->previewMesh.pos;
+                pointLightDescriptors.ambientStrength = _lightData[i]->ambientStrength;
+                pointLightDescriptors.color = _lightData[i]->color;
+
+                descriptors.pointLights[i] = pointLightDescriptors;
+            }
             WriteLightDescriptors(_vulkanDevice, SwapChain::MAX_FRAMES_IN_FLIGHT, descriptors, writer,
                                   meshRenderData.lightsBuffers);
         }
@@ -252,7 +276,7 @@ namespace IC {
     }
 
     void VulkanRenderer::AddLight(std::shared_ptr<PointLight> light) {
-        _lightData = light;
+        _lightData.push_back(light);
         AddMesh(light->previewMesh, light->previewMaterial);
     }
 

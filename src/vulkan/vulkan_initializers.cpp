@@ -105,16 +105,16 @@ namespace IC {
         }
     }
 
-    void WriteLightDescriptors(VulkanDevice &device, size_t maxFrames, LightDescriptors &lightData,
+    void WriteLightDescriptors(VulkanDevice &device, size_t maxFrames, SceneLightDescriptors &lightData,
                                DescriptorWriter &writer, std::vector<AllocatedBuffer> &lightBuffers) {
         lightBuffers.resize(maxFrames);
         for (size_t i = 0; i < maxFrames; i++) {
-            CreateAndFillBuffer(device, &lightData, sizeof(LightDescriptors), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            CreateAndFillBuffer(device, &lightData, sizeof(SceneLightDescriptors), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, lightBuffers[i]);
-            vkMapMemory(device.Device(), lightBuffers[i].memory, 0, sizeof(LightDescriptors), 0,
+            vkMapMemory(device.Device(), lightBuffers[i].memory, 0, sizeof(SceneLightDescriptors), 0,
                         &lightBuffers[i].mappedMemory);
 
-            writer.WriteBuffer(2, lightBuffers[i].buffer, sizeof(LightDescriptors), 0,
+            writer.WriteBuffer(2, lightBuffers[i].buffer, sizeof(SceneLightDescriptors), 0,
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }
     }

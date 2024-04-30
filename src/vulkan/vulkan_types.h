@@ -3,6 +3,8 @@
 #include <ic_graphics.h>
 #include <ic_log.h>
 
+#include "vulkan_constants.hpp"
+
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_RADIANS
 #include <glm/mat4x4.hpp>
@@ -48,11 +50,23 @@ namespace IC {
         glm::mat4 view;
     };
 
-    struct LightDescriptors {
+    struct DirectionalLightDescriptors {
+        alignas(16) glm::vec3 dir;
+        alignas(16) glm::vec3 amb;
+        alignas(16) glm::vec3 diff;
+        alignas(16) glm::vec3 spec;
+    };
+
+    struct PointLightDescriptors {
         glm::vec3 pos;
         glm::float32 ambientStrength;
         glm::vec3 color;
         glm::float32 padding;
+    };
+
+    struct SceneLightDescriptors {
+        DirectionalLightDescriptors directionalLight;
+        alignas(32) std::array<PointLightDescriptors, MAX_POINT_LIGHTS> pointLights;
     };
 
     struct Pipeline {
