@@ -108,7 +108,7 @@ namespace IC {
             memcpy(mvpBuffers[currentImage].mappedMemory, &uniformBuffer, sizeof(uniformBuffer));
         }
 
-        template <typename T> void UpdateUniformBuffer(T data, AllocatedBuffer &buffer) {
+        template <typename T> void UpdateUniformBuffer(T &data, AllocatedBuffer &buffer) {
             memcpy(buffer.mappedMemory, &data, sizeof(T));
         }
     };
