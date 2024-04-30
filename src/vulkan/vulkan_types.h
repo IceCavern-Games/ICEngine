@@ -78,7 +78,7 @@ namespace IC {
 
         bool operator<(const Pipeline &other) const {
             return pipeline < other.pipeline &&
-                   materialFlags & MaterialFlags::Transparent <= other.materialFlags & MaterialFlags::Transparent;
+                   (materialFlags & MaterialFlags::Transparent) <= (other.materialFlags & MaterialFlags::Transparent);
         }
     };
 
