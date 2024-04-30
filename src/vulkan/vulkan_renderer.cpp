@@ -31,6 +31,9 @@ namespace IC {
     }
 
     VulkanRenderer::~VulkanRenderer() {
+        glfwSetWindowUserPointer(window, nullptr);
+        glfwSetFramebufferSizeCallback(window, nullptr);
+
         ImGui_ImplVulkan_Shutdown();
         _meshDescriptorAllocator.DestroyDescriptorPool(_vulkanDevice.Device());
         _imGuiDescriptorAllocator.DestroyDescriptorPool(_vulkanDevice.Device());
