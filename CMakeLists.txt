@@ -135,6 +135,11 @@ export(EXPORT ${PROJECT_NAME}_targets
 )
 
 ##############################################
+# Shaders
+
+add_subdirectory(resources/shaders)
+
+##############################################
 # Editor
 
 # Alias our library as IC::ICEngine so that examples

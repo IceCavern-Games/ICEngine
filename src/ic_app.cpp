@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 
+#include <functional>
 #include <iostream>
 
 using namespace IC;
@@ -53,12 +54,56 @@ bool App::Run(const Config *c) {
     Material material{};
 
     mesh.LoadFromFile("resources/models/cube.obj");
-    material.fragShaderData = "resources/shaders/default_shader.frag.spv";
-    material.vertShaderData = "resources/shaders/default_shader.vert.spv";
-    material.constants.color = {1.0f, 0.0f, 0.0f, 1.0f};
+    mesh.pos = glm::vec3(0.0f);
+    mesh.rotation = glm::vec3(0.0f);
+    mesh.scale = glm::vec3(0.5f);
+    material.fragShaderData = "resources/shaders/default_lit_shader.frag.spv";
+    material.vertShaderData = "resources/shaders/default_lit_shader.vert.spv";
+    material.constants.color = {0.8f, 0.8f, 0.8f, 1.0f};
+    material.flags = MaterialFlags::Lit;
 
+    // test light
+    std::shared_ptr<PointLight> light = std::make_shared<PointLight>();
+    Mesh lightMesh;
+    Material lightMaterial{};
+
+    lightMesh.pos = glm::vec3(1.7f, 1.0f, 1.0f);
+    lightMesh.rotation = glm::vec3(0.0f);
+    lightMesh.scale = glm::vec3(0.1f);
+    light->color = {1.0f, 1.0f, 1.0f};
+    light->ambientStrength = 0.5f;
+
+    lightMesh.LoadFromFile("resources/models/sphere.obj");
+    lightMaterial.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
+    lightMaterial.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
+    lightMaterial.constants.color = {light->color.r, light->color.g, light->color.b, 1.0f};
+
+    light->previewMesh = lightMesh;
+    light->previewMaterial = lightMaterial;
+
+    // test light 2
+    std::shared_ptr<PointLight> light2 = std::make_shared<PointLight>();
+    Mesh lightMesh2;
+    Material lightMaterial2{};
+
+    lightMesh2.pos = glm::vec3(1.0f, 1.7f, 1.0f);
+    lightMesh2.rotation = glm::vec3(0.0f);
+    lightMesh2.scale = glm::vec3(0.1f);
+    light2->color = {0.0f, 1.0f, 1.0f};
+    light2->ambientStrength = 0.5f;
+
+    lightMesh2.LoadFromFile("resources/models/sphere.obj");
+    lightMaterial2.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
+    lightMaterial2.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
+    lightMaterial2.constants.color = {light2->color.r, light2->color.g, light2->color.b, 1.0f};
+
+    light2->previewMesh = lightMesh2;
+    light2->previewMaterial = lightMaterial2;
+
+    appRendererApi->AddLight(light);
+    appRendererApi->AddLight(light2);
     appRendererApi->AddMesh(mesh, material);
-    appRendererApi->AddImguiFunction(ImGuiFunction(ImGui::ShowDemoWindow));
+    appRendererApi->AddImguiFunction(std::bind(&PointLight::ParameterGui, light.get()));
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();

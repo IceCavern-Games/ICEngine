@@ -22,12 +22,12 @@ namespace IC {
         }
     }
 
-    void Renderer::AddImguiFunction(ImGuiFunction function) {
+    void Renderer::AddImguiFunction(std::function<void()> function) {
         imGuiFunctions.push_back(function);
     }
 
-    void Renderer::RemoveImguiFunction(ImGuiFunction function) {
+    void Renderer::RemoveImguiFunction(std::function<void()> function) {
         // unordered erase.
-        std::erase(imGuiFunctions, function);
+        // std::erase(imGuiFunctions, function);
     }
 } // namespace IC

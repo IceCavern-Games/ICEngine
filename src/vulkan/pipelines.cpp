@@ -238,7 +238,7 @@ namespace IC {
     }
 
     bool PipelineManager::IsPipelineSuitable(Pipeline &pipeline, Material &materialData) {
-        // todo: code this
-        return true;
+        // todo: oversimplification, but will do for now
+        return pipeline.materialFlags == materialData.flags;
     }
 } // namespace IC

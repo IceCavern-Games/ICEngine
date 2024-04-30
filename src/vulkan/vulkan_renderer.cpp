@@ -38,6 +38,10 @@ namespace IC {
                 DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.constantsBuffers[i]);
                 DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.mvpBuffers[i]);
             }
+
+            for (auto buffer : mesh.lightsBuffers) {
+                DestroyAllocatedBuffer(_vulkanDevice.Device(), buffer);
+            }
         }
     }
 
@@ -124,28 +128,46 @@ namespace IC {
 
         vkCmdSetScissor(_cBuffers[imageIndex], 0, 1, &scissor);
 
-        // transitioning to COLOR_ATTACHMENT_OPTIMAL for imgui, imgui expects image to be in this
-        // format todo: actually implement imgui
         TransitionImageLayout(_cBuffers[imageIndex], _swapChain.GetImage(imageIndex),
                               _swapChain.GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED,
                               VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
         VulkanBeginRendering(_cBuffers[imageIndex], &renderingInfo);
-
         for (MeshRenderData data : _renderData) {
             // bind pipeline todo: only bind if different
             vkCmdBindPipeline(_cBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, data.renderPipeline->pipeline);
 
-            MVPObject ubo{};
-            // hard coded for now
-            ubo.model = glm::rotate(glm::scale(glm::mat4(1.0f), {0.2f, 0.2f, 0.2f}), rotation, {0.0f, 0.0f, 1.0f});
-            ubo.view =
-                glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-            ubo.proj = glm::perspective(
-                glm::radians(45.0f),
-                (float)_swapChain.GetSwapChainExtent().width / _swapChain.GetSwapChainExtent().height, 0.1f, 10.0f);
+            TransformationPushConstants pushConstants{};
+            pushConstants.model = glm::translate(glm::mat4(1.0f), data.meshData.pos) *
+                                  glm::rotate(glm::mat4(1.0f), rotation, {0.0f, 0.0f, 1.0f}) *
+                                  glm::scale(glm::mat4(1.0f), data.meshData.scale);
+            pushConstants.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-            data.UpdateMvpBuffer(ubo, _swapChain.GetCurrentFrame());
+            vkCmdPushConstants(_cBuffers[imageIndex], data.renderPipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
+                               sizeof(TransformationPushConstants), &pushConstants);
+
+            // update light data
+            SceneLightDescriptors descriptors;
+            descriptors.directionalLight = {};
+            for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
+                if (i >= _lightData.size()) {
+                    descriptors.pointLights[i] = {
+                        .pos = glm::vec3(0.0f), .ambientStrength = 0.0f, .color = glm::vec3(0.0f)};
+                    continue;
+                }
+                PointLightDescriptors pointLightDescriptors{};
+                pointLightDescriptors.pos = _lightData[i]->previewMesh.pos;
+                pointLightDescriptors.ambientStrength = _lightData[i]->ambientStrength;
+                pointLightDescriptors.color = _lightData[i]->color;
+
+                descriptors.pointLights[i] = pointLightDescriptors;
+            }
+
+            if (data.materialData.flags & MaterialFlags::Lit) {
+                data.UpdateUniformBuffer<SceneLightDescriptors>(descriptors,
+                                                                data.lightsBuffers[_swapChain.GetCurrentFrame()]);
+            }
+
             data.Bind(_cBuffers[imageIndex], data.renderPipeline->layout, _swapChain.GetCurrentFrame());
             data.Draw(_cBuffers[imageIndex]);
         }
@@ -170,19 +192,15 @@ namespace IC {
         }
 
         vkDeviceWaitIdle(_vulkanDevice.Device());
-    }
+    } // namespace IC
 
     void VulkanRenderer::InitDescriptorAllocators() {
         // mesh descriptor pool
         std::vector<VkDescriptorPoolSize> poolSizes{};
-        poolSizes.push_back(
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT)});
-        poolSizes.push_back(
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT)});
-        poolSizes.push_back(
-            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT)});
+        poolSizes.push_back({VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000});
+        poolSizes.push_back({VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000});
 
-        _meshDescriptorAllocator.CreateDescriptorPool(_vulkanDevice.Device(), poolSizes, 100);
+        _meshDescriptorAllocator.CreateDescriptorPool(_vulkanDevice.Device(), poolSizes, 1000);
 
         // imgui descriptor pool
         std::vector<VkDescriptorPoolSize> guiPoolSizes{};
@@ -209,7 +227,7 @@ namespace IC {
         meshRenderData.renderPipeline =
             _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), _swapChain, materialData);
 
-        // buffers
+        // vertex buffers
         CreateAndFillBuffer(_vulkanDevice, meshData.vertices.data(),
                             sizeof(meshData.vertices[0]) * meshData.vertexCount, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, meshRenderData.vertexBuffer);
@@ -217,37 +235,43 @@ namespace IC {
                             VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                             meshRenderData.indexBuffer);
 
-        meshRenderData.mvpBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
-        meshRenderData.constantsBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
-        for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-            _vulkanDevice.CreateBuffer(sizeof(MVPObject), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                       meshRenderData.mvpBuffers[i].buffer, meshRenderData.mvpBuffers[i].memory);
-
-            CreateAndFillBuffer(_vulkanDevice, &materialData.constants, sizeof(MaterialConstants),
-                                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                                meshRenderData.constantsBuffers[i]);
-
-            vkMapMemory(_vulkanDevice.Device(), meshRenderData.mvpBuffers[i].memory, 0, sizeof(MVPObject), 0,
-                        &meshRenderData.mvpBuffers[i].mapped_memory);
-            vkMapMemory(_vulkanDevice.Device(), meshRenderData.constantsBuffers[i].memory, 0, sizeof(MaterialConstants),
-                        0, &meshRenderData.constantsBuffers[i].mapped_memory);
-        }
-
         // write descriptor sets
         _meshDescriptorAllocator.AllocateDescriptorSets(
             _vulkanDevice.Device(), meshRenderData.renderPipeline->descriptorSetLayout, meshRenderData.descriptorSets);
-        DescriptorWriter writer{};
-        for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-            writer.WriteBuffer(0, meshRenderData.mvpBuffers[i].buffer, sizeof(MVPObject), 0,
-                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-            writer.WriteBuffer(1, meshRenderData.constantsBuffers[i].buffer, sizeof(MaterialConstants), 0,
-                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
+        DescriptorWriter writer{};
+        WriteCommonDescriptors(_vulkanDevice, _swapChain, writer, meshRenderData);
+        if (materialData.flags & MaterialFlags::Lit) {
+            DirectionalLightDescriptors directional{};
+            SceneLightDescriptors descriptors;
+            descriptors.directionalLight = directional;
+            for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
+                if (i >= _lightData.size()) {
+                    descriptors.pointLights[i] = {
+                        .pos = glm::vec3(0.0f), .ambientStrength = 0.0f, .color = glm::vec3(0.0f)};
+                    continue;
+                }
+                PointLightDescriptors pointLightDescriptors{};
+                pointLightDescriptors.pos = _lightData[i]->previewMesh.pos;
+                pointLightDescriptors.ambientStrength = _lightData[i]->ambientStrength;
+                pointLightDescriptors.color = _lightData[i]->color;
+
+                descriptors.pointLights[i] = pointLightDescriptors;
+            }
+            WriteLightDescriptors(_vulkanDevice, SwapChain::MAX_FRAMES_IN_FLIGHT, descriptors, writer,
+                                  meshRenderData.lightsBuffers);
+        }
+
+        for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
             writer.UpdateSet(_vulkanDevice.Device(), meshRenderData.descriptorSets[i]);
         }
 
         _renderData.push_back(meshRenderData);
+    }
+
+    void VulkanRenderer::AddLight(std::shared_ptr<PointLight> light) {
+        _lightData.push_back(light);
+        AddMesh(light->previewMesh, light->previewMaterial);
     }
 
     void VulkanRenderer::RenderImGui(VkCommandBuffer cBuffer, VkImageView targetImageView) {

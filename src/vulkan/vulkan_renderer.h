@@ -15,6 +15,7 @@ namespace IC {
         virtual ~VulkanRenderer();
 
         void AddMesh(Mesh &meshData, Material &materialData) override;
+        void AddLight(std::shared_ptr<PointLight> light) override;
         void DrawFrame() override;
 
     private:
@@ -32,6 +33,8 @@ namespace IC {
         DescriptorAllocator _imGuiDescriptorAllocator{};
 
         std::vector<MeshRenderData> _renderData{};
+        std::vector<std::shared_ptr<PointLight>> _lightData;
+
         std::vector<VkCommandBuffer> _cBuffers{};
 
         // render functions for mac support

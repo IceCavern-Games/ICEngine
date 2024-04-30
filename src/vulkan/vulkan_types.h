@@ -3,6 +3,8 @@
 #include <ic_graphics.h>
 #include <ic_log.h>
 
+#include "vulkan_constants.h"
+
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_RADIANS
 #include <glm/mat4x4.hpp>
@@ -29,7 +31,7 @@ namespace IC {
     struct AllocatedBuffer {
         VkBuffer buffer;
         VkDeviceMemory memory;
-        void *mapped_memory;
+        void *mappedMemory;
     };
 
     struct AllocatedImage {
@@ -38,10 +40,33 @@ namespace IC {
         VkDeviceMemory memory;
     };
 
-    struct MVPObject {
+    struct CameraDescriptors {
+        glm::mat4 proj;
+    };
+
+    // size = 128 bytes
+    struct TransformationPushConstants {
         glm::mat4 model;
         glm::mat4 view;
-        glm::mat4 proj;
+    };
+
+    struct DirectionalLightDescriptors {
+        alignas(16) glm::vec3 dir;
+        alignas(16) glm::vec3 amb;
+        alignas(16) glm::vec3 diff;
+        alignas(16) glm::vec3 spec;
+    };
+
+    struct PointLightDescriptors {
+        glm::vec3 pos;
+        glm::float32 ambientStrength;
+        glm::vec3 color;
+        glm::float32 padding;
+    };
+
+    struct SceneLightDescriptors {
+        DirectionalLightDescriptors directionalLight;
+        alignas(32) std::array<PointLightDescriptors, MAX_POINT_LIGHTS> pointLights;
     };
 
     struct Pipeline {
@@ -49,10 +74,11 @@ namespace IC {
         VkPipelineLayout layout;
         std::vector<VkShaderModule> shaderModules;
         VkDescriptorSetLayout descriptorSetLayout;
-        bool transparent = false;
+        MaterialFlags materialFlags;
 
         bool operator<(const Pipeline &other) const {
-            return pipeline < other.pipeline && transparent <= other.transparent;
+            return pipeline < other.pipeline &&
+                   materialFlags & MaterialFlags::Transparent <= other.materialFlags & MaterialFlags::Transparent;
         }
     };
 
@@ -65,6 +91,7 @@ namespace IC {
         AllocatedBuffer indexBuffer;
         std::vector<AllocatedBuffer> mvpBuffers;
         std::vector<AllocatedBuffer> constantsBuffers;
+        std::vector<AllocatedBuffer> lightsBuffers;
 
         void Bind(VkCommandBuffer cBuffer, VkPipelineLayout pipelineLayout, size_t currentFrame) {
             VkBuffer vertexBuffers[] = {vertexBuffer.buffer};
@@ -77,8 +104,12 @@ namespace IC {
 
         void Draw(VkCommandBuffer cBuffer) { vkCmdDrawIndexed(cBuffer, meshData.indexCount, 1, 0, 0, 0); }
 
-        void UpdateMvpBuffer(MVPObject uniformBuffer, uint32_t currentImage) {
-            memcpy(mvpBuffers[currentImage].mapped_memory, &uniformBuffer, sizeof(uniformBuffer));
+        void UpdateMvpBuffer(CameraDescriptors uniformBuffer, uint32_t currentImage) {
+            memcpy(mvpBuffers[currentImage].mappedMemory, &uniformBuffer, sizeof(uniformBuffer));
+        }
+
+        template <typename T> void UpdateUniformBuffer(T data, AllocatedBuffer &buffer) {
+            memcpy(buffer.mappedMemory, &data, sizeof(T));
         }
     };
 
@@ -90,8 +121,8 @@ namespace IC {
         return bindingDescription;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 3> GetVertexAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+    static std::array<VkVertexInputAttributeDescription, 4> GetVertexAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -100,12 +131,17 @@ namespace IC {
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(VertexData, color);
+        attributeDescriptions[1].offset = offsetof(VertexData, normal);
 
         attributeDescriptions[2].binding = 0;
         attributeDescriptions[2].location = 2;
-        attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[2].offset = offsetof(VertexData, texCoord);
+        attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[2].offset = offsetof(VertexData, color);
+
+        attributeDescriptions[3].binding = 0;
+        attributeDescriptions[3].location = 3;
+        attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[3].offset = offsetof(VertexData, texCoord);
         return attributeDescriptions;
     }
 } // namespace IC

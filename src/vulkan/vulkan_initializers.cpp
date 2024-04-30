@@ -71,6 +71,54 @@ namespace IC {
         return info;
     }
 
+    // descriptors
+    void WriteCommonDescriptors(VulkanDevice &device, SwapChain &swapChain, DescriptorWriter &writer,
+                                MeshRenderData &renderData) {
+        size_t maxFrames = SwapChain::MAX_FRAMES_IN_FLIGHT;
+        renderData.mvpBuffers.resize(maxFrames);
+        renderData.constantsBuffers.resize(maxFrames);
+
+        for (size_t i = 0; i < maxFrames; i++) {
+            // hard coded for now
+            CameraDescriptors projection{};
+            projection.proj = glm::perspective(
+                glm::radians(45.0f),
+                (float)swapChain.GetSwapChainExtent().width / swapChain.GetSwapChainExtent().height, 0.1f, 10.0f);
+
+            CreateAndFillBuffer(device, &projection, sizeof(CameraDescriptors), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                renderData.mvpBuffers[i]);
+
+            CreateAndFillBuffer(device, &renderData.materialData.constants, sizeof(MaterialConstants),
+                                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                                renderData.constantsBuffers[i]);
+
+            vkMapMemory(device.Device(), renderData.mvpBuffers[i].memory, 0, sizeof(CameraDescriptors), 0,
+                        &renderData.mvpBuffers[i].mappedMemory);
+            vkMapMemory(device.Device(), renderData.constantsBuffers[i].memory, 0, sizeof(MaterialConstants), 0,
+                        &renderData.constantsBuffers[i].mappedMemory);
+
+            writer.WriteBuffer(0, renderData.mvpBuffers[i].buffer, sizeof(CameraDescriptors), 0,
+                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+            writer.WriteBuffer(1, renderData.constantsBuffers[i].buffer, sizeof(MaterialConstants), 0,
+                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        }
+    }
+
+    void WriteLightDescriptors(VulkanDevice &device, size_t maxFrames, SceneLightDescriptors &lightData,
+                               DescriptorWriter &writer, std::vector<AllocatedBuffer> &lightBuffers) {
+        lightBuffers.resize(maxFrames);
+        for (size_t i = 0; i < maxFrames; i++) {
+            CreateAndFillBuffer(device, &lightData, sizeof(SceneLightDescriptors), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, lightBuffers[i]);
+            vkMapMemory(device.Device(), lightBuffers[i].memory, 0, sizeof(SceneLightDescriptors), 0,
+                        &lightBuffers[i].mappedMemory);
+
+            writer.WriteBuffer(2, lightBuffers[i].buffer, sizeof(SceneLightDescriptors), 0,
+                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        }
+    }
+
     // images
     void CreateImage(VulkanDevice *device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
                      VkImageUsageFlags usage, VkMemoryPropertyFlags properties, AllocatedImage &image) {
@@ -126,6 +174,10 @@ namespace IC {
         descriptorLayoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // uniform buffer object
         descriptorLayoutBuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // constants buffer object
 
+        if (materialData.flags & MaterialFlags::Lit) {
+            descriptorLayoutBuilder.AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        }
+
         VkDescriptorSetLayout descriptorSetLayout =
             descriptorLayoutBuilder.Build(device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
@@ -134,6 +186,11 @@ namespace IC {
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = 1;
         pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+
+        // push constants
+        VkPushConstantRange pushConstants = PushConstants<TransformationPushConstants>(VK_SHADER_STAGE_VERTEX_BIT);
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstants;
 
         VkPipelineLayout pipelineLayout;
         VK_CHECK(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
@@ -147,9 +204,10 @@ namespace IC {
         pipelineBuilder.SetShaders(vertShaderModule, fragShaderModule);
         pipelineBuilder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
         pipelineBuilder.SetPolygonMode(VK_POLYGON_MODE_FILL);
-        pipelineBuilder.SetCullMode(VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+        pipelineBuilder.SetCullMode(VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
         pipelineBuilder.SetMultisamplingNone();
-        pipelineBuilder.DisableBlending();
+        materialData.flags &MaterialFlags::Transparent ? pipelineBuilder.EnableBlending()
+                                                       : pipelineBuilder.DisableBlending();
         pipelineBuilder.EnableDepthTest();
         pipelineBuilder.SetColorAttachmentFormat(swapChain.GetSwapChainImageFormat());
         pipelineBuilder.SetDepthFormat(swapChain.GetSwapChainDepthFormat());
@@ -159,7 +217,7 @@ namespace IC {
         pipeline->layout = pipelineLayout;
         pipeline->descriptorSetLayout = descriptorSetLayout;
         pipeline->shaderModules = {vertShaderModule, fragShaderModule};
-        pipeline->transparent = false;
+        pipeline->materialFlags = materialData.flags;
 
         return pipeline;
     }
