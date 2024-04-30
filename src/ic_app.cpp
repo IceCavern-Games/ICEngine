@@ -86,11 +86,11 @@ bool App::Run(const Config *c) {
     Mesh lightMesh2;
     Material lightMaterial2{};
 
-    lightMesh2.pos = glm::vec3(1.0f, 1.7f, 1.0f);
+    lightMesh2.pos = glm::vec3(0.47f, 1.17f, 0.09f);
     lightMesh2.rotation = glm::vec3(0.0f);
     lightMesh2.scale = glm::vec3(0.1f);
     light2->color = {0.0f, 1.0f, 1.0f};
-    light2->ambientStrength = 0.5f;
+    light2->ambientStrength = 0.1f;
 
     lightMesh2.LoadFromFile("resources/models/sphere.obj");
     lightMaterial2.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
@@ -101,7 +101,7 @@ bool App::Run(const Config *c) {
     light2->previewMaterial = lightMaterial2;
 
     appRendererApi->AddLight(light);
-    // appRendererApi->AddLight(light2);
+    appRendererApi->AddLight(light2);
     appRendererApi->AddMesh(mesh, material);
     appRendererApi->AddImguiFunction(std::bind(&PointLight::ParameterGui, light.get()));
 
