@@ -14,8 +14,7 @@ namespace IC {
     public:
         static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-        SwapChain(VulkanDevice &deviceRef, VkExtent2D windowExtent);
-        SwapChain(VulkanDevice &deviceRef, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous);
+        SwapChain(VulkanDevice &deviceRef, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous = nullptr);
         ~SwapChain();
 
         SwapChain(const SwapChain &) = delete;
@@ -47,17 +46,18 @@ namespace IC {
                                            std::function<void(VkCommandBuffer cmd)> &&function);
 
     private:
-        void CreateSwapChain();
+        void CreateSwapChain(std::shared_ptr<SwapChain> &previous);
         void CreateImageViews();
         void CreateDepthResources();
         void CreateRenderPass();
         void CreateFramebuffers();
         void CreateSyncObjects();
-        void Init();
+        void Init(std::shared_ptr<SwapChain> &previous);
 
         // Helper functions
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
-        VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+        VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes,
+                                               bool previousSwapChain);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
         VkFormat _swapChainImageFormat;
@@ -77,7 +77,6 @@ namespace IC {
         VkExtent2D _windowExtent;
 
         VkSwapchainKHR _swapChain;
-        std::shared_ptr<SwapChain> _oldSwapChain;
 
         std::vector<VkSemaphore> _imageAvailableSemaphores;
         std::vector<VkSemaphore> _renderFinishedSemaphores;
