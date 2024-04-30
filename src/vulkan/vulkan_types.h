@@ -3,7 +3,7 @@
 #include <ic_graphics.h>
 #include <ic_log.h>
 
-#include "vulkan_constants.hpp"
+#include "vulkan_constants.h"
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_RADIANS
