@@ -10,21 +10,30 @@
 
 namespace IC {
     VulkanRenderer::VulkanRenderer(const RendererConfig &config)
-        : Renderer(config), _vulkanDevice(config.window),
-          _swapChain(_vulkanDevice, {static_cast<uint32_t>(config.width), static_cast<uint32_t>(config.height)}) {
+        : Renderer(config), _vulkanDevice(config.window), _windowExtent{static_cast<uint32_t>(config.width),
+                                                                        static_cast<uint32_t>(config.height)} {
         // find rendering functions
         VulkanBeginRendering =
             (PFN_vkCmdBeginRenderingKHR)vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdBeginRenderingKHR");
         VulkanEndRendering =
             (PFN_vkCmdEndRenderingKHR)vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdEndRenderingKHR");
 
+        RecreateSwapChain();
+
         CreateCommandBuffers();
         InitDescriptorAllocators();
         InitImGui(_vulkanDevice, window, _imGuiDescriptorAllocator.GetDescriptorPool(),
-                  _swapChain.GetSwapChainImageFormat());
+                  _swapChain->GetSwapChainImageFormat());
+
+        // window resize callback
+        glfwSetWindowUserPointer(window, this);
+        glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
     }
 
     VulkanRenderer::~VulkanRenderer() {
+        glfwSetWindowUserPointer(window, nullptr);
+        glfwSetFramebufferSizeCallback(window, nullptr);
+
         ImGui_ImplVulkan_Shutdown();
         _meshDescriptorAllocator.DestroyDescriptorPool(_vulkanDevice.Device());
         _imGuiDescriptorAllocator.DestroyDescriptorPool(_vulkanDevice.Device());
@@ -46,7 +55,7 @@ namespace IC {
     }
 
     void VulkanRenderer::CreateCommandBuffers() {
-        _cBuffers.resize(_swapChain.ImageCount());
+        _cBuffers.resize(_swapChain->ImageCount());
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -55,6 +64,12 @@ namespace IC {
         allocInfo.commandBufferCount = static_cast<uint32_t>(_cBuffers.size());
 
         VK_CHECK(vkAllocateCommandBuffers(_vulkanDevice.Device(), &allocInfo, _cBuffers.data()));
+    }
+
+    void VulkanRenderer::FreeCommandBuffers() {
+        vkFreeCommandBuffers(_vulkanDevice.Device(), _vulkanDevice.GetCommandPool(),
+                             static_cast<uint32_t>(_cBuffers.size()), _cBuffers.data());
+        _cBuffers.clear();
     }
 
     void VulkanRenderer::DrawFrame() {
@@ -70,14 +85,19 @@ namespace IC {
         rotation += 0.01f;
 
         uint32_t imageIndex;
-        auto result = _swapChain.AcquireNextImage(&imageIndex);
+        auto result = _swapChain->AcquireNextImage(&imageIndex);
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+            RecreateSwapChain();
+            return;
+        }
 
         if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             IC_CORE_ERROR("Failed to acquire swap chain image.");
             throw std::runtime_error("Failed to acquire swap chain image.");
         }
 
-        _swapChain.WaitForFrameFence(&imageIndex);
+        _swapChain->WaitForFrameFence(&imageIndex);
 
         vkResetCommandBuffer(_cBuffers[imageIndex], 0);
 
@@ -89,21 +109,21 @@ namespace IC {
         }
 
         VkRenderingAttachmentInfo colorAttachment = {.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-        colorAttachment.imageView = _swapChain.GetImageView(imageIndex);
+        colorAttachment.imageView = _swapChain->GetImageView(imageIndex);
         colorAttachment.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
         colorAttachment.clearValue = {0.1f, 0.1f, 0.1f, 1.0f};
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
         VkRenderingAttachmentInfo depthAttachment{.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-        depthAttachment.imageView = _swapChain.GetDepthImageView(imageIndex);
+        depthAttachment.imageView = _swapChain->GetDepthImageView(imageIndex);
         depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
         depthAttachment.clearValue.depthStencil = {1.0f, 0};
         depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
         VkRenderingInfo renderingInfo{.sType = VK_STRUCTURE_TYPE_RENDERING_INFO};
-        renderingInfo.renderArea = VkRect2D{VkOffset2D{0, 0}, _swapChain.GetSwapChainExtent()};
+        renderingInfo.renderArea = VkRect2D{VkOffset2D{0, 0}, _swapChain->GetSwapChainExtent()};
         renderingInfo.layerCount = 1;
         renderingInfo.colorAttachmentCount = 1;
         renderingInfo.pColorAttachments = &colorAttachment;
@@ -113,8 +133,8 @@ namespace IC {
         VkViewport viewport = {};
         viewport.x = 0;
         viewport.y = 0;
-        viewport.width = _swapChain.GetSwapChainExtent().width;
-        viewport.height = _swapChain.GetSwapChainExtent().height;
+        viewport.width = _swapChain->GetSwapChainExtent().width;
+        viewport.height = _swapChain->GetSwapChainExtent().height;
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 
@@ -123,13 +143,13 @@ namespace IC {
         VkRect2D scissor = {};
         scissor.offset.x = 0;
         scissor.offset.y = 0;
-        scissor.extent.width = _swapChain.GetSwapChainExtent().width;
-        scissor.extent.height = _swapChain.GetSwapChainExtent().height;
+        scissor.extent.width = _swapChain->GetSwapChainExtent().width;
+        scissor.extent.height = _swapChain->GetSwapChainExtent().height;
 
         vkCmdSetScissor(_cBuffers[imageIndex], 0, 1, &scissor);
 
-        TransitionImageLayout(_cBuffers[imageIndex], _swapChain.GetImage(imageIndex),
-                              _swapChain.GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED,
+        TransitionImageLayout(_cBuffers[imageIndex], _swapChain->GetImage(imageIndex),
+                              _swapChain->GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED,
                               VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
         VulkanBeginRendering(_cBuffers[imageIndex], &renderingInfo);
@@ -166,19 +186,19 @@ namespace IC {
 
             if (data.materialData.flags & MaterialFlags::Lit) {
                 data.UpdateUniformBuffer<SceneLightDescriptors>(descriptors,
-                                                                data.lightsBuffers[_swapChain.GetCurrentFrame()]);
+                                                                data.lightsBuffers[_swapChain->GetCurrentFrame()]);
             }
 
-            data.Bind(_cBuffers[imageIndex], data.renderPipeline->layout, _swapChain.GetCurrentFrame());
+            data.Bind(_cBuffers[imageIndex], data.renderPipeline->layout, _swapChain->GetCurrentFrame());
             data.Draw(_cBuffers[imageIndex]);
         }
 
         VulkanEndRendering(_cBuffers[imageIndex]);
 
-        RenderImGui(_cBuffers[imageIndex], _swapChain.GetImageView(imageIndex));
+        RenderImGui(_cBuffers[imageIndex], _swapChain->GetImageView(imageIndex));
 
-        TransitionImageLayout(_cBuffers[imageIndex], _swapChain.GetImage(imageIndex),
-                              _swapChain.GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        TransitionImageLayout(_cBuffers[imageIndex], _swapChain->GetImage(imageIndex),
+                              _swapChain->GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                               VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
         if (vkEndCommandBuffer(_cBuffers[imageIndex]) != VK_SUCCESS) {
@@ -186,14 +206,27 @@ namespace IC {
             throw std::runtime_error("Failed to record command buffer.");
         }
 
-        result = _swapChain.SubmitCommandBuffers(&_cBuffers[imageIndex], &imageIndex);
+        result = _swapChain->SubmitCommandBuffers(&_cBuffers[imageIndex], &imageIndex);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _framebufferResized) {
+            _framebufferResized = false;
+            RecreateSwapChain();
+            return;
+        }
+
         if (result != VK_SUCCESS) {
             IC_CORE_ERROR("Failed to present swap chain image.");
             throw std::runtime_error("Failed to present swap chain image.");
         }
 
         vkDeviceWaitIdle(_vulkanDevice.Device());
-    } // namespace IC
+    }
+
+    void VulkanRenderer::FramebufferResizeCallback(GLFWwindow *window, int width, int height) {
+        auto renderer = reinterpret_cast<VulkanRenderer *>(glfwGetWindowUserPointer(window));
+        renderer->_framebufferResized = true;
+        renderer->_windowExtent.width = width;
+        renderer->_windowExtent.height = height;
+    }
 
     void VulkanRenderer::InitDescriptorAllocators() {
         // mesh descriptor pool
@@ -226,7 +259,7 @@ namespace IC {
         MeshRenderData meshRenderData{.meshData = meshData, .materialData = materialData};
 
         meshRenderData.renderPipeline =
-            _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), _swapChain, materialData);
+            _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), *_swapChain.get(), materialData);
 
         // vertex buffers
         CreateAndFillBuffer(_vulkanDevice, meshData.vertices.data(),
@@ -241,7 +274,7 @@ namespace IC {
             _vulkanDevice.Device(), meshRenderData.renderPipeline->descriptorSetLayout, meshRenderData.descriptorSets);
 
         DescriptorWriter writer{};
-        WriteCommonDescriptors(_vulkanDevice, _swapChain, writer, meshRenderData);
+        WriteCommonDescriptors(_vulkanDevice, *_swapChain.get(), writer, meshRenderData);
         if (materialData.flags & MaterialFlags::Lit) {
             DirectionalLightDescriptors directional{};
             SceneLightDescriptors descriptors;
@@ -275,9 +308,26 @@ namespace IC {
         AddMesh(light->previewMesh, light->previewMaterial);
     }
 
+    void VulkanRenderer::RecreateSwapChain() {
+        while (_windowExtent.width == 0 || _windowExtent.height == 0) {
+            glfwWaitEvents();
+        }
+
+        vkDeviceWaitIdle(_vulkanDevice.Device());
+        if (_swapChain == nullptr) {
+            _swapChain = std::make_unique<SwapChain>(_vulkanDevice, _windowExtent);
+        } else {
+            _swapChain = std::make_unique<SwapChain>(_vulkanDevice, _windowExtent, std::move(_swapChain));
+            if (_swapChain->ImageCount() != _cBuffers.size()) {
+                FreeCommandBuffers();
+                CreateCommandBuffers();
+            }
+        }
+    }
+
     void VulkanRenderer::RenderImGui(VkCommandBuffer cBuffer, VkImageView targetImageView) {
         VkRenderingAttachmentInfo colorAttachment = AttachmentInfo(targetImageView, nullptr, VK_IMAGE_LAYOUT_GENERAL);
-        VkRenderingInfo renderInfo = RenderingInfo(_swapChain.GetSwapChainExtent(), &colorAttachment, nullptr);
+        VkRenderingInfo renderInfo = RenderingInfo(_swapChain->GetSwapChainExtent(), &colorAttachment, nullptr);
 
         VulkanBeginRendering(cBuffer, &renderInfo);
 

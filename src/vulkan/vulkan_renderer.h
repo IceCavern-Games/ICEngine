@@ -17,26 +17,35 @@ namespace IC {
         void AddMesh(Mesh &meshData, Material &materialData) override;
         void AddLight(std::shared_ptr<PointLight> light) override;
         void DrawFrame() override;
+        static void FramebufferResizeCallback(GLFWwindow *window, int width, int height);
 
     private:
         void CreateCommandBuffers();
+        void FreeCommandBuffers();
         void InitDescriptorAllocators();
+        void RecreateSwapChain();
         void RenderImGui(VkCommandBuffer cBuffer, VkImageView targetImageView);
 
+        // function pointers (for mac)
         PFN_vkCmdBeginRenderingKHR VulkanBeginRendering{};
         PFN_vkCmdEndRenderingKHR VulkanEndRendering{};
 
+        // vulkan Helper Classes
         VulkanDevice _vulkanDevice;
-        SwapChain _swapChain;
+        std::unique_ptr<SwapChain> _swapChain;
         PipelineManager _pipelineManager{};
         DescriptorAllocator _meshDescriptorAllocator{};
         DescriptorAllocator _imGuiDescriptorAllocator{};
 
+        // rendering data (mesh, lights)
         std::vector<MeshRenderData> _renderData{};
         std::vector<std::shared_ptr<PointLight>> _lightData;
 
+        // command buffers
         std::vector<VkCommandBuffer> _cBuffers{};
 
-        // render functions for mac support
+        // window information
+        VkExtent2D _windowExtent;
+        bool _framebufferResized = false;
     };
 } // namespace IC

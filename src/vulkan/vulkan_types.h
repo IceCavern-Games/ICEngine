@@ -78,7 +78,7 @@ namespace IC {
 
         bool operator<(const Pipeline &other) const {
             return pipeline < other.pipeline &&
-                   materialFlags & MaterialFlags::Transparent <= other.materialFlags & MaterialFlags::Transparent;
+                   (materialFlags & MaterialFlags::Transparent) <= (other.materialFlags & MaterialFlags::Transparent);
         }
     };
 
@@ -108,7 +108,7 @@ namespace IC {
             memcpy(mvpBuffers[currentImage].mappedMemory, &uniformBuffer, sizeof(uniformBuffer));
         }
 
-        template <typename T> void UpdateUniformBuffer(T data, AllocatedBuffer &buffer) {
+        template <typename T> void UpdateUniformBuffer(T &data, AllocatedBuffer &buffer) {
             memcpy(buffer.mappedMemory, &data, sizeof(T));
         }
     };
