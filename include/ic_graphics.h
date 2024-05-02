@@ -60,7 +60,8 @@ namespace IC {
     struct PointLight {
         // todo: move mesh and material to gameobject/gameobject components
         glm::vec3 color;
-        float ambientStrength;
+        glm::vec3 ambient;
+        glm::vec3 specular;
 
         Mesh previewMesh;
         Material previewMaterial;
@@ -69,7 +70,8 @@ namespace IC {
             ImGui::Begin("Point Light Parameters");
             ImGui::DragFloat3("Light Position", (float *)&previewMesh.pos, 0.01, FLT_MIN, FLT_MAX, "%.3f", 0);
             ImGui::ColorEdit3("Light Color", (float *)&color);
-            ImGui::DragFloat("Ambient Strength", &ambientStrength, 0.01, 0, 1.0, "%.3f", 0);
+            ImGui::ColorEdit3("Ambient", (float *)&ambient);
+            ImGui::ColorEdit3("Specular", (float *)&specular);
             ImGui::End();
         }
     };

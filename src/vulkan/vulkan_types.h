@@ -58,10 +58,10 @@ namespace IC {
     };
 
     struct PointLightDescriptors {
-        glm::vec3 pos;
-        glm::float32 ambientStrength;
-        glm::vec3 color;
-        glm::float32 padding;
+        alignas(16) glm::vec3 pos;
+        alignas(16) glm::vec3 amb;
+        alignas(16) glm::vec3 diff;
+        alignas(16) glm::vec3 spec;
     };
 
     struct SceneLightDescriptors {

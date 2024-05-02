@@ -4,6 +4,7 @@
 
 struct DirectionalLightData {
     vec3 dir;
+
     vec3 amb;
     vec3 diff;
     vec3 spec;
@@ -11,9 +12,10 @@ struct DirectionalLightData {
 
 struct PointLightData {
     vec3 pos;
-    float amb;
-    vec3 color;
-    float padding;
+
+    vec3 amb;
+    vec3 diff;
+    vec3 spec;
 };
 
 layout(binding = 2) uniform SceneLightData {
@@ -48,21 +50,19 @@ void main() {
 }
 
 vec3 calcPointLight(PointLightData light) {
-    float specStrength = 1.0;
-
     vec3 lightPos = vec3(mv.view * vec4(light.pos, 1.0));
     vec3 lightDir = normalize(lightPos - fragPos);
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = diff * light.color;
 
-    // specular calculation
     vec3 viewDir = normalize(-fragPos);
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-    vec3 specular = specStrength * spec * light.color;
 
-    vec3 ambientColor = light.color * light.amb;
-    return (ambientColor + diffuse + specular);    
+    vec3 ambient = light.amb;
+    vec3 diffuse = diff * light.diff;
+    vec3 specular = spec * light.spec;
+
+    return (ambient + diffuse + specular);
 }
 
 vec3 calcDirectionalLight(DirectionalLightData light) {

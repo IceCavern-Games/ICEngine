@@ -172,14 +172,17 @@ namespace IC {
             descriptors.directionalLight = {};
             for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
                 if (i >= _lightData.size()) {
-                    descriptors.pointLights[i] = {
-                        .pos = glm::vec3(0.0f), .ambientStrength = 0.0f, .color = glm::vec3(0.0f)};
+                    descriptors.pointLights[i] = {.pos = glm::vec3(0.0f),
+                                                  .amb = glm::vec3(0.0f),
+                                                  .diff = glm::vec3(0.0f),
+                                                  .spec = glm::vec3(0.0f)};
                     continue;
                 }
                 PointLightDescriptors pointLightDescriptors{};
                 pointLightDescriptors.pos = _lightData[i]->previewMesh.pos;
-                pointLightDescriptors.ambientStrength = _lightData[i]->ambientStrength;
-                pointLightDescriptors.color = _lightData[i]->color;
+                pointLightDescriptors.amb = _lightData[i]->ambient;
+                pointLightDescriptors.diff = _lightData[i]->color;
+                pointLightDescriptors.spec = _lightData[i]->specular;
 
                 descriptors.pointLights[i] = pointLightDescriptors;
             }
@@ -281,14 +284,17 @@ namespace IC {
             descriptors.directionalLight = directional;
             for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
                 if (i >= _lightData.size()) {
-                    descriptors.pointLights[i] = {
-                        .pos = glm::vec3(0.0f), .ambientStrength = 0.0f, .color = glm::vec3(0.0f)};
+                    descriptors.pointLights[i] = {.pos = glm::vec3(0.0f),
+                                                  .amb = glm::vec3(0.0f),
+                                                  .diff = glm::vec3(0.0f),
+                                                  .spec = glm::vec3(0.0f)};
                     continue;
                 }
                 PointLightDescriptors pointLightDescriptors{};
                 pointLightDescriptors.pos = _lightData[i]->previewMesh.pos;
-                pointLightDescriptors.ambientStrength = _lightData[i]->ambientStrength;
-                pointLightDescriptors.color = _lightData[i]->color;
+                pointLightDescriptors.amb = _lightData[i]->ambient;
+                pointLightDescriptors.diff = _lightData[i]->color;
+                pointLightDescriptors.spec = _lightData[i]->specular;
 
                 descriptors.pointLights[i] = pointLightDescriptors;
             }

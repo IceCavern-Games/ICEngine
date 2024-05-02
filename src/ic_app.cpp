@@ -71,7 +71,8 @@ bool App::Run(const Config *c) {
     lightMesh.rotation = glm::vec3(0.0f);
     lightMesh.scale = glm::vec3(0.1f);
     light->color = {1.0f, 1.0f, 1.0f};
-    light->ambientStrength = 0.5f;
+    light->ambient = glm::vec3(0.1f);
+    light->specular = glm::vec3(1.0f);
 
     lightMesh.LoadFromFile("resources/models/sphere.obj");
     lightMaterial.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
@@ -90,7 +91,8 @@ bool App::Run(const Config *c) {
     lightMesh2.rotation = glm::vec3(0.0f);
     lightMesh2.scale = glm::vec3(0.1f);
     light2->color = {0.0f, 1.0f, 1.0f};
-    light2->ambientStrength = 0.1f;
+    light2->ambient = glm::vec3(0.1f);
+    light2->specular = glm::vec3(1.0f);
 
     lightMesh2.LoadFromFile("resources/models/sphere.obj");
     lightMaterial2.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
