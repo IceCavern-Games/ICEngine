@@ -63,6 +63,11 @@ namespace IC {
         glm::vec3 ambient;
         glm::vec3 specular;
 
+        // lighting falloff parameters
+        float constant = 1.0f;
+        float linear = 0.09f;
+        float quadratic = 0.032f;
+
         Mesh previewMesh;
         Material previewMaterial;
 
@@ -72,6 +77,9 @@ namespace IC {
             ImGui::ColorEdit3("Light Color", (float *)&color);
             ImGui::ColorEdit3("Ambient", (float *)&ambient);
             ImGui::ColorEdit3("Specular", (float *)&specular);
+            ImGui::DragFloat("Constant", &constant, 0.01, 0.0, FLT_MAX);
+            ImGui::DragFloat("Linear", &linear, 0.01, 0.0, FLT_MAX);
+            ImGui::DragFloat("Quadratic", &quadratic, 0.01, 0.0, FLT_MAX);
             ImGui::End();
         }
     };

@@ -175,7 +175,10 @@ namespace IC {
                     descriptors.pointLights[i] = {.pos = glm::vec3(0.0f),
                                                   .amb = glm::vec3(0.0f),
                                                   .diff = glm::vec3(0.0f),
-                                                  .spec = glm::vec3(0.0f)};
+                                                  .spec = glm::vec3(0.0f),
+                                                  .cons = 1.0f,
+                                                  .lin = 1.0f,
+                                                  .quad = 1.0f};
                     continue;
                 }
                 PointLightDescriptors pointLightDescriptors{};
@@ -183,6 +186,9 @@ namespace IC {
                 pointLightDescriptors.amb = _lightData[i]->ambient;
                 pointLightDescriptors.diff = _lightData[i]->color;
                 pointLightDescriptors.spec = _lightData[i]->specular;
+                pointLightDescriptors.cons = _lightData[i]->constant;
+                pointLightDescriptors.lin = _lightData[i]->linear;
+                pointLightDescriptors.quad = _lightData[i]->quadratic;
 
                 descriptors.pointLights[i] = pointLightDescriptors;
             }
@@ -295,6 +301,9 @@ namespace IC {
                 pointLightDescriptors.amb = _lightData[i]->ambient;
                 pointLightDescriptors.diff = _lightData[i]->color;
                 pointLightDescriptors.spec = _lightData[i]->specular;
+                pointLightDescriptors.cons = _lightData[i]->constant;
+                pointLightDescriptors.lin = _lightData[i]->linear;
+                pointLightDescriptors.quad = _lightData[i]->quadratic;
 
                 descriptors.pointLights[i] = pointLightDescriptors;
             }
