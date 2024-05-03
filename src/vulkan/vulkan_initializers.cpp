@@ -119,6 +119,31 @@ namespace IC {
         }
     }
 
+    SceneLightDescriptors CreateSceneLightDescriptors(std::shared_ptr<DirectionalLight> &directionalLight,
+                                                      std::vector<std::shared_ptr<PointLight>> &pointLights) {
+        SceneLightDescriptors descriptors;
+        DirectionalLightDescriptors directionalDescriptors{};
+        directionalDescriptors.dir = directionalLight->direction;
+        directionalDescriptors.diff = directionalLight->color;
+        directionalDescriptors.amb = directionalLight->ambient;
+        directionalDescriptors.spec = directionalLight->specular;
+        descriptors.directionalLight = directionalDescriptors;
+        for (int i = 0; i < pointLights.size() && i < MAX_POINT_LIGHTS; i++) {
+            PointLightDescriptors pointLightDescriptors{};
+            pointLightDescriptors.pos = pointLights[i]->previewMesh.pos;
+            pointLightDescriptors.amb = pointLights[i]->ambient;
+            pointLightDescriptors.diff = pointLights[i]->color;
+            pointLightDescriptors.spec = pointLights[i]->specular;
+            pointLightDescriptors.cons = pointLights[i]->constant;
+            pointLightDescriptors.lin = pointLights[i]->linear;
+            pointLightDescriptors.quad = pointLights[i]->quadratic;
+
+            descriptors.pointLights[i] = pointLightDescriptors;
+        }
+        descriptors.numPointLights = pointLights.size() > MAX_POINT_LIGHTS ? MAX_POINT_LIGHTS : pointLights.size();
+        return descriptors;
+    }
+
     // images
     void CreateImage(VulkanDevice *device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
                      VkImageUsageFlags usage, VkMemoryPropertyFlags properties, AllocatedImage &image) {

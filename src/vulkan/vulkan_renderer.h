@@ -40,7 +40,7 @@ namespace IC {
 
         // rendering data (mesh, lights)
         std::vector<MeshRenderData> _renderData{};
-        std::vector<std::shared_ptr<PointLight>> _lightData;
+        std::vector<std::shared_ptr<PointLight>> _pointLights;
         std::shared_ptr<DirectionalLight> _directionalLight;
 
         // command buffers

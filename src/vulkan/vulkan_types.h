@@ -70,6 +70,7 @@ namespace IC {
     struct SceneLightDescriptors {
         DirectionalLightDescriptors directionalLight;
         std::array<PointLightDescriptors, MAX_POINT_LIGHTS> pointLights;
+        glm::uint32 numPointLights;
     };
 
     struct Pipeline {

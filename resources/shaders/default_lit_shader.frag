@@ -25,6 +25,7 @@ struct PointLightData {
 layout(binding = 2) uniform SceneLightData {
     DirectionalLightData directional;
     PointLightData[MAX_POINT_LIGHTS] pointLights;
+    uint numPointLights;
 }
 lightData;
 
@@ -47,7 +48,7 @@ vec3 calcDirectionalLight(DirectionalLightData light);
 void main() {
     vec3 result;
     result = calcDirectionalLight(lightData.directional);
-    for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
+    for (int i = 0; i < lightData.numPointLights; i++) {
         result += calcPointLight(lightData.pointLights[i]);
     }
     outColor = vec4(result * fragColor.rgb, 1.0);
