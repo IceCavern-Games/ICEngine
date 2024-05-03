@@ -102,10 +102,19 @@ bool App::Run(const Config *c) {
     light2->previewMesh = lightMesh2;
     light2->previewMaterial = lightMaterial2;
 
+    // directional light
+    std::shared_ptr<DirectionalLight> dirLight = std::make_shared<DirectionalLight>();
+    dirLight->direction = {0.0f, 0.0f, 1.0f};
+    dirLight->color = glm::vec3(1.0f);
+    dirLight->ambient = glm::vec3(0.2f);
+    dirLight->specular = glm::vec3(1.0f);
+
     appRendererApi->AddLight(light);
-    appRendererApi->AddLight(light2);
+    // appRendererApi->AddLight(light2);
+    appRendererApi->AddDirectionalLight(dirLight);
     appRendererApi->AddMesh(mesh, material);
     appRendererApi->AddImguiFunction(std::bind(&PointLight::ParameterGui, light.get()));
+    appRendererApi->AddImguiFunction(std::bind(&DirectionalLight::ParameterGui, dirLight.get()));
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();

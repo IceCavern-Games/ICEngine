@@ -66,7 +66,6 @@ vec3 calcPointLight(PointLightData light) {
     float diff = max(dot(normal, lightDir), 0.0);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     float attenuation = 1.0 / (light.cons + light.lin * lightDistance + light.quad * (lightDistance * lightDistance));
-    // float attenuation = 1.0 / (1.0 + .09 * lightDistance + .032 * (lightDistance * lightDistance));
 
     // final values
     vec3 ambient = light.amb * attenuation;
@@ -77,5 +76,19 @@ vec3 calcPointLight(PointLightData light) {
 }
 
 vec3 calcDirectionalLight(DirectionalLightData light) {
-    return vec3(0.0, 0.0, 0.0);
+    // vectors
+    vec3 lightDir = normalize(vec3(mv.view * vec4(-light.dir, 1.0)));
+    vec3 viewDir = normalize(-fragPos);
+    vec3 reflectDir = reflect(-lightDir, normal);
+
+    // scalar calculations
+    float diff = max(dot(normal, lightDir), 0.0);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+
+    // final values
+    vec3 ambient = light.amb;
+    vec3 diffuse = diff * light.diff;
+    vec3 specular = spec * light.spec;
+
+    return (ambient + diffuse + specular);
 }

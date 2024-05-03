@@ -56,8 +56,10 @@ namespace IC {
         void LoadFromFile(std::string fileName);
     };
 
+    struct Light {};
+
     // lights
-    struct PointLight {
+    struct PointLight : Light {
         // todo: move mesh and material to gameobject/gameobject components
         glm::vec3 color;
         glm::vec3 ambient;
@@ -80,6 +82,22 @@ namespace IC {
             ImGui::DragFloat("Constant", &constant, 0.01, 0.0, FLT_MAX);
             ImGui::DragFloat("Linear", &linear, 0.01, 0.0, FLT_MAX);
             ImGui::DragFloat("Quadratic", &quadratic, 0.01, 0.0, FLT_MAX);
+            ImGui::End();
+        }
+    };
+
+    struct DirectionalLight : Light {
+        glm::vec3 direction;
+        glm::vec3 color;
+        glm::vec3 ambient;
+        glm::vec3 specular;
+
+        void ParameterGui() {
+            ImGui::Begin("Directional Light Parameters");
+            ImGui::DragFloat3("Light Direction", (float *)&direction, 0.01);
+            ImGui::ColorEdit3("Light Color", (float *)&color);
+            ImGui::ColorEdit3("Ambient", (float *)&ambient);
+            ImGui::ColorEdit3("Specular", (float *)&specular);
             ImGui::End();
         }
     };

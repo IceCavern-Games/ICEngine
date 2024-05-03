@@ -169,7 +169,12 @@ namespace IC {
 
             // update light data
             SceneLightDescriptors descriptors;
-            descriptors.directionalLight = {};
+            DirectionalLightDescriptors directionalDescriptors{};
+            directionalDescriptors.dir = _directionalLight->direction;
+            directionalDescriptors.diff = _directionalLight->color;
+            directionalDescriptors.amb = _directionalLight->ambient;
+            directionalDescriptors.spec = _directionalLight->specular;
+            descriptors.directionalLight = directionalDescriptors;
             for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
                 if (i >= _lightData.size()) {
                     descriptors.pointLights[i] = {.pos = glm::vec3(0.0f),
@@ -285,9 +290,14 @@ namespace IC {
         DescriptorWriter writer{};
         WriteCommonDescriptors(_vulkanDevice, *_swapChain.get(), writer, meshRenderData);
         if (materialData.flags & MaterialFlags::Lit) {
-            DirectionalLightDescriptors directional{};
             SceneLightDescriptors descriptors;
-            descriptors.directionalLight = directional;
+            DirectionalLightDescriptors directionalDescriptors{};
+            directionalDescriptors.dir = _directionalLight->direction;
+            directionalDescriptors.diff = _directionalLight->color;
+            directionalDescriptors.amb = _directionalLight->ambient;
+            directionalDescriptors.spec = _directionalLight->specular;
+            descriptors.directionalLight = directionalDescriptors;
+
             for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
                 if (i >= _lightData.size()) {
                     descriptors.pointLights[i] = {.pos = glm::vec3(0.0f),
@@ -321,6 +331,10 @@ namespace IC {
     void VulkanRenderer::AddLight(std::shared_ptr<PointLight> light) {
         _lightData.push_back(light);
         AddMesh(light->previewMesh, light->previewMaterial);
+    }
+
+    void VulkanRenderer::AddDirectionalLight(std::shared_ptr<DirectionalLight> light) {
+        _directionalLight = light;
     }
 
     void VulkanRenderer::RecreateSwapChain() {

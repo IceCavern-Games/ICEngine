@@ -16,6 +16,7 @@ namespace IC {
 
         void AddMesh(Mesh &meshData, Material &materialData) override;
         void AddLight(std::shared_ptr<PointLight> light) override;
+        void AddDirectionalLight(std::shared_ptr<DirectionalLight> light) override;
         void DrawFrame() override;
         static void FramebufferResizeCallback(GLFWwindow *window, int width, int height);
 
@@ -40,6 +41,7 @@ namespace IC {
         // rendering data (mesh, lights)
         std::vector<MeshRenderData> _renderData{};
         std::vector<std::shared_ptr<PointLight>> _lightData;
+        std::shared_ptr<DirectionalLight> _directionalLight;
 
         // command buffers
         std::vector<VkCommandBuffer> _cBuffers{};
