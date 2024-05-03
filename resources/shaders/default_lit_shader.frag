@@ -56,12 +56,11 @@ void main() {
 
 vec3 calcPointLight(PointLightData light) {
     // vectors
-    vec3 lightPos = vec3(mv.view * vec4(light.pos, 1.0));
-    vec3 lightDir = normalize(lightPos - fragPos);
+    vec3 lightDir = normalize(light.pos - fragPos);
     vec3 viewDir = normalize(-fragPos);
     vec3 reflectDir = reflect(-lightDir, normal);
 
-    float lightDistance = length(lightPos - fragPos);
+    float lightDistance = length(light.pos - fragPos);
 
     // scalar calculations
     float diff = max(dot(normal, lightDir), 0.0);
@@ -78,7 +77,7 @@ vec3 calcPointLight(PointLightData light) {
 
 vec3 calcDirectionalLight(DirectionalLightData light) {
     // vectors
-    vec3 lightDir = normalize(vec3(mv.view * vec4(-light.dir, 1.0)));
+    vec3 lightDir = normalize(-light.dir);
     vec3 viewDir = normalize(-fragPos);
     vec3 reflectDir = reflect(-lightDir, normal);
 

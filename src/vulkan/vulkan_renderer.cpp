@@ -169,7 +169,8 @@ namespace IC {
 
             if (data.materialData.flags & MaterialFlags::Lit) {
                 // update light data
-                SceneLightDescriptors descriptors = CreateSceneLightDescriptors(_directionalLight, _pointLights);
+                SceneLightDescriptors descriptors =
+                    CreateSceneLightDescriptors(_directionalLight, _pointLights, pushConstants.view);
                 data.UpdateUniformBuffer<SceneLightDescriptors>(descriptors,
                                                                 data.lightsBuffers[_swapChain->GetCurrentFrame()]);
             }
@@ -261,7 +262,9 @@ namespace IC {
         DescriptorWriter writer{};
         WriteCommonDescriptors(_vulkanDevice, *_swapChain.get(), writer, meshRenderData);
         if (materialData.flags & MaterialFlags::Lit) {
-            SceneLightDescriptors descriptors = CreateSceneLightDescriptors(_directionalLight, _pointLights);
+            SceneLightDescriptors descriptors = CreateSceneLightDescriptors(
+                _directionalLight, _pointLights,
+                glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
             WriteLightDescriptors(_vulkanDevice, SwapChain::MAX_FRAMES_IN_FLIGHT, descriptors, writer,
                                   meshRenderData.lightsBuffers);
         }

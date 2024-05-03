@@ -34,7 +34,8 @@ namespace IC {
     void WriteLightDescriptors(VulkanDevice &device, size_t maxFrames, SceneLightDescriptors &lightData,
                                DescriptorWriter &writer, std::vector<AllocatedBuffer> &lightBuffers);
     SceneLightDescriptors CreateSceneLightDescriptors(std::shared_ptr<DirectionalLight> &directionalLight,
-                                                      std::vector<std::shared_ptr<PointLight>> &pointLights);
+                                                      std::vector<std::shared_ptr<PointLight>> &pointLights,
+                                                      glm::mat4 viewMat);
 
     // images
     void CreateImage(VulkanDevice *device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
