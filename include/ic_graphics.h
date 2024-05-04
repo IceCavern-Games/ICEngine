@@ -56,11 +56,19 @@ namespace IC {
         void LoadFromFile(std::string fileName);
     };
 
+    struct Light {};
+
     // lights
-    struct PointLight {
+    struct PointLight : Light {
         // todo: move mesh and material to gameobject/gameobject components
         glm::vec3 color;
-        float ambientStrength;
+        glm::vec3 ambient;
+        glm::vec3 specular;
+
+        // lighting falloff parameters
+        float constant = 1.0f;
+        float linear = 0.09f;
+        float quadratic = 0.032f;
 
         Mesh previewMesh;
         Material previewMaterial;
@@ -69,7 +77,27 @@ namespace IC {
             ImGui::Begin("Point Light Parameters");
             ImGui::DragFloat3("Light Position", (float *)&previewMesh.pos, 0.01, FLT_MIN, FLT_MAX, "%.3f", 0);
             ImGui::ColorEdit3("Light Color", (float *)&color);
-            ImGui::DragFloat("Ambient Strength", &ambientStrength, 0.01, 0, 1.0, "%.3f", 0);
+            ImGui::ColorEdit3("Ambient", (float *)&ambient);
+            ImGui::ColorEdit3("Specular", (float *)&specular);
+            ImGui::DragFloat("Constant", &constant, 0.01, 0.0, FLT_MAX);
+            ImGui::DragFloat("Linear", &linear, 0.01, 0.0, FLT_MAX);
+            ImGui::DragFloat("Quadratic", &quadratic, 0.01, 0.0, FLT_MAX);
+            ImGui::End();
+        }
+    };
+
+    struct DirectionalLight : Light {
+        glm::vec3 direction;
+        glm::vec3 color;
+        glm::vec3 ambient;
+        glm::vec3 specular;
+
+        void ParameterGui() {
+            ImGui::Begin("Directional Light Parameters");
+            ImGui::DragFloat3("Light Direction", (float *)&direction, 0.01);
+            ImGui::ColorEdit3("Light Color", (float *)&color);
+            ImGui::ColorEdit3("Ambient", (float *)&ambient);
+            ImGui::ColorEdit3("Specular", (float *)&specular);
             ImGui::End();
         }
     };

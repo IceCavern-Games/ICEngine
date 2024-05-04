@@ -58,15 +58,19 @@ namespace IC {
     };
 
     struct PointLightDescriptors {
-        glm::vec3 pos;
-        glm::float32 ambientStrength;
-        glm::vec3 color;
-        glm::float32 padding;
+        alignas(16) glm::vec3 pos;
+        alignas(16) glm::vec3 amb;
+        alignas(16) glm::vec3 diff;
+        alignas(16) glm::vec3 spec;
+        glm::float32 cons;
+        glm::float32 lin;
+        glm::float32 quad;
     };
 
     struct SceneLightDescriptors {
         DirectionalLightDescriptors directionalLight;
-        alignas(32) std::array<PointLightDescriptors, MAX_POINT_LIGHTS> pointLights;
+        std::array<PointLightDescriptors, MAX_POINT_LIGHTS> pointLights;
+        glm::uint32 numPointLights;
     };
 
     struct Pipeline {

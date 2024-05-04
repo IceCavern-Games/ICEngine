@@ -119,6 +119,36 @@ namespace IC {
         }
     }
 
+    SceneLightDescriptors CreateSceneLightDescriptors(std::shared_ptr<DirectionalLight> &directionalLight,
+                                                      std::vector<std::shared_ptr<PointLight>> &pointLights,
+                                                      glm::mat4 viewMat) {
+        SceneLightDescriptors descriptors;
+        glm::vec3 directionalViewSpaceDirection = viewMat * glm::vec4(directionalLight->direction, 1.0f);
+
+        DirectionalLightDescriptors directionalDescriptors{};
+        directionalDescriptors.dir = directionalViewSpaceDirection;
+        directionalDescriptors.diff = directionalLight->color;
+        directionalDescriptors.amb = directionalLight->ambient;
+        directionalDescriptors.spec = directionalLight->specular;
+        descriptors.directionalLight = directionalDescriptors;
+        for (int i = 0; i < pointLights.size() && i < MAX_POINT_LIGHTS; i++) {
+            glm::vec3 lightViewSpacePos = viewMat * glm::vec4(pointLights[i]->previewMesh.pos, 1.0f);
+
+            PointLightDescriptors pointLightDescriptors{};
+            pointLightDescriptors.pos = lightViewSpacePos;
+            pointLightDescriptors.amb = pointLights[i]->ambient;
+            pointLightDescriptors.diff = pointLights[i]->color;
+            pointLightDescriptors.spec = pointLights[i]->specular;
+            pointLightDescriptors.cons = pointLights[i]->constant;
+            pointLightDescriptors.lin = pointLights[i]->linear;
+            pointLightDescriptors.quad = pointLights[i]->quadratic;
+
+            descriptors.pointLights[i] = pointLightDescriptors;
+        }
+        descriptors.numPointLights = pointLights.size() > MAX_POINT_LIGHTS ? MAX_POINT_LIGHTS : pointLights.size();
+        return descriptors;
+    }
+
     // images
     void CreateImage(VulkanDevice *device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
                      VkImageUsageFlags usage, VkMemoryPropertyFlags properties, AllocatedImage &image) {
@@ -188,7 +218,8 @@ namespace IC {
         pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 
         // push constants
-        VkPushConstantRange pushConstants = PushConstants<TransformationPushConstants>(VK_SHADER_STAGE_VERTEX_BIT);
+        VkPushConstantRange pushConstants =
+            PushConstants<TransformationPushConstants>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstants;
 

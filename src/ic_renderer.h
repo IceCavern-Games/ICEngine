@@ -29,6 +29,7 @@ namespace IC {
 
         virtual void AddMesh(Mesh &meshData, Material &materialData) = 0;
         virtual void AddLight(std::shared_ptr<PointLight> light) = 0;
+        virtual void AddDirectionalLight(std::shared_ptr<DirectionalLight> light) = 0;
         virtual void DrawFrame() = 0;
 
         void AddImguiFunction(std::function<void()> function);

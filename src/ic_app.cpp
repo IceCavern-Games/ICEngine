@@ -53,7 +53,7 @@ bool App::Run(const Config *c) {
     Mesh mesh;
     Material material{};
 
-    mesh.LoadFromFile("resources/models/cube.obj");
+    mesh.LoadFromFile("resources/models/sphere.obj");
     mesh.pos = glm::vec3(0.0f);
     mesh.rotation = glm::vec3(0.0f);
     mesh.scale = glm::vec3(0.5f);
@@ -71,7 +71,8 @@ bool App::Run(const Config *c) {
     lightMesh.rotation = glm::vec3(0.0f);
     lightMesh.scale = glm::vec3(0.1f);
     light->color = {1.0f, 1.0f, 1.0f};
-    light->ambientStrength = 0.5f;
+    light->ambient = glm::vec3(0.1f);
+    light->specular = glm::vec3(1.0f);
 
     lightMesh.LoadFromFile("resources/models/sphere.obj");
     lightMaterial.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
@@ -86,11 +87,12 @@ bool App::Run(const Config *c) {
     Mesh lightMesh2;
     Material lightMaterial2{};
 
-    lightMesh2.pos = glm::vec3(1.0f, 1.7f, 1.0f);
+    lightMesh2.pos = glm::vec3(0.47f, 1.17f, 0.09f);
     lightMesh2.rotation = glm::vec3(0.0f);
     lightMesh2.scale = glm::vec3(0.1f);
     light2->color = {0.0f, 1.0f, 1.0f};
-    light2->ambientStrength = 0.5f;
+    light2->ambient = glm::vec3(0.1f);
+    light2->specular = glm::vec3(1.0f);
 
     lightMesh2.LoadFromFile("resources/models/sphere.obj");
     lightMaterial2.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
@@ -100,10 +102,19 @@ bool App::Run(const Config *c) {
     light2->previewMesh = lightMesh2;
     light2->previewMaterial = lightMaterial2;
 
+    // directional light
+    std::shared_ptr<DirectionalLight> dirLight = std::make_shared<DirectionalLight>();
+    dirLight->direction = {0.0f, 0.0f, 1.0f};
+    dirLight->color = glm::vec3(1.0f);
+    dirLight->ambient = glm::vec3(0.2f);
+    dirLight->specular = glm::vec3(1.0f);
+
     appRendererApi->AddLight(light);
-    appRendererApi->AddLight(light2);
+    // appRendererApi->AddLight(light2);
+    appRendererApi->AddDirectionalLight(dirLight);
     appRendererApi->AddMesh(mesh, material);
     appRendererApi->AddImguiFunction(std::bind(&PointLight::ParameterGui, light.get()));
+    appRendererApi->AddImguiFunction(std::bind(&DirectionalLight::ParameterGui, dirLight.get()));
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
