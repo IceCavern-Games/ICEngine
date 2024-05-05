@@ -73,13 +73,19 @@ namespace IC {
     }
 
     void VulkanRenderer::DrawFrame() {
+        double start = glfwGetTime();
+
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        for (auto function : imGuiFunctions) {
-            function();
+        for (auto keyValue : imGuiFunctions) {
+            keyValue.second();
         }
         ImGui::Render();
+
+        renderStats.drawCalls = 0;
+        renderStats.numTris = 0;
+        renderStats.frametime = 0.0f;
 
         static float rotation = 0.0f;
         rotation += 0.01f;
@@ -177,6 +183,8 @@ namespace IC {
 
             data.Bind(_cBuffers[imageIndex], data.renderPipeline->layout, _swapChain->GetCurrentFrame());
             data.Draw(_cBuffers[imageIndex]);
+            renderStats.drawCalls++;
+            renderStats.numTris += data.meshData.indexCount / 3;
         }
 
         VulkanEndRendering(_cBuffers[imageIndex]);
@@ -205,6 +213,10 @@ namespace IC {
         }
 
         vkDeviceWaitIdle(_vulkanDevice.Device());
+
+        double end = glfwGetTime();
+        double elapsed = end - start;
+        renderStats.frametime = elapsed * 1000.0f;
     }
 
     void VulkanRenderer::FramebufferResizeCallback(GLFWwindow *window, int width, int height) {

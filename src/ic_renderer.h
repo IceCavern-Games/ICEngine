@@ -20,6 +20,12 @@ namespace IC {
         int height;
     };
 
+    struct RenderStats {
+        float frametime;
+        uint32_t numTris;
+        uint32_t drawCalls;
+    };
+
     class Renderer {
     public:
         Renderer(const RendererConfig &config);
@@ -32,15 +38,19 @@ namespace IC {
         virtual void AddDirectionalLight(std::shared_ptr<DirectionalLight> light) = 0;
         virtual void DrawFrame() = 0;
 
-        void AddImguiFunction(std::function<void()> function);
-        void RemoveImguiFunction(std::function<void()> function);
+        void AddImguiFunction(std::string windowName, std::function<void()> function);
+        void RemoveImguiFunction(std::string windowName);
 
     protected:
-        std::vector<std::function<void()>> imGuiFunctions;
+        std::unordered_map<std::string, std::function<void()>> imGuiFunctions;
         GLFWwindow *window;
+        RenderStats renderStats{};
+
+        void RenderStatsGUI();
 
     private:
         Renderer(const Renderer &) = delete;
         Renderer &operator=(const Renderer &) = delete;
+        const std::string STATS_WINDOW_NAME = "render stats";
     };
 } // namespace IC
