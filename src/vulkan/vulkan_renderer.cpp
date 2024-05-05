@@ -78,8 +78,8 @@ namespace IC {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        for (auto function : imGuiFunctions) {
-            function();
+        for (auto keyValue : imGuiFunctions) {
+            keyValue.second();
         }
         ImGui::Render();
 

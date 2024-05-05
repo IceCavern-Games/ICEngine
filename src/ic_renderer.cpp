@@ -6,10 +6,12 @@
 
 namespace IC {
     Renderer::Renderer(const RendererConfig &config) : window(config.window) {
-        AddImguiFunction(std::bind(&Renderer::RenderStatsGUI, this));
+        AddImguiFunction(STATS_WINDOW_NAME, std::bind(&Renderer::RenderStatsGUI, this));
     }
 
-    Renderer::~Renderer() {}
+    Renderer::~Renderer() {
+        RemoveImguiFunction(STATS_WINDOW_NAME);
+    }
 
     Renderer *Renderer::MakeRenderer(const RendererConfig &rendererConfig) {
         switch (rendererConfig.rendererType) {
@@ -32,12 +34,11 @@ namespace IC {
         ImGui::End();
     }
 
-    void Renderer::AddImguiFunction(std::function<void()> function) {
-        imGuiFunctions.push_back(function);
+    void Renderer::AddImguiFunction(std::string windowName, std::function<void()> function) {
+        imGuiFunctions[windowName] = function;
     }
 
-    void Renderer::RemoveImguiFunction(std::function<void()> function) {
-        // unordered erase.
-        // std::erase(imGuiFunctions, function);
+    void Renderer::RemoveImguiFunction(std::string windowName) {
+        imGuiFunctions.erase(windowName);
     }
 } // namespace IC

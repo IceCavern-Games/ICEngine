@@ -113,8 +113,8 @@ bool App::Run(const Config *c) {
     // appRendererApi->AddLight(light2);
     appRendererApi->AddDirectionalLight(dirLight);
     appRendererApi->AddMesh(mesh, material);
-    appRendererApi->AddImguiFunction(std::bind(&PointLight::ParameterGui, light.get()));
-    appRendererApi->AddImguiFunction(std::bind(&DirectionalLight::ParameterGui, dirLight.get()));
+    appRendererApi->AddImguiFunction("point light", std::bind(&PointLight::ParameterGui, light.get()));
+    appRendererApi->AddImguiFunction("directional light", std::bind(&DirectionalLight::ParameterGui, dirLight.get()));
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
