@@ -123,7 +123,7 @@ namespace IC {
                                                       std::vector<std::shared_ptr<PointLight>> &pointLights,
                                                       glm::mat4 viewMat) {
         SceneLightDescriptors descriptors;
-        glm::vec3 directionalViewSpaceDirection = viewMat * glm::vec4(directionalLight->direction, 1.0f);
+        glm::vec3 directionalViewSpaceDirection = viewMat * glm::vec4(directionalLight->direction, 0.0f);
 
         DirectionalLightDescriptors directionalDescriptors{};
         directionalDescriptors.dir = directionalViewSpaceDirection;
