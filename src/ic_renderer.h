@@ -20,6 +20,12 @@ namespace IC {
         int height;
     };
 
+    struct RenderStats {
+        float frametime;
+        uint32_t numTris;
+        uint32_t drawCalls;
+    };
+
     class Renderer {
     public:
         Renderer(const RendererConfig &config);
@@ -38,6 +44,9 @@ namespace IC {
     protected:
         std::vector<std::function<void()>> imGuiFunctions;
         GLFWwindow *window;
+        RenderStats renderStats{};
+
+        void RenderStatsGUI();
 
     private:
         Renderer(const Renderer &) = delete;

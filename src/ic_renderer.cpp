@@ -5,7 +5,9 @@
 #include <algorithm>
 
 namespace IC {
-    Renderer::Renderer(const RendererConfig &config) : window(config.window) {}
+    Renderer::Renderer(const RendererConfig &config) : window(config.window) {
+        AddImguiFunction(std::bind(&Renderer::RenderStatsGUI, this));
+    }
 
     Renderer::~Renderer() {}
 
@@ -20,6 +22,14 @@ namespace IC {
         default:
             return nullptr;
         }
+    }
+
+    void Renderer::RenderStatsGUI() {
+        ImGui::Begin("Render Stats");
+        ImGui::Text("frametime %f ms (%f FPS)", renderStats.frametime, 1 / (renderStats.frametime / 1000));
+        ImGui::Text("rendered tris: %d", renderStats.numTris);
+        ImGui::Text("draw calls: %d", renderStats.drawCalls);
+        ImGui::End();
     }
 
     void Renderer::AddImguiFunction(std::function<void()> function) {
