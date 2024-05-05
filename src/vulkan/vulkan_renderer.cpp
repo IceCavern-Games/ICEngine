@@ -73,7 +73,7 @@ namespace IC {
     }
 
     void VulkanRenderer::DrawFrame() {
-        auto start = std::chrono::system_clock::now();
+        double start = glfwGetTime();
 
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -214,9 +214,9 @@ namespace IC {
 
         vkDeviceWaitIdle(_vulkanDevice.Device());
 
-        auto end = std::chrono::system_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        renderStats.frametime = elapsed.count() / 1000.0f;
+        double end = glfwGetTime();
+        double elapsed = end - start;
+        renderStats.frametime = elapsed * 1000.0f;
     }
 
     void VulkanRenderer::FramebufferResizeCallback(GLFWwindow *window, int width, int height) {
