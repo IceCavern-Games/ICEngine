@@ -18,6 +18,9 @@ namespace IC {
         GLFWwindow *window;
         int width;
         int height;
+
+        RendererConfig(GLFWwindow *window, RendererType rendererType, int width, int height)
+            : window(window), rendererType(rendererType), width(width), height(height) {}
     };
 
     class Renderer {

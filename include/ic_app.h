@@ -1,41 +1,23 @@
 #pragma once
 
-#include "ic_graphics.h"
+#include "ic_window.h"
+
+#include <string>
 
 namespace IC {
-    // Application Configuration
     struct Config {
-        // Application name.
-        const char *name = "ic";
-
-        // Which renderer to use.
-#ifdef IC_RENDERER_VULKAN
-        RendererType rendererType = RendererType::Vulkan;
-#else
-        RendererType rendererType = RendererType::None;
-#endif
-
-        // Starting width, in pixels.
-        // Depending on the OS DPI, the true window size may be a multiple of this.
-        int width = 1280;
-
-        // Starting height, in pixels.
-        // Depending on the OS DPI, the true window size may be a multiple of this.
-        int height = 720;
+        std::string name = "ic";
     };
 
-    // Application
-    namespace App {
-        // Runs the application.
-        bool Run(const Config *config);
+    class App {
+    public:
+        App(const Config &config);
+        virtual ~App();
 
-        // Checks if the Application is running yet.
-        bool IsRunning();
+        void Run();
 
-        // Exits the application.
-        void Exit();
-
-        // Gets the config data used to run the application.
-        const Config &GetConfig();
-    } // namespace App
+    private:
+        std::unique_ptr<Window> _window;
+        bool _isRunning = true;
+    };
 } // namespace IC

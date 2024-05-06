@@ -1,12 +1,16 @@
 #include <ic.h>
 
-using namespace IC;
+class Editor : public IC::App {
+public:
+    Editor(const IC::Config &config) : IC::App(config) {}
+    ~Editor() {}
+};
 
 int main() {
-    Config config;
+    IC::Config config;
     config.name = "ICEditor";
-    config.width = 1600;
-    config.height = 900;
 
-    App::Run(&config);
+    auto app = new Editor(config);
+    app->Run();
+    delete app;
 }
