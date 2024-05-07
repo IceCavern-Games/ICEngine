@@ -48,6 +48,8 @@ namespace IC {
 
         void RenderStatsGUI();
 
+        const std::string DEFAULT_TEXTURE_PATH = "resources/textures/default_texture.png";
+
     private:
         Renderer(const Renderer &) = delete;
         Renderer &operator=(const Renderer &) = delete;

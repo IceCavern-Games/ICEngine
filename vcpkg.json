@@ -3,6 +3,7 @@
         "glfw3",
         "glm",
         "spdlog",
+        "stb",
         "tinyobjloader",
         "vulkan",
         "vulkan-utility-libraries",

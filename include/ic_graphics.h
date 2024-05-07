@@ -22,6 +22,7 @@ namespace IC {
 
     struct MaterialConstants {
         glm::vec4 color;
+        std::string diffuseTexturePath;
     };
 
     struct Material {

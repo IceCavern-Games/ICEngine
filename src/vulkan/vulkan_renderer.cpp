@@ -10,8 +10,8 @@
 
 namespace IC {
     VulkanRenderer::VulkanRenderer(const RendererConfig &config)
-        : Renderer(config), _vulkanDevice(config.window), _windowExtent{static_cast<uint32_t>(config.width),
-                                                                        static_cast<uint32_t>(config.height)} {
+        : Renderer(config), _vulkanDevice(config.window),
+          _windowExtent{static_cast<uint32_t>(config.width), static_cast<uint32_t>(config.height)} {
         // find rendering functions
         VulkanBeginRendering =
             (PFN_vkCmdBeginRenderingKHR)vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdBeginRenderingKHR");
@@ -258,6 +258,14 @@ namespace IC {
 
         meshRenderData.renderPipeline =
             _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), *_swapChain.get(), materialData);
+
+        // create images
+        AllocatedImage texture;
+        if (!materialData.constants.diffuseTexturePath.empty()) {
+            LoadTextureImage(_vulkanDevice, materialData.constants.diffuseTexturePath, texture);
+        } else {
+            LoadTextureImage(_vulkanDevice, DEFAULT_TEXTURE_PATH, texture);
+        }
 
         // vertex buffers
         CreateAndFillBuffer(_vulkanDevice, meshData.vertices.data(),

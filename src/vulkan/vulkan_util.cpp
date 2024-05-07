@@ -2,6 +2,9 @@
 
 #include "vulkan_initializers.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #include <cstring>
 
 namespace IC {
@@ -105,16 +108,13 @@ namespace IC {
 
         vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
     }
-    // todo
-    /*
-    void LoadTextureImage(VulkanDevice &device, std::string texturePath, AllocatedImage &outImage)
-    {
-        int texWidth, texHeight, texChannels;
-        stbi_uc *pixels = stbi_load(texturePath.c_str(), &texWidth, &texHeight, &texChannels,
-    STBI_rgb_alpha); VkDeviceSize imageSize = texWidth * texHeight * 4;
 
-        if (!pixels)
-        {
+    void LoadTextureImage(VulkanDevice &device, std::string texturePath, AllocatedImage &image) {
+        int texWidth, texHeight, texChannels;
+        stbi_uc *pixels = stbi_load(texturePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+        if (!pixels) {
             IC_CORE_ERROR("Failed to load texture image.");
             throw std::runtime_error("Failed to load texture image.");
         }
@@ -122,10 +122,9 @@ namespace IC {
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
-        device.createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                            stagingBuffer, stagingBufferMemory);
+        device.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
+                            stagingBufferMemory);
 
         void *data;
         vkMapMemory(device.Device(), stagingBufferMemory, 0, imageSize, 0, &data);
@@ -134,26 +133,23 @@ namespace IC {
         stbi_image_free(pixels);
 
         VkCommandBuffer commandBuffer = device.BeginSingleTimeCommands();
-        Init::createImage(&device, texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB,
-                          VK_IMAGE_TILING_OPTIMAL,
-                          VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, outImage);
-        TransitionImageLayout(commandBuffer, outImage.image, VK_FORMAT_R8G8B8A8_SRGB,
-                                VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        CreateImage(&device, texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                    image);
+        TransitionImageLayout(commandBuffer, image.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED,
+                              VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         device.EndSingleTimeCommands(commandBuffer);
 
-        device.CopyBufferToImage(stagingBuffer, outImage.image, static_cast<uint32_t>(texWidth),
+        device.CopyBufferToImage(stagingBuffer, image.image, static_cast<uint32_t>(texWidth),
                                  static_cast<uint32_t>(texHeight), 1);
         commandBuffer = device.BeginSingleTimeCommands();
-        TransitionImageLayout(commandBuffer, outImage.image, VK_FORMAT_R8G8B8A8_SRGB,
-                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        TransitionImageLayout(commandBuffer, image.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         device.EndSingleTimeCommands(commandBuffer);
 
         vkDestroyBuffer(device.Device(), stagingBuffer, nullptr);
         vkFreeMemory(device.Device(), stagingBufferMemory, nullptr);
     }
-    */
 
     // destructors
     void DestroyPipeline(VkDevice device, const Pipeline &pipeline) {
