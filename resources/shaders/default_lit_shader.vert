@@ -10,7 +10,6 @@ layout(binding = 1) uniform MaterialConstants {
 }
 constants;
 
-
 layout(push_constant) uniform PushConstants {
     mat4 model;
     mat4 view;

@@ -22,7 +22,6 @@ namespace IC {
 
     struct MaterialConstants {
         glm::vec4 color;
-        std::string diffuseTexturePath;
     };
 
     struct Material {
@@ -30,6 +29,8 @@ namespace IC {
 
         std::string fragShaderData;
         std::string vertShaderData;
+
+        std::string diffuseTexturePath;
 
         MaterialConstants constants;
     };

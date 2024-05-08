@@ -42,6 +42,7 @@ if (IC_RENDERER_VULKAN)
         src/vulkan/vulkan_device.cpp
         src/vulkan/vulkan_initializers.cpp
         src/vulkan/vulkan_renderer.cpp
+        src/vulkan/vulkan_texture_manager.cpp
         src/vulkan/vulkan_util.cpp
     )
 
@@ -82,7 +83,7 @@ target_include_directories(${PROJECT_NAME}
 )
 
 # Renderer include directory
-target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR__RENDERER})
+target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR__RENDERER} ${Stb_INCLUDE_DIR})
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE ${LIBS}
@@ -90,7 +91,6 @@ target_link_libraries(${PROJECT_NAME}
         imgui::imgui
         spdlog::spdlog_header_only
         tinyobjloader::tinyobjloader
-        ${Stb_INCLUDE_DIR}
 )
 
 ##############################################

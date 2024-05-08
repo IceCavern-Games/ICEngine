@@ -6,6 +6,7 @@
 #include "pipelines.h"
 #include "swap_chain.h"
 #include "vulkan_initializers.h"
+#include "vulkan_texture_manager.h"
 #include "vulkan_types.h"
 
 namespace IC {
@@ -37,6 +38,7 @@ namespace IC {
         PipelineManager _pipelineManager{};
         DescriptorAllocator _meshDescriptorAllocator{};
         DescriptorAllocator _imGuiDescriptorAllocator{};
+        VulkanTextureManager _textureManager{_vulkanDevice};
 
         // rendering data (mesh, lights)
         std::vector<MeshRenderData> _renderData{};

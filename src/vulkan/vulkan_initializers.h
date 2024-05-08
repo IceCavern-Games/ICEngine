@@ -30,7 +30,7 @@ namespace IC {
 
     // descriptors
     void WriteCommonDescriptors(VulkanDevice &device, SwapChain &swapChain, DescriptorWriter &writer,
-                                MeshRenderData &renderData);
+                                MeshRenderData &renderData, AllocatedImage &texture, VkSampler textureSampler);
     void WriteLightDescriptors(VulkanDevice &device, size_t maxFrames, SceneLightDescriptors &lightData,
                                DescriptorWriter &writer, std::vector<AllocatedBuffer> &lightBuffers);
     SceneLightDescriptors CreateSceneLightDescriptors(std::shared_ptr<DirectionalLight> &directionalLight,

@@ -10,8 +10,8 @@
 
 namespace IC {
     VulkanRenderer::VulkanRenderer(const RendererConfig &config)
-        : Renderer(config), _vulkanDevice(config.window),
-          _windowExtent{static_cast<uint32_t>(config.width), static_cast<uint32_t>(config.height)} {
+        : Renderer(config), _vulkanDevice(config.window), _windowExtent{static_cast<uint32_t>(config.width),
+                                                                        static_cast<uint32_t>(config.height)} {
         // find rendering functions
         VulkanBeginRendering =
             (PFN_vkCmdBeginRenderingKHR)vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdBeginRenderingKHR");
@@ -259,12 +259,12 @@ namespace IC {
         meshRenderData.renderPipeline =
             _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), *_swapChain.get(), materialData);
 
-        // create images
-        AllocatedImage texture;
-        if (!materialData.constants.diffuseTexturePath.empty()) {
-            LoadTextureImage(_vulkanDevice, materialData.constants.diffuseTexturePath, texture);
+        // get/load textures
+        AllocatedImage *texture;
+        if (!meshRenderData.materialData.diffuseTexturePath.empty()) {
+            texture = _textureManager.GetTexture(meshRenderData.materialData.diffuseTexturePath);
         } else {
-            LoadTextureImage(_vulkanDevice, DEFAULT_TEXTURE_PATH, texture);
+            texture = _textureManager.GetTexture(DEFAULT_TEXTURE_PATH);
         }
 
         // vertex buffers
@@ -280,7 +280,8 @@ namespace IC {
             _vulkanDevice.Device(), meshRenderData.renderPipeline->descriptorSetLayout, meshRenderData.descriptorSets);
 
         DescriptorWriter writer{};
-        WriteCommonDescriptors(_vulkanDevice, *_swapChain.get(), writer, meshRenderData);
+        WriteCommonDescriptors(_vulkanDevice, *_swapChain.get(), writer, meshRenderData, *texture,
+                               _textureManager.DefaultSampler());
         if (materialData.flags & MaterialFlags::Lit) {
             SceneLightDescriptors descriptors = CreateSceneLightDescriptors(
                 _directionalLight, _pointLights,

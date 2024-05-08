@@ -22,7 +22,9 @@ struct PointLightData {
     float quad;
 };
 
-layout(binding = 2) uniform SceneLightData {
+layout(binding = 2) uniform sampler2D texSampler;
+
+layout(binding = 3) uniform SceneLightData {
     DirectionalLightData directional;
     PointLightData[MAX_POINT_LIGHTS] pointLights;
     uint numPointLights;
@@ -51,7 +53,7 @@ void main() {
     for (int i = 0; i < lightData.numPointLights; i++) {
         result += calcPointLight(lightData.pointLights[i]);
     }
-    outColor = vec4(result * fragColor.rgb, 1.0);
+    outColor = texture(texSampler, fragTexCoord) * vec4(result * fragColor.rgb, 1.0);
 }
 
 vec3 calcPointLight(PointLightData light) {

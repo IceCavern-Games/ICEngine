@@ -60,6 +60,7 @@ bool App::Run(const Config *c) {
     material.fragShaderData = "resources/shaders/default_lit_shader.frag.spv";
     material.vertShaderData = "resources/shaders/default_lit_shader.vert.spv";
     material.constants.color = {0.8f, 0.8f, 0.8f, 1.0f};
+    material.diffuseTexturePath = "resources/textures/Gravel026_1K_Color.png";
     material.flags = MaterialFlags::Lit;
 
     // test light

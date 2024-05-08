@@ -36,7 +36,7 @@ namespace IC {
 
     void DescriptorWriter::WriteImage(int binding, VkImageView image, VkSampler sampler, VkImageLayout layout,
                                       VkDescriptorType type) {
-        VkDescriptorImageInfo info = imageInfos.emplace_back(
+        VkDescriptorImageInfo &info = imageInfos.emplace_back(
             VkDescriptorImageInfo{.sampler = sampler, .imageView = image, .imageLayout = layout});
 
         VkWriteDescriptorSet write = {.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
@@ -76,7 +76,6 @@ namespace IC {
         for (VkWriteDescriptorSet &write : writes) {
             write.dstSet = set;
         }
-
         vkUpdateDescriptorSets(device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
     }
 
