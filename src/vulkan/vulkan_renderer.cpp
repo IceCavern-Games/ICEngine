@@ -253,19 +253,11 @@ namespace IC {
     }
 
     // Adds a mesh and associated material to list of renderable objects
-    void VulkanRenderer::AddMesh(Mesh &meshData, Material &materialData) {
-        MeshRenderData meshRenderData{.meshData = meshData, .materialData = materialData};
+    void VulkanRenderer::AddMesh(Mesh &meshData, Material *materialData) {
+        MeshRenderData meshRenderData{.meshData = meshData, .materialData = *materialData};
 
         meshRenderData.renderPipeline =
-            _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), *_swapChain.get(), materialData);
-
-        // get/load textures
-        AllocatedImage *texture;
-        if (!meshRenderData.materialData.diffuseTexturePath.empty()) {
-            texture = _textureManager.GetTexture(meshRenderData.materialData.diffuseTexturePath);
-        } else {
-            texture = _textureManager.GetTexture(DEFAULT_TEXTURE_PATH);
-        }
+            _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), *_swapChain.get(), *materialData);
 
         // vertex buffers
         CreateAndFillBuffer(_vulkanDevice, meshData.vertices.data(),
@@ -280,14 +272,21 @@ namespace IC {
             _vulkanDevice.Device(), meshRenderData.renderPipeline->descriptorSetLayout, meshRenderData.descriptorSets);
 
         DescriptorWriter writer{};
-        WriteCommonDescriptors(_vulkanDevice, *_swapChain.get(), writer, meshRenderData, *texture,
-                               _textureManager.DefaultSampler());
-        if (materialData.flags & MaterialFlags::Lit) {
+        WriteCommonDescriptors(_vulkanDevice, *_swapChain.get(), writer, meshRenderData);
+        if (materialData->flags & MaterialFlags::Lit) {
+            // load lit textures
+            LitMaterial *material = dynamic_cast<LitMaterial *>(materialData);
+            AllocatedImage *diffuse = _textureManager.GetTexture(material->diffuseTexturePath);
+            AllocatedImage *specular = _textureManager.GetTexture(material->specularTexturePath);
+
             SceneLightDescriptors descriptors = CreateSceneLightDescriptors(
                 _directionalLight, _pointLights,
                 glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+
             WriteLightDescriptors(_vulkanDevice, SwapChain::MAX_FRAMES_IN_FLIGHT, descriptors, writer,
                                   meshRenderData.lightsBuffers);
+            WriteLitMaterialDescriptors(_vulkanDevice, SwapChain::MAX_FRAMES_IN_FLIGHT, writer, *diffuse, *specular,
+                                        _textureManager.DefaultSampler());
         }
 
         for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {

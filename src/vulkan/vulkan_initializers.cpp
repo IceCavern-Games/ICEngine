@@ -73,7 +73,7 @@ namespace IC {
 
     // descriptors
     void WriteCommonDescriptors(VulkanDevice &device, SwapChain &swapChain, DescriptorWriter &writer,
-                                MeshRenderData &renderData, AllocatedImage &texture, VkSampler textureSampler) {
+                                MeshRenderData &renderData) {
         size_t maxFrames = SwapChain::MAX_FRAMES_IN_FLIGHT;
         renderData.mvpBuffers.resize(maxFrames);
         renderData.constantsBuffers.resize(maxFrames);
@@ -102,8 +102,6 @@ namespace IC {
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
             writer.WriteBuffer(1, renderData.constantsBuffers[i].buffer, sizeof(MaterialConstants), 0,
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-            writer.WriteImage(2, texture.view, textureSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                              VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
         }
     }
 
@@ -116,8 +114,18 @@ namespace IC {
             vkMapMemory(device.Device(), lightBuffers[i].memory, 0, sizeof(SceneLightDescriptors), 0,
                         &lightBuffers[i].mappedMemory);
 
-            writer.WriteBuffer(3, lightBuffers[i].buffer, sizeof(SceneLightDescriptors), 0,
+            writer.WriteBuffer(4, lightBuffers[i].buffer, sizeof(SceneLightDescriptors), 0,
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        }
+    }
+
+    void WriteLitMaterialDescriptors(VulkanDevice &device, size_t maxFrames, DescriptorWriter &writer,
+                                     AllocatedImage &diffuse, AllocatedImage &specular, VkSampler sampler) {
+        for (size_t i = 0; i < maxFrames; i++) {
+            writer.WriteImage(2, diffuse.view, sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                              VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            writer.WriteImage(3, specular.view, sampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                              VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
         }
     }
 
@@ -202,12 +210,13 @@ namespace IC {
     std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain, Material &materialData) {
         // descriptor sets
         DescriptorLayoutBuilder descriptorLayoutBuilder{};
-        descriptorLayoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);         // uniform buffer object
-        descriptorLayoutBuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);         // constants buffer object
-        descriptorLayoutBuilder.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // diffuse texture
+        descriptorLayoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // uniform buffer object
+        descriptorLayoutBuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // constants buffer object
 
         if (materialData.flags & MaterialFlags::Lit) {
-            descriptorLayoutBuilder.AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+            descriptorLayoutBuilder.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // diffuse texture
+            descriptorLayoutBuilder.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // specular mask
+            descriptorLayoutBuilder.AddBinding(4, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }
 
         VkDescriptorSetLayout descriptorSetLayout =

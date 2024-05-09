@@ -51,22 +51,19 @@ bool App::Run(const Config *c) {
     }
 
     Mesh mesh;
-    Material material{};
+    LitMaterial meshMaterial{};
 
     mesh.LoadFromFile("resources/models/sphere.obj");
     mesh.pos = glm::vec3(0.0f);
     mesh.rotation = glm::vec3(0.0f);
     mesh.scale = glm::vec3(0.5f);
-    material.fragShaderData = "resources/shaders/default_lit_shader.frag.spv";
-    material.vertShaderData = "resources/shaders/default_lit_shader.vert.spv";
-    material.constants.color = {0.8f, 0.8f, 0.8f, 1.0f};
-    material.diffuseTexturePath = "resources/textures/Gravel026_1K_Color.png";
-    material.flags = MaterialFlags::Lit;
+    meshMaterial.constants.color = {0.8f, 0.8f, 0.8f, 1.0f};
+    meshMaterial.diffuseTexturePath = "resources/textures/Gravel026_1K_Color.png";
 
     // test light
     std::shared_ptr<PointLight> light = std::make_shared<PointLight>();
     Mesh lightMesh;
-    Material lightMaterial{};
+    UnlitMaterial lightMaterial{};
 
     lightMesh.pos = glm::vec3(1.7f, 1.0f, 1.0f);
     lightMesh.rotation = glm::vec3(0.0f);
@@ -76,32 +73,10 @@ bool App::Run(const Config *c) {
     light->specular = glm::vec3(1.0f);
 
     lightMesh.LoadFromFile("resources/models/sphere.obj");
-    lightMaterial.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
-    lightMaterial.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
     lightMaterial.constants.color = {light->color.r, light->color.g, light->color.b, 1.0f};
 
     light->previewMesh = lightMesh;
-    light->previewMaterial = lightMaterial;
-
-    // test light 2
-    std::shared_ptr<PointLight> light2 = std::make_shared<PointLight>();
-    Mesh lightMesh2;
-    Material lightMaterial2{};
-
-    lightMesh2.pos = glm::vec3(0.47f, 1.17f, 0.09f);
-    lightMesh2.rotation = glm::vec3(0.0f);
-    lightMesh2.scale = glm::vec3(0.1f);
-    light2->color = {0.0f, 1.0f, 1.0f};
-    light2->ambient = glm::vec3(0.1f);
-    light2->specular = glm::vec3(1.0f);
-
-    lightMesh2.LoadFromFile("resources/models/sphere.obj");
-    lightMaterial2.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
-    lightMaterial2.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
-    lightMaterial2.constants.color = {light2->color.r, light2->color.g, light2->color.b, 1.0f};
-
-    light2->previewMesh = lightMesh2;
-    light2->previewMaterial = lightMaterial2;
+    light->previewMaterial = &lightMaterial;
 
     // directional light
     std::shared_ptr<DirectionalLight> dirLight = std::make_shared<DirectionalLight>();
@@ -113,7 +88,7 @@ bool App::Run(const Config *c) {
     appRendererApi->AddLight(light);
     // appRendererApi->AddLight(light2);
     appRendererApi->AddDirectionalLight(dirLight);
-    appRendererApi->AddMesh(mesh, material);
+    appRendererApi->AddMesh(mesh, &meshMaterial);
     appRendererApi->AddImguiFunction("point light", std::bind(&PointLight::ParameterGui, light.get()));
     appRendererApi->AddImguiFunction("directional light", std::bind(&DirectionalLight::ParameterGui, dirLight.get()));
 

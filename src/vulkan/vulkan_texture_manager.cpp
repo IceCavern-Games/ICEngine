@@ -9,6 +9,9 @@
 namespace IC {
     VulkanTextureManager::VulkanTextureManager(VulkanDevice &device) : _device{device} {
         CreateImageSampler(_device.Device(), _device.properties.limits.maxSamplerAnisotropy, _defaultSampler);
+
+        // load default image into manager
+        LoadTextureImage(DEFAULT_TEXTURE_PATH);
     }
     VulkanTextureManager::~VulkanTextureManager() {
         for (const auto &[key, image] : _textures) {
@@ -21,6 +24,10 @@ namespace IC {
     }
 
     AllocatedImage *VulkanTextureManager::GetTexture(std::string texturePath) {
+        if (texturePath.empty()) {
+            return _textures[DEFAULT_TEXTURE_PATH].get();
+        }
+
         if (_textures.contains(texturePath)) {
             return _textures[texturePath].get();
         } else {

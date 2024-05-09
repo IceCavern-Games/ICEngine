@@ -20,6 +20,8 @@ namespace IC {
         void operator=(const VulkanTextureManager &) = delete;
         void LoadTextureImage(std::string texturePath);
 
+        const std::string DEFAULT_TEXTURE_PATH = "resources/textures/default_texture.png";
+
         VulkanDevice &_device;
 
         VkSampler _defaultSampler;

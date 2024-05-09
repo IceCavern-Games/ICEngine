@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ic_material.h"
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
@@ -13,26 +15,6 @@ namespace IC {
     enum class RendererType {
         None = -1,
         Vulkan
-    };
-
-    enum MaterialFlags {
-        Lit = 1 << 0,
-        Transparent = 1 << 1
-    };
-
-    struct MaterialConstants {
-        glm::vec4 color;
-    };
-
-    struct Material {
-        MaterialFlags flags;
-
-        std::string fragShaderData;
-        std::string vertShaderData;
-
-        std::string diffuseTexturePath;
-
-        MaterialConstants constants;
     };
 
     struct VertexData {
@@ -73,7 +55,7 @@ namespace IC {
         float quadratic = 0.032f;
 
         Mesh previewMesh;
-        Material previewMaterial;
+        Material *previewMaterial;
 
         void ParameterGui() {
             ImGui::Begin("Point Light Parameters");
