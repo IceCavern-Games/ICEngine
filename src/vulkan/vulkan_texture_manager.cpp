@@ -37,6 +37,7 @@ namespace IC {
     }
 
     void VulkanTextureManager::LoadTextureImage(std::string texturePath) {
+        stbi_set_flip_vertically_on_load(true);
         auto texture = std::make_unique<AllocatedImage>();
         int texWidth, texHeight, texChannels;
         stbi_uc *pixels = stbi_load(texturePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);

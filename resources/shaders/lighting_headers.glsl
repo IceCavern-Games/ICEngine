@@ -20,6 +20,9 @@ struct PointLightData {
     float quad;
 };
 
+layout(binding = 2) uniform sampler2D diffuseTexture;
+layout(binding = 3) uniform sampler2D specularMask;
+
 layout(binding = 4) uniform SceneLightData {
     DirectionalLightData directional;
     PointLightData[MAX_POINT_LIGHTS] pointLights;
@@ -27,7 +30,7 @@ layout(binding = 4) uniform SceneLightData {
 }
 lightData;
 
-vec3 calcPointLight(PointLightData light, vec3 normal, vec3 fragPos) {
+vec3 calcPointLight(PointLightData light, vec2 texCoord, vec3 normal, vec3 fragPos) {
     // vectors
     vec3 lightDir = normalize(light.pos - fragPos);
     vec3 viewDir = normalize(-fragPos);
@@ -41,14 +44,14 @@ vec3 calcPointLight(PointLightData light, vec3 normal, vec3 fragPos) {
     float attenuation = 1.0 / (light.cons + light.lin * lightDistance + light.quad * (lightDistance * lightDistance));
 
     // final values
-    vec3 ambient = light.amb * attenuation;
-    vec3 diffuse = diff * light.diff * attenuation;
-    vec3 specular = spec * light.spec * attenuation;
+    vec3 ambient = light.amb * attenuation * vec3(texture(diffuseTexture, texCoord));
+    vec3 diffuse = diff * light.diff * attenuation * vec3(texture(diffuseTexture, texCoord));
+    vec3 specular = spec * light.spec * attenuation * vec3(texture(specularMask, texCoord));
 
     return (ambient + diffuse + specular);
 }
 
-vec3 calcDirectionalLight(DirectionalLightData light, vec3 normal, vec3 fragPos) {
+vec3 calcDirectionalLight(DirectionalLightData light, vec2 texCoord, vec3 normal, vec3 fragPos) {
     // vectors
     vec3 lightDir = normalize(-light.dir);
     vec3 viewDir = normalize(-fragPos);
@@ -59,9 +62,9 @@ vec3 calcDirectionalLight(DirectionalLightData light, vec3 normal, vec3 fragPos)
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
 
     // final values
-    vec3 ambient = light.amb;
-    vec3 diffuse = diff * light.diff;
-    vec3 specular = spec * light.spec;
+    vec3 ambient = light.amb * vec3(texture(diffuseTexture, texCoord));
+    vec3 diffuse = diff * light.diff * vec3(texture(diffuseTexture, texCoord));
+    vec3 specular = spec * light.spec * vec3(texture(specularMask, texCoord));
 
     return (ambient + diffuse + specular);
 }

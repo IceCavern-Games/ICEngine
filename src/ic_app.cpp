@@ -53,12 +53,13 @@ bool App::Run(const Config *c) {
     Mesh mesh;
     LitMaterial meshMaterial{};
 
-    mesh.LoadFromFile("resources/models/sphere.obj");
+    mesh.LoadFromFile("resources/models/backpack.obj");
     mesh.pos = glm::vec3(0.0f);
-    mesh.rotation = glm::vec3(0.0f);
+    mesh.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
     mesh.scale = glm::vec3(0.5f);
     meshMaterial.constants.color = {0.8f, 0.8f, 0.8f, 1.0f};
-    meshMaterial.diffuseTexturePath = "resources/textures/Gravel026_1K_Color.png";
+    meshMaterial.diffuseTexturePath = "resources/textures/backpack_diffuse.jpg";
+    meshMaterial.specularTexturePath = "resources/textures/backpack_specular.jpg";
 
     // test light
     std::shared_ptr<PointLight> light = std::make_shared<PointLight>();

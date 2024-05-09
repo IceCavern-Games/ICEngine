@@ -165,7 +165,8 @@ namespace IC {
 
             TransformationPushConstants pushConstants{};
             pushConstants.model = glm::translate(glm::mat4(1.0f), data.meshData.pos) *
-                                  glm::rotate(glm::mat4(1.0f), rotation, {0.0f, 0.0f, 1.0f}) *
+                                  glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), {1.0f, 0.0f, 0.0f}) *
+                                  glm::rotate(glm::mat4(1.0f), rotation, {0.0f, 1.0f, 0.0f}) *
                                   glm::scale(glm::mat4(1.0f), data.meshData.scale);
             pushConstants.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
