@@ -38,7 +38,7 @@ namespace IC {
         PipelineManager _pipelineManager{};
         DescriptorAllocator _meshDescriptorAllocator{};
         DescriptorAllocator _imGuiDescriptorAllocator{};
-        VulkanTextureManager _textureManager{_vulkanDevice};
+        VulkanTextureManager _textureManager;
 
         // rendering data (mesh, lights)
         std::vector<MeshRenderData> _renderData{};

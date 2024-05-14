@@ -6,6 +6,7 @@ AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: false
 BreakBeforeBraces: Attach
 ColumnLimit: 120
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
 IndentCaseLabels: false
 IndentWidth: 4
 NamespaceIndentation: All

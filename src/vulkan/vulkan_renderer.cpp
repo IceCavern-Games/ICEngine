@@ -10,8 +10,10 @@
 
 namespace IC {
     VulkanRenderer::VulkanRenderer(const RendererConfig &config)
-        : Renderer(config), _vulkanDevice(config.window), _windowExtent{static_cast<uint32_t>(config.width),
-                                                                        static_cast<uint32_t>(config.height)} {
+        : Renderer(config),
+          _textureManager{_vulkanDevice},
+          _vulkanDevice(config.window),
+          _windowExtent{static_cast<uint32_t>(config.width), static_cast<uint32_t>(config.height)} {
         // find rendering functions
         VulkanBeginRendering =
             (PFN_vkCmdBeginRenderingKHR)vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdBeginRenderingKHR");
