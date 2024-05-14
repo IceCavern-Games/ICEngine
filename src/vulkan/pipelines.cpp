@@ -226,7 +226,7 @@ namespace IC {
     }
 
     std::shared_ptr<Pipeline> PipelineManager::FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain,
-                                                                            Material &materialData) {
+                                                                            MaterialInstance &materialData) {
         for (auto pipeline : _createdPipelines) {
             if (IsPipelineSuitable(*pipeline, materialData)) {
                 return pipeline;
@@ -237,8 +237,8 @@ namespace IC {
         return pipeline;
     }
 
-    bool PipelineManager::IsPipelineSuitable(Pipeline &pipeline, Material &materialData) {
+    bool PipelineManager::IsPipelineSuitable(Pipeline &pipeline, MaterialInstance &materialData) {
         // todo: oversimplification, but will do for now
-        return pipeline.materialFlags == materialData.flags;
+        return pipeline.materialFlags == materialData.Template().flags;
     }
 } // namespace IC

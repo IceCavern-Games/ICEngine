@@ -3,6 +3,7 @@
 #include "descriptors.h"
 #include "swap_chain.h"
 #include "vulkan_device.h"
+#include "vulkan_texture_manager.h"
 #include "vulkan_types.h"
 
 #include <imgui.h>
@@ -29,10 +30,13 @@ namespace IC {
     }
 
     // descriptors
-    void WriteCommonDescriptors(VulkanDevice &device, SwapChain &swapChain, DescriptorWriter &writer,
-                                MeshRenderData &renderData);
+    void WritePerObjectDescriptors(VulkanDevice &device, SwapChain &swapChain, DescriptorWriter &writer,
+                                   MeshRenderData &renderData);
     void WriteLightDescriptors(VulkanDevice &device, size_t maxFrames, SceneLightDescriptors &lightData,
                                DescriptorWriter &writer, std::vector<AllocatedBuffer> &lightBuffers);
+    void WriteMaterialDescriptors(VulkanDevice &device, size_t maxFrames, DescriptorWriter &writer,
+                                  MaterialInstance &material, VulkanTextureManager &textureManager,
+                                  std::vector<AllocatedBuffer> &materialBuffers);
     SceneLightDescriptors CreateSceneLightDescriptors(std::shared_ptr<DirectionalLight> &directionalLight,
                                                       std::vector<std::shared_ptr<PointLight>> &pointLights,
                                                       glm::mat4 viewMat);
@@ -43,7 +47,8 @@ namespace IC {
     void CreateImageSampler(VkDevice device, float maxAnisotropy, VkSampler &textureSampler);
 
     // pipelines
-    std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain, Material &materialData);
+    std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain,
+                                                   MaterialInstance &materialData);
 
     // ImGui
     void InitImGui(VulkanDevice &device, GLFWwindow *window, VkDescriptorPool descriptorPool, VkFormat imageFormat);

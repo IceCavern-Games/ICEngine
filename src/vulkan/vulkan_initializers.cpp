@@ -72,11 +72,10 @@ namespace IC {
     }
 
     // descriptors
-    void WriteCommonDescriptors(VulkanDevice &device, SwapChain &swapChain, DescriptorWriter &writer,
-                                MeshRenderData &renderData) {
+    void WritePerObjectDescriptors(VulkanDevice &device, SwapChain &swapChain, DescriptorWriter &writer,
+                                   MeshRenderData &renderData) {
         size_t maxFrames = SwapChain::MAX_FRAMES_IN_FLIGHT;
         renderData.mvpBuffers.resize(maxFrames);
-        renderData.constantsBuffers.resize(maxFrames);
 
         for (size_t i = 0; i < maxFrames; i++) {
             // hard coded for now
@@ -89,18 +88,10 @@ namespace IC {
                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                 renderData.mvpBuffers[i]);
 
-            CreateAndFillBuffer(device, &renderData.materialData.constants, sizeof(MaterialConstants),
-                                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                                renderData.constantsBuffers[i]);
-
             vkMapMemory(device.Device(), renderData.mvpBuffers[i].memory, 0, sizeof(CameraDescriptors), 0,
                         &renderData.mvpBuffers[i].mappedMemory);
-            vkMapMemory(device.Device(), renderData.constantsBuffers[i].memory, 0, sizeof(MaterialConstants), 0,
-                        &renderData.constantsBuffers[i].mappedMemory);
 
             writer.WriteBuffer(0, renderData.mvpBuffers[i].buffer, sizeof(CameraDescriptors), 0,
-                               VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-            writer.WriteBuffer(1, renderData.constantsBuffers[i].buffer, sizeof(MaterialConstants), 0,
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }
     }
@@ -114,8 +105,43 @@ namespace IC {
             vkMapMemory(device.Device(), lightBuffers[i].memory, 0, sizeof(SceneLightDescriptors), 0,
                         &lightBuffers[i].mappedMemory);
 
-            writer.WriteBuffer(2, lightBuffers[i].buffer, sizeof(SceneLightDescriptors), 0,
+            writer.WriteBuffer(0, lightBuffers[i].buffer, sizeof(SceneLightDescriptors), 0,
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        }
+    }
+
+    void WriteMaterialDescriptors(VulkanDevice &device, size_t maxFrames, DescriptorWriter &writer,
+                                  MaterialInstance &material, VulkanTextureManager &textureManager,
+                                  std::vector<AllocatedBuffer> &materialBuffers) {
+        // create material buffer
+        materialBuffers.resize(maxFrames);
+        VkDeviceSize size = 0;
+        std::map<int, size_t> offsets;
+        for (auto &[index, binding] : material.BindingValues()) {
+            offsets[index] = size;
+
+            // uniform binding types only
+            if (binding.binding->bindingType == BindingType::Uniform) {
+                size += static_cast<VkDeviceSize>(binding.size);
+            }
+        }
+
+        for (size_t i = 0; i < maxFrames; i++) {
+            CreateAllocatedBuffer(device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                                  materialBuffers[i]);
+            vkMapMemory(device.Device(), materialBuffers[i].memory, 0, size, 0, &materialBuffers[i].mappedMemory);
+
+            for (auto &[index, binding] : material.BindingValues()) {
+                if (binding.binding->bindingType == BindingType::Texture) {
+                    AllocatedImage *texture = textureManager.GetTexture(*static_cast<std::string *>(binding.value));
+                    writer.WriteImage(index, texture->view, textureManager.DefaultSampler(),
+                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                      VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                } else {
+                    writer.WriteBuffer(index, materialBuffers[i].buffer, binding.size, offsets[index],
+                                       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+                }
+            }
         }
     }
 
@@ -193,29 +219,42 @@ namespace IC {
 
         if (vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
             IC_CORE_ERROR("Failed to create texture sampler.");
-            throw std::runtime_error("Failed to create texture sampler.");
         }
     }
 
     // pipelines
-    std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain, Material &materialData) {
-        // descriptor sets
+    std::shared_ptr<Pipeline> CreateOpaquePipeline(VkDevice device, SwapChain &swapChain,
+                                                   MaterialInstance &materialData) {
+        std::vector<VkDescriptorSetLayout> descriptorSets;
+        // per object descriptors
         DescriptorLayoutBuilder descriptorLayoutBuilder{};
-        descriptorLayoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // uniform buffer object
-        descriptorLayoutBuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // constants buffer object
+        descriptorLayoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // Camera Descriptors
+        descriptorSets.push_back(descriptorLayoutBuilder.Build(device, VK_SHADER_STAGE_VERTEX_BIT));
+        descriptorLayoutBuilder.Clear();
 
-        if (materialData.flags & MaterialFlags::Lit) {
-            descriptorLayoutBuilder.AddBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        // lit descriptors
+        if (materialData.Template().flags & MaterialFlags::Lit) {
+            descriptorLayoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // scene light data
+            descriptorSets.push_back(descriptorLayoutBuilder.Build(device, VK_SHADER_STAGE_FRAGMENT_BIT));
+            descriptorLayoutBuilder.Clear();
         }
 
-        VkDescriptorSetLayout descriptorSetLayout =
-            descriptorLayoutBuilder.Build(device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+        // material descriptors
+        for (auto &[index, value] : materialData.BindingValues()) {
+            descriptorLayoutBuilder.AddBinding(index, value.binding->bindingType == BindingType::Texture
+                                                          ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+                                                          : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        }
+        if (materialData.BindingValues().size() > 0) {
+            descriptorSets.push_back(
+                descriptorLayoutBuilder.Build(device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
+        }
 
         // pipeline layout
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 1;
-        pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+        pipelineLayoutInfo.setLayoutCount = descriptorSets.size();
+        pipelineLayoutInfo.pSetLayouts = descriptorSets.data();
 
         // push constants
         VkPushConstantRange pushConstants =
@@ -229,16 +268,18 @@ namespace IC {
         PipelineBuilder pipelineBuilder;
 
         pipelineBuilder.pipelineLayout = pipelineLayout;
-        VkShaderModule vertShaderModule = PipelineBuilder::CreateShaderModule(device, materialData.vertShaderData);
-        VkShaderModule fragShaderModule = PipelineBuilder::CreateShaderModule(device, materialData.fragShaderData);
+        VkShaderModule vertShaderModule =
+            PipelineBuilder::CreateShaderModule(device, materialData.Template().vertShaderData);
+        VkShaderModule fragShaderModule =
+            PipelineBuilder::CreateShaderModule(device, materialData.Template().fragShaderData);
 
         pipelineBuilder.SetShaders(vertShaderModule, fragShaderModule);
         pipelineBuilder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
         pipelineBuilder.SetPolygonMode(VK_POLYGON_MODE_FILL);
         pipelineBuilder.SetCullMode(VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
         pipelineBuilder.SetMultisamplingNone();
-        materialData.flags &MaterialFlags::Transparent ? pipelineBuilder.EnableBlending()
-                                                       : pipelineBuilder.DisableBlending();
+        materialData.Template().flags &MaterialFlags::Transparent ? pipelineBuilder.EnableBlending()
+                                                                  : pipelineBuilder.DisableBlending();
         pipelineBuilder.EnableDepthTest();
         pipelineBuilder.SetColorAttachmentFormat(swapChain.GetSwapChainImageFormat());
         pipelineBuilder.SetDepthFormat(swapChain.GetSwapChainDepthFormat());
@@ -246,9 +287,9 @@ namespace IC {
         std::shared_ptr<Pipeline> pipeline = std::make_shared<Pipeline>();
         pipeline->pipeline = pipelineBuilder.BuildPipeline(device);
         pipeline->layout = pipelineLayout;
-        pipeline->descriptorSetLayout = descriptorSetLayout;
+        pipeline->descriptorSetLayouts = descriptorSets;
         pipeline->shaderModules = {vertShaderModule, fragShaderModule};
-        pipeline->materialFlags = materialData.flags;
+        pipeline->materialFlags = materialData.Template().flags;
 
         return pipeline;
     }

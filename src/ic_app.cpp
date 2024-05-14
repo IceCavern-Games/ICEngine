@@ -51,56 +51,51 @@ bool App::Run(const Config *c) {
     }
 
     Mesh mesh;
-    Material material{};
+    MaterialTemplate meshMaterial{};
+    meshMaterial.AddBinding(0, "color", BindingType::Uniform, ShaderDataType::Vec4);
+    meshMaterial.AddBinding(1, "diffuse", BindingType::Texture, ShaderDataType::String);
+    meshMaterial.AddBinding(2, "specular", BindingType::Texture, ShaderDataType::String);
+    meshMaterial.vertShaderData = "resources/shaders/default_lit_shader.vert.spv";
+    meshMaterial.fragShaderData = "resources/shaders/default_lit_shader.frag.spv";
+    meshMaterial.flags = MaterialFlags::Lit;
 
-    mesh.LoadFromFile("resources/models/sphere.obj");
+    MaterialTemplate unlitMaterial{};
+    unlitMaterial.AddBinding(0, "color", BindingType::Uniform, ShaderDataType::Vec4);
+    unlitMaterial.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
+    unlitMaterial.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
+    unlitMaterial.flags = MaterialFlags::None;
+
+    glm::vec4 color = {0.8f, 0.8f, 0.8f, 1.0f};
+    std::string diffusePath = "resources/textures/backpack_diffuse.jpg";
+    std::string specularPath = "resources/textures/backpack_specular.jpg";
+
+    MaterialInstance meshMaterialInstance{meshMaterial};
+    meshMaterialInstance.SetBindingValue(0, &color, sizeof(glm::vec4));
+    meshMaterialInstance.SetBindingValue(1, &diffusePath, sizeof(diffusePath));
+    meshMaterialInstance.SetBindingValue(2, &specularPath, sizeof(specularPath));
+
+    MaterialInstance unlitMaterialInstance{unlitMaterial};
+    unlitMaterialInstance.SetBindingValue(0, &color, sizeof(glm::vec4));
+
+    mesh.LoadFromFile("resources/models/backpack.obj");
     mesh.pos = glm::vec3(0.0f);
-    mesh.rotation = glm::vec3(0.0f);
+    mesh.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
     mesh.scale = glm::vec3(0.5f);
-    material.fragShaderData = "resources/shaders/default_lit_shader.frag.spv";
-    material.vertShaderData = "resources/shaders/default_lit_shader.vert.spv";
-    material.constants.color = {0.8f, 0.8f, 0.8f, 1.0f};
-    material.flags = MaterialFlags::Lit;
 
     // test light
     std::shared_ptr<PointLight> light = std::make_shared<PointLight>();
-    Mesh lightMesh;
-    Material lightMaterial{};
-
-    lightMesh.pos = glm::vec3(1.7f, 1.0f, 1.0f);
-    lightMesh.rotation = glm::vec3(0.0f);
-    lightMesh.scale = glm::vec3(0.1f);
     light->color = {1.0f, 1.0f, 1.0f};
     light->ambient = glm::vec3(0.1f);
     light->specular = glm::vec3(1.0f);
 
+    Mesh lightMesh;
+    lightMesh.pos = glm::vec3(1.7f, 1.0f, 1.0f);
+    lightMesh.rotation = glm::vec3(0.0f);
+    lightMesh.scale = glm::vec3(0.1f);
     lightMesh.LoadFromFile("resources/models/sphere.obj");
-    lightMaterial.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
-    lightMaterial.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
-    lightMaterial.constants.color = {light->color.r, light->color.g, light->color.b, 1.0f};
 
     light->previewMesh = lightMesh;
-    light->previewMaterial = lightMaterial;
-
-    // test light 2
-    std::shared_ptr<PointLight> light2 = std::make_shared<PointLight>();
-    Mesh lightMesh2;
-    Material lightMaterial2{};
-
-    lightMesh2.pos = glm::vec3(0.47f, 1.17f, 0.09f);
-    lightMesh2.rotation = glm::vec3(0.0f);
-    lightMesh2.scale = glm::vec3(0.1f);
-    light2->color = {0.0f, 1.0f, 1.0f};
-    light2->ambient = glm::vec3(0.1f);
-    light2->specular = glm::vec3(1.0f);
-
-    lightMesh2.LoadFromFile("resources/models/sphere.obj");
-    lightMaterial2.fragShaderData = "resources/shaders/default_unlit_shader.frag.spv";
-    lightMaterial2.vertShaderData = "resources/shaders/default_unlit_shader.vert.spv";
-    lightMaterial2.constants.color = {light2->color.r, light2->color.g, light2->color.b, 1.0f};
-
-    light2->previewMesh = lightMesh2;
-    light2->previewMaterial = lightMaterial2;
+    light->previewMaterial = &unlitMaterialInstance;
 
     // directional light
     std::shared_ptr<DirectionalLight> dirLight = std::make_shared<DirectionalLight>();
@@ -110,9 +105,8 @@ bool App::Run(const Config *c) {
     dirLight->specular = glm::vec3(1.0f);
 
     appRendererApi->AddLight(light);
-    // appRendererApi->AddLight(light2);
     appRendererApi->AddDirectionalLight(dirLight);
-    appRendererApi->AddMesh(mesh, material);
+    appRendererApi->AddMesh(mesh, &meshMaterialInstance);
     appRendererApi->AddImguiFunction("point light", std::bind(&PointLight::ParameterGui, light.get()));
     appRendererApi->AddImguiFunction("directional light", std::bind(&DirectionalLight::ParameterGui, dirLight.get()));
 

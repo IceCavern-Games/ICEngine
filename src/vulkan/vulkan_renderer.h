@@ -6,6 +6,7 @@
 #include "pipelines.h"
 #include "swap_chain.h"
 #include "vulkan_initializers.h"
+#include "vulkan_texture_manager.h"
 #include "vulkan_types.h"
 
 namespace IC {
@@ -14,7 +15,7 @@ namespace IC {
         VulkanRenderer(const RendererConfig &config);
         virtual ~VulkanRenderer();
 
-        void AddMesh(Mesh &meshData, Material &materialData) override;
+        void AddMesh(Mesh &meshData, MaterialInstance *materialData) override;
         void AddLight(std::shared_ptr<PointLight> light) override;
         void AddDirectionalLight(std::shared_ptr<DirectionalLight> light) override;
         void DrawFrame() override;
@@ -37,6 +38,7 @@ namespace IC {
         PipelineManager _pipelineManager{};
         DescriptorAllocator _meshDescriptorAllocator{};
         DescriptorAllocator _imGuiDescriptorAllocator{};
+        VulkanTextureManager _textureManager;
 
         // rendering data (mesh, lights)
         std::vector<MeshRenderData> _renderData{};
