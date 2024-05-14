@@ -55,7 +55,7 @@ namespace IC {
         float quadratic = 0.032f;
 
         Mesh previewMesh;
-        Material *previewMaterial;
+        MaterialInstance *previewMaterial;
 
         void ParameterGui() {
             ImGui::Begin("Point Light Parameters");

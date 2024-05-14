@@ -44,10 +44,9 @@ namespace IC {
             DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.indexBuffer);
 
             for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-                DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.constantsBuffers[i]);
                 DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.mvpBuffers[i]);
+                DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.materialBuffers[i]);
             }
-
             for (auto buffer : mesh.lightsBuffers) {
                 DestroyAllocatedBuffer(_vulkanDevice.Device(), buffer);
             }
@@ -174,7 +173,7 @@ namespace IC {
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                                sizeof(TransformationPushConstants), &pushConstants);
 
-            if (data.materialData.flags & MaterialFlags::Lit) {
+            if (data.materialData.Template().flags & MaterialFlags::Lit) {
                 // update light data
                 SceneLightDescriptors descriptors =
                     CreateSceneLightDescriptors(_directionalLight, _pointLights, pushConstants.view);
@@ -254,7 +253,7 @@ namespace IC {
     }
 
     // Adds a mesh and associated material to list of renderable objects
-    void VulkanRenderer::AddMesh(Mesh &meshData, Material *materialData) {
+    void VulkanRenderer::AddMesh(Mesh &meshData, MaterialInstance *materialData) {
         MeshRenderData meshRenderData{.meshData = meshData, .materialData = *materialData};
 
         meshRenderData.renderPipeline =
@@ -270,28 +269,38 @@ namespace IC {
 
         // write descriptor sets
         _meshDescriptorAllocator.AllocateDescriptorSets(
-            _vulkanDevice.Device(), meshRenderData.renderPipeline->descriptorSetLayout, meshRenderData.descriptorSets);
+            _vulkanDevice.Device(), meshRenderData.renderPipeline->descriptorSetLayouts, meshRenderData.descriptorSets);
 
+        // per object descriptors (set 0)
         DescriptorWriter writer{};
-        WriteCommonDescriptors(_vulkanDevice, *_swapChain.get(), writer, meshRenderData);
-        if (materialData->flags & MaterialFlags::Lit) {
-            // load lit textures
-            LitMaterial *material = dynamic_cast<LitMaterial *>(materialData);
-            AllocatedImage *diffuse = _textureManager.GetTexture(material->diffuseTexturePath);
-            AllocatedImage *specular = _textureManager.GetTexture(material->specularTexturePath);
+        WritePerObjectDescriptors(_vulkanDevice, *_swapChain.get(), writer, meshRenderData);
+        for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+            writer.UpdateSet(_vulkanDevice.Device(), meshRenderData.descriptorSets[i][0]);
+        }
+        writer.Clear();
 
+        // scene data/lighting descriptors (set 1)
+        if (materialData->Template().flags & MaterialFlags::Lit) {
             SceneLightDescriptors descriptors = CreateSceneLightDescriptors(
                 _directionalLight, _pointLights,
                 glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
 
             WriteLightDescriptors(_vulkanDevice, SwapChain::MAX_FRAMES_IN_FLIGHT, descriptors, writer,
                                   meshRenderData.lightsBuffers);
-            WriteLitMaterialDescriptors(_vulkanDevice, SwapChain::MAX_FRAMES_IN_FLIGHT, writer, *diffuse, *specular,
-                                        _textureManager.DefaultSampler());
+
+            for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+                writer.UpdateSet(_vulkanDevice.Device(), meshRenderData.descriptorSets[i][1]);
+            }
+            writer.Clear();
         }
 
+        // material descriptors (set 1 or 2)
+        WriteMaterialDescriptors(_vulkanDevice, SwapChain::MAX_FRAMES_IN_FLIGHT, writer, *materialData, _textureManager,
+                                 meshRenderData.materialBuffers);
         for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-            writer.UpdateSet(_vulkanDevice.Device(), meshRenderData.descriptorSets[i]);
+            int index = materialData->Template().flags & MaterialFlags::Lit ? 2 : 1;
+            writer.UpdateSet(_vulkanDevice.Device(), meshRenderData.descriptorSets[i][index]);
+            meshRenderData.UpdateMaterialBuffer(i);
         }
 
         _renderData.push_back(meshRenderData);

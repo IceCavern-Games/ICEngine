@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace IC {
@@ -19,61 +20,56 @@ namespace IC {
         Texture
     };
 
+    enum class ShaderDataType {
+        Float32,
+        String,
+        Vec2,
+        Vec3,
+        Vec4
+    };
+
     struct ShaderBinding {
-        BindingType type;
-        void *data;
+        int index;
+        std::string name;
+        BindingType bindingType;
+        ShaderDataType dataType;
+    };
+
+    struct ShaderBindingValue {
+        ShaderBinding &binding;
+        void *value;
         size_t size;
     };
 
-    struct MaterialConstants {
-        glm::vec4 color;
-    };
-
-    struct LitMaterialProperties {
-        glm::vec3 specular;
-        glm::float32 shininess;
-    };
-
-    class Material {
+    class MaterialTemplate {
     public:
-        Material(){};
-        virtual ~Material(){};
+        MaterialTemplate(){};
+        ~MaterialTemplate(){};
+
+        void AddBinding(int bindingIndex, std::string name, BindingType bindingType, ShaderDataType dataType);
+
+        std::map<int, ShaderBinding> &Bindings() { return _bindings; }
 
         MaterialFlags flags;
 
         std::string fragShaderData;
         std::string vertShaderData;
 
-        MaterialConstants constants{};
-
-    protected:
-        std::vector<std::string> textures;
-        std::map<int, std::unique_ptr<ShaderBinding>> bindings;
-
     private:
+        std::map<int, ShaderBinding> _bindings;
     };
 
-    class LitMaterial : public Material {
+    class MaterialInstance {
     public:
-        LitMaterial();
-        ~LitMaterial(){};
+        MaterialInstance(MaterialTemplate &materialTemplate);
+        ~MaterialInstance(){};
 
-        std::string diffuseTexturePath;
-        std::string specularTexturePath;
-
-    protected:
-    private:
-        const std::string DEFAULT_VERT_SHADER_PATH = "resources/shaders/default_lit_shader.vert.spv";
-        const std::string DEFAULT_FRAG_SHADER_PATH = "resources/shaders/default_lit_shader.frag.spv";
-    };
-
-    class UnlitMaterial : public Material {
-    public:
-        UnlitMaterial();
-        ~UnlitMaterial(){};
+        std::map<int, std::shared_ptr<ShaderBindingValue>> BindingValues() { return _bindingValues; }
+        MaterialTemplate Template() { return _template; }
+        void SetBindingValue(int index, void *value, size_t size);
 
     private:
-        const std::string DEFAULT_VERT_SHADER_PATH = "resources/shaders/default_unlit_shader.vert.spv";
-        const std::string DEFAULT_FRAG_SHADER_PATH = "resources/shaders/default_unlit_shader.frag.spv";
+        MaterialTemplate &_template;
+        std::map<int, std::shared_ptr<ShaderBindingValue>> _bindingValues;
     };
 } // namespace IC

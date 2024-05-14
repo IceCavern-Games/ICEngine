@@ -15,7 +15,7 @@ namespace IC {
         VulkanRenderer(const RendererConfig &config);
         virtual ~VulkanRenderer();
 
-        void AddMesh(Mesh &meshData, Material *materialData) override;
+        void AddMesh(Mesh &meshData, MaterialInstance *materialData) override;
         void AddLight(std::shared_ptr<PointLight> light) override;
         void AddDirectionalLight(std::shared_ptr<DirectionalLight> light) override;
         void DrawFrame() override;

@@ -5,6 +5,12 @@
 #include <cstring>
 
 namespace IC {
+    void CreateAllocatedBuffer(VulkanDevice &device, VkDeviceSize bufferSize, VkBufferUsageFlags bufferUsageFlags,
+                               VkMemoryPropertyFlags memoryPropertyFlags, AllocatedBuffer &allocatedBuffer) {
+        device.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | bufferUsageFlags, memoryPropertyFlags,
+                            allocatedBuffer.buffer, allocatedBuffer.memory);
+    }
+
     void CreateAndFillBuffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize,
                              VkBufferUsageFlags bufferUsageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
                              AllocatedBuffer &allocatedBuffer) {
@@ -110,7 +116,9 @@ namespace IC {
     void DestroyPipeline(VkDevice device, const Pipeline &pipeline) {
         vkDestroyPipeline(device, pipeline.pipeline, nullptr);
         vkDestroyPipelineLayout(device, pipeline.layout, nullptr);
-        vkDestroyDescriptorSetLayout(device, pipeline.descriptorSetLayout, nullptr);
+        for (auto layout : pipeline.descriptorSetLayouts) {
+            vkDestroyDescriptorSetLayout(device, layout, nullptr);
+        }
         for (auto shader : pipeline.shaderModules) {
             vkDestroyShaderModule(device, shader, nullptr);
         }

@@ -20,15 +20,15 @@ struct PointLightData {
     float quad;
 };
 
-layout(binding = 2) uniform sampler2D diffuseTexture;
-layout(binding = 3) uniform sampler2D specularMask;
-
-layout(binding = 4) uniform SceneLightData {
+layout(set = 1, binding = 0) uniform SceneLightData {
     DirectionalLightData directional;
     PointLightData[MAX_POINT_LIGHTS] pointLights;
     uint numPointLights;
 }
 lightData;
+
+layout(set = 2, binding = 1) uniform sampler2D diffuseTexture;
+layout(set = 2, binding = 2) uniform sampler2D specularMask;
 
 vec3 calcPointLight(PointLightData light, vec2 texCoord, vec3 normal, vec3 fragPos) {
     // vectors

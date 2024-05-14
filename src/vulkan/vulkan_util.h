@@ -4,6 +4,8 @@
 #include "vulkan_types.h"
 
 namespace IC {
+    void CreateAllocatedBuffer(VulkanDevice &device, VkDeviceSize bufferSize, VkBufferUsageFlags bufferUsageFlags,
+                               VkMemoryPropertyFlags memoryPropertyFlags, AllocatedBuffer &allocatedBuffer);
     void CreateAndFillBuffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize,
                              VkBufferUsageFlags bufferUsageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
                              AllocatedBuffer &allocatedBuffer);

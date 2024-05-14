@@ -91,20 +91,35 @@ namespace IC {
         VK_CHECK(vkCreateDescriptorPool(device, &poolInfo, nullptr, &_pool));
     }
 
-    void DescriptorAllocator::AllocateDescriptorSets(VkDevice device, VkDescriptorSetLayout layout,
-                                                     std::vector<VkDescriptorSet> &descriptorSets) {
-        std::vector<VkDescriptorSetLayout> layouts(SwapChain::MAX_FRAMES_IN_FLIGHT, layout);
+    void DescriptorAllocator::AllocateDescriptorSets(VkDevice device, std::vector<VkDescriptorSetLayout> layouts,
+                                                     std::vector<std::vector<VkDescriptorSet>> &descriptorSets) {
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         allocInfo.descriptorPool = _pool;
-        allocInfo.descriptorSetCount = static_cast<uint32_t>(SwapChain::MAX_FRAMES_IN_FLIGHT);
+        allocInfo.descriptorSetCount = static_cast<uint32_t>(layouts.size());
         allocInfo.pSetLayouts = layouts.data();
 
         descriptorSets.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
-        VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()));
+        for (int i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+            descriptorSets[i].resize(layouts.size());
+            VK_CHECK(vkAllocateDescriptorSets(device, &allocInfo, descriptorSets[i].data()));
+        }
     }
 
     void DescriptorAllocator::DestroyDescriptorPool(VkDevice device) {
         vkDestroyDescriptorPool(device, _pool, nullptr);
     }
+
+    /*MaterialDescriptorManager::MaterialDescriptorManager() {}
+
+    MaterialDescriptorManager::~MaterialDescriptorManager() {}
+
+    VkDescriptorSet MaterialDescriptorManager::GetMaterialDescriptors(std::shared_ptr<MaterialTemplate> &material) {
+        if (!_materialDescriptorMap.contains(material)) {
+            AddMaterial(material);
+        }
+        return _materialDescriptorMap[material];
+    }
+
+    void MaterialDescriptorManager::AddMaterial(std::shared_ptr<MaterialTemplate> &material) {}*/
 } // namespace IC

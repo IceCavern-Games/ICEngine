@@ -32,8 +32,8 @@ namespace IC {
     public:
         void CreateDescriptorPool(VkDevice device, std::vector<VkDescriptorPoolSize> poolSizes, uint32_t maxSets,
                                   VkDescriptorPoolCreateFlags flags = 0);
-        void AllocateDescriptorSets(VkDevice device, VkDescriptorSetLayout layout,
-                                    std::vector<VkDescriptorSet> &descriptorSets);
+        void AllocateDescriptorSets(VkDevice device, std::vector<VkDescriptorSetLayout> layouts,
+                                    std::vector<std::vector<VkDescriptorSet>> &descriptorSets);
         void DestroyDescriptorPool(VkDevice device);
 
         VkDescriptorPool GetDescriptorPool() { return _pool; }
