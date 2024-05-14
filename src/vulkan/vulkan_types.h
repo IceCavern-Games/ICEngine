@@ -116,10 +116,10 @@ namespace IC {
         void UpdateMaterialBuffer(uint32_t currentImage) {
             VkDeviceSize offset = 0;
             for (auto &[index, binding] : materialData.BindingValues()) {
-                if (binding->binding.bindingType == BindingType::Uniform) {
-                    memcpy(static_cast<char *>(materialBuffers[currentImage].mappedMemory) + offset, binding->value,
-                           binding->size);
-                    offset += binding->size;
+                if (binding.binding->bindingType == BindingType::Uniform) {
+                    memcpy(static_cast<char *>(materialBuffers[currentImage].mappedMemory) + offset, binding.value,
+                           binding.size);
+                    offset += binding.size;
                 }
             }
         }

@@ -28,15 +28,15 @@ namespace IC {
             return _textures[DEFAULT_TEXTURE_PATH].get();
         }
 
-        if (_textures.contains(texturePath)) {
-            return _textures[texturePath].get();
-        } else {
-            LoadTextureImage(texturePath);
-            return _textures[texturePath].get();
+        if (!_textures.contains(texturePath)) {
+            if (!LoadTextureImage(texturePath)) {
+                return _textures[DEFAULT_TEXTURE_PATH].get();
+            }
         }
+        return _textures[texturePath].get();
     }
 
-    void VulkanTextureManager::LoadTextureImage(std::string texturePath) {
+    bool VulkanTextureManager::LoadTextureImage(std::string texturePath) {
         stbi_set_flip_vertically_on_load(true);
         auto texture = std::make_unique<AllocatedImage>();
         int texWidth, texHeight, texChannels;
@@ -45,6 +45,7 @@ namespace IC {
 
         if (!pixels) {
             IC_CORE_ERROR("Failed to load texture image.");
+            return false;
         }
 
         VkBuffer stagingBuffer;
@@ -79,5 +80,6 @@ namespace IC {
         vkFreeMemory(_device.Device(), stagingBufferMemory, nullptr);
 
         _textures[texturePath] = std::move(texture);
+        return true;
     }
 } // namespace IC

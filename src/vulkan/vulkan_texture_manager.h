@@ -18,7 +18,7 @@ namespace IC {
     private:
         VulkanTextureManager(const VulkanTextureManager &) = delete;
         void operator=(const VulkanTextureManager &) = delete;
-        void LoadTextureImage(std::string texturePath);
+        bool LoadTextureImage(std::string texturePath);
 
         const std::string DEFAULT_TEXTURE_PATH = "resources/textures/default_texture.png";
 

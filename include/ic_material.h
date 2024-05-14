@@ -36,7 +36,7 @@ namespace IC {
     };
 
     struct ShaderBindingValue {
-        ShaderBinding &binding;
+        ShaderBinding *binding;
         void *value;
         size_t size;
     };
@@ -64,12 +64,12 @@ namespace IC {
         MaterialInstance(MaterialTemplate &materialTemplate);
         ~MaterialInstance(){};
 
-        std::map<int, std::shared_ptr<ShaderBindingValue>> BindingValues() { return _bindingValues; }
-        MaterialTemplate Template() { return _template; }
+        std::map<int, ShaderBindingValue> &BindingValues() { return _bindingValues; }
+        MaterialTemplate &Template() { return _template; }
         void SetBindingValue(int index, void *value, size_t size);
 
     private:
         MaterialTemplate &_template;
-        std::map<int, std::shared_ptr<ShaderBindingValue>> _bindingValues;
+        std::map<int, ShaderBindingValue> _bindingValues;
     };
 } // namespace IC

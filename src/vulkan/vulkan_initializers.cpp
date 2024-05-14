@@ -121,8 +121,8 @@ namespace IC {
             offsets[index] = size;
 
             // uniform binding types only
-            if (binding->binding.bindingType == BindingType::Uniform) {
-                size += static_cast<VkDeviceSize>(binding->size);
+            if (binding.binding->bindingType == BindingType::Uniform) {
+                size += static_cast<VkDeviceSize>(binding.size);
             }
         }
 
@@ -132,13 +132,13 @@ namespace IC {
             vkMapMemory(device.Device(), materialBuffers[i].memory, 0, size, 0, &materialBuffers[i].mappedMemory);
 
             for (auto &[index, binding] : material.BindingValues()) {
-                if (binding->binding.bindingType == BindingType::Texture) {
-                    AllocatedImage *texture = textureManager.GetTexture(*static_cast<std::string *>(binding->value));
+                if (binding.binding->bindingType == BindingType::Texture) {
+                    AllocatedImage *texture = textureManager.GetTexture(*static_cast<std::string *>(binding.value));
                     writer.WriteImage(index, texture->view, textureManager.DefaultSampler(),
                                       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                                       VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
                 } else {
-                    writer.WriteBuffer(index, materialBuffers[i].buffer, binding->size, offsets[index],
+                    writer.WriteBuffer(index, materialBuffers[i].buffer, binding.size, offsets[index],
                                        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
                 }
             }
@@ -240,8 +240,8 @@ namespace IC {
         }
 
         // material descriptors
-        for (auto [index, value] : materialData.BindingValues()) {
-            descriptorLayoutBuilder.AddBinding(index, value->binding.bindingType == BindingType::Texture
+        for (auto &[index, value] : materialData.BindingValues()) {
+            descriptorLayoutBuilder.AddBinding(index, value.binding->bindingType == BindingType::Texture
                                                           ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
                                                           : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }

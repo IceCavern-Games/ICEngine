@@ -91,7 +91,7 @@ namespace IC {
         VK_CHECK(vkCreateDescriptorPool(device, &poolInfo, nullptr, &_pool));
     }
 
-    void DescriptorAllocator::AllocateDescriptorSets(VkDevice device, std::vector<VkDescriptorSetLayout> layouts,
+    void DescriptorAllocator::AllocateDescriptorSets(VkDevice device, std::vector<VkDescriptorSetLayout> &layouts,
                                                      std::vector<std::vector<VkDescriptorSet>> &descriptorSets) {
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
