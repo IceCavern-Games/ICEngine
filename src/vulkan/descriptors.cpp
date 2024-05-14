@@ -109,17 +109,4 @@ namespace IC {
     void DescriptorAllocator::DestroyDescriptorPool(VkDevice device) {
         vkDestroyDescriptorPool(device, _pool, nullptr);
     }
-
-    /*MaterialDescriptorManager::MaterialDescriptorManager() {}
-
-    MaterialDescriptorManager::~MaterialDescriptorManager() {}
-
-    VkDescriptorSet MaterialDescriptorManager::GetMaterialDescriptors(std::shared_ptr<MaterialTemplate> &material) {
-        if (!_materialDescriptorMap.contains(material)) {
-            AddMaterial(material);
-        }
-        return _materialDescriptorMap[material];
-    }
-
-    void MaterialDescriptorManager::AddMaterial(std::shared_ptr<MaterialTemplate> &material) {}*/
 } // namespace IC
