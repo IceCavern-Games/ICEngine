@@ -1,5 +1,6 @@
 #pragma once
 
+#include "vulkan_allocator.h"
 #include "vulkan_device.h"
 #include "vulkan_types.h"
 
@@ -8,7 +9,7 @@
 namespace IC {
     class VulkanTextureManager {
     public:
-        VulkanTextureManager(VulkanDevice &device);
+        VulkanTextureManager(VulkanDevice &device, VulkanAllocator &allocator);
         ~VulkanTextureManager();
 
         AllocatedImage *GetTexture(std::string texturePath);
@@ -22,6 +23,7 @@ namespace IC {
 
         const std::string DEFAULT_TEXTURE_PATH = "resources/textures/default_texture.png";
 
+        VulkanAllocator &_allocator;
         VulkanDevice &_device;
 
         VkSampler _defaultSampler;

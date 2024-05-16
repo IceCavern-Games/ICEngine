@@ -10,6 +10,18 @@
 #include <iostream>
 
 namespace IC {
+    VmaAllocatorCreateInfo AllocatorCreateInfo(VulkanDevice &device) {
+        VmaAllocatorCreateInfo info = {};
+
+        info.flags = 0;
+        info.vulkanApiVersion = VULKAN_API_VERSION;
+        info.physicalDevice = device.PhysicalDevice();
+        info.device = device.Device();
+        info.instance = device.Instance();
+
+        return info;
+    }
+
     VkRenderingAttachmentInfo AttachmentInfo(VkImageView view, VkClearValue *clear, VkImageLayout layout) {
         VkRenderingAttachmentInfo info = {.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
         info.pNext = nullptr;
@@ -43,6 +55,42 @@ namespace IC {
         return info;
     }
 
+    VkImageCreateInfo ImageCreateInfo(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+                                      VkImageUsageFlags usage) {
+        VkImageCreateInfo info{};
+        info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        info.imageType = VK_IMAGE_TYPE_2D;
+        info.extent.width = static_cast<uint32_t>(width);
+        info.extent.height = static_cast<uint32_t>(height);
+        info.extent.depth = 1;
+        info.mipLevels = 1;
+        info.arrayLayers = 1;
+        info.format = format;
+        info.tiling = tiling;
+        info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        info.usage = usage;
+        info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        info.samples = VK_SAMPLE_COUNT_1_BIT;
+        info.flags = 0;
+
+        return info;
+    }
+
+    VkImageViewCreateInfo ImageViewCreateInfo(VkFormat format, VkImage image, VkImageAspectFlags aspect) {
+        VkImageViewCreateInfo info{};
+        info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        info.image = image;
+        info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        info.format = format;
+        info.subresourceRange.aspectMask = aspect;
+        info.subresourceRange.baseMipLevel = 0;
+        info.subresourceRange.levelCount = 1;
+        info.subresourceRange.baseArrayLayer = 0;
+        info.subresourceRange.layerCount = 1;
+
+        return info;
+    }
+
     VkRenderingInfo RenderingInfo(VkExtent2D renderExtent, VkRenderingAttachmentInfo *colorAttachment,
                                   VkRenderingAttachmentInfo *depthAttachment) {
         VkRenderingInfo info{.sType = VK_STRUCTURE_TYPE_RENDERING_INFO};
@@ -72,7 +120,7 @@ namespace IC {
     }
 
     // descriptors
-    void WritePerObjectDescriptors(VulkanDevice &device, SwapChain &swapChain, DescriptorWriter &writer,
+    void WritePerObjectDescriptors(VulkanAllocator &allocator, SwapChain &swapChain, DescriptorWriter &writer,
                                    MeshRenderData &renderData) {
         size_t maxFrames = SwapChain::MAX_FRAMES_IN_FLIGHT;
         renderData.mvpBuffers.resize(maxFrames);
@@ -84,33 +132,30 @@ namespace IC {
                 glm::radians(45.0f),
                 (float)swapChain.GetSwapChainExtent().width / swapChain.GetSwapChainExtent().height, 0.1f, 10.0f);
 
-            CreateAndFillBuffer(device, &projection, sizeof(CameraDescriptors), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                renderData.mvpBuffers[i]);
+            allocator.CreateBuffer(sizeof(CameraDescriptors), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO,
+                                   renderData.mvpBuffers[i]);
 
-            vkMapMemory(device.Device(), renderData.mvpBuffers[i].memory, 0, sizeof(CameraDescriptors), 0,
-                        &renderData.mvpBuffers[i].mappedMemory);
+            memcpy(renderData.mvpBuffers[i].allocInfo.pMappedData, &projection, sizeof(CameraDescriptors));
 
             writer.WriteBuffer(0, renderData.mvpBuffers[i].buffer, sizeof(CameraDescriptors), 0,
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }
     }
 
-    void WriteLightDescriptors(VulkanDevice &device, size_t maxFrames, SceneLightDescriptors &lightData,
+    void WriteLightDescriptors(VulkanAllocator &allocator, size_t maxFrames, SceneLightDescriptors &lightData,
                                DescriptorWriter &writer, std::vector<AllocatedBuffer> &lightBuffers) {
         lightBuffers.resize(maxFrames);
         for (size_t i = 0; i < maxFrames; i++) {
-            CreateAndFillBuffer(device, &lightData, sizeof(SceneLightDescriptors), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, lightBuffers[i]);
-            vkMapMemory(device.Device(), lightBuffers[i].memory, 0, sizeof(SceneLightDescriptors), 0,
-                        &lightBuffers[i].mappedMemory);
+            allocator.CreateBuffer(sizeof(SceneLightDescriptors), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                   VMA_MEMORY_USAGE_AUTO, lightBuffers[i]);
 
+            memcpy(lightBuffers[i].allocInfo.pMappedData, &lightData, sizeof(SceneLightDescriptors));
             writer.WriteBuffer(0, lightBuffers[i].buffer, sizeof(SceneLightDescriptors), 0,
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }
     }
 
-    void WriteMaterialDescriptors(VulkanDevice &device, size_t maxFrames, DescriptorWriter &writer,
+    void WriteMaterialDescriptors(VulkanAllocator &allocator, size_t maxFrames, DescriptorWriter &writer,
                                   MaterialInstance &material, VulkanTextureManager &textureManager,
                                   std::vector<AllocatedBuffer> &materialBuffers) {
         // create material buffer
@@ -127,9 +172,7 @@ namespace IC {
         }
 
         for (size_t i = 0; i < maxFrames; i++) {
-            CreateAllocatedBuffer(device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                                  materialBuffers[i]);
-            vkMapMemory(device.Device(), materialBuffers[i].memory, 0, size, 0, &materialBuffers[i].mappedMemory);
+            allocator.CreateBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, materialBuffers[i]);
 
             for (auto &[index, binding] : material.BindingValues()) {
                 if (binding.binding->bindingType == BindingType::Texture) {
@@ -176,27 +219,6 @@ namespace IC {
     }
 
     // images
-    void CreateImage(VulkanDevice *device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
-                     VkImageUsageFlags usage, VkMemoryPropertyFlags properties, AllocatedImage &image) {
-        VkImageCreateInfo imageInfo{};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = static_cast<uint32_t>(width);
-        imageInfo.extent.height = static_cast<uint32_t>(height);
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.format = format;
-        imageInfo.tiling = tiling;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = usage;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.flags = 0;
-
-        device->CreateImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image.image, image.memory);
-        image.view = device->CreateImageView(image.image, format);
-    }
 
     void CreateImageSampler(VkDevice device, float maxAnisotropy, VkSampler &textureSampler) {
         VkSamplerCreateInfo samplerInfo{};

@@ -34,11 +34,12 @@ namespace IC {
 
         // vulkan Helper Classes
         VulkanDevice _vulkanDevice;
+        VulkanAllocator _allocator;
+        VulkanTextureManager _textureManager;
         std::unique_ptr<SwapChain> _swapChain;
         PipelineManager _pipelineManager{};
         DescriptorAllocator _meshDescriptorAllocator{};
         DescriptorAllocator _imGuiDescriptorAllocator{};
-        VulkanTextureManager _textureManager;
 
         // rendering data (mesh, lights)
         std::vector<MeshRenderData> _renderData{};

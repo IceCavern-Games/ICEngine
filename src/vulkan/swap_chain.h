@@ -1,5 +1,6 @@
 #pragma once
 
+#include "vulkan_allocator.h"
 #include "vulkan_device.h"
 
 #include <vulkan/vulkan.h>
@@ -14,7 +15,8 @@ namespace IC {
     public:
         static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-        SwapChain(VulkanDevice &deviceRef, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous = nullptr);
+        SwapChain(VulkanDevice &deviceRef, VulkanAllocator &allocator, VkExtent2D windowExtent,
+                  std::shared_ptr<SwapChain> previous = nullptr);
         ~SwapChain();
 
         SwapChain(const SwapChain &) = delete;
@@ -23,10 +25,9 @@ namespace IC {
         size_t GetCurrentFrame() { return _currentFrame; }
         VkFramebuffer GetFrameBuffer(int index) { return _swapChainFramebuffers[index]; }
         VkRenderPass GetRenderPass() { return _renderPass; }
+        VkImage &GetImage(int index) { return _swapChainImages[index]; }
         VkImageView GetImageView(int index) { return _swapChainImageViews[index]; }
-        VkImage GetImage(int index) { return _swapChainImages[index]; }
-        VkImageView GetDepthImageView(int index) { return _depthImageViews[index]; }
-        VkImage GetDepthImage(int index) { return _depthImages[index]; }
+        AllocatedImage &GetDepthImage(int index) { return _depthImages[index]; }
         size_t ImageCount() { return _swapChainImages.size(); }
         VkFormat GetSwapChainDepthFormat() { return _swapChainDepthFormat; }
         VkFormat GetSwapChainImageFormat() { return _swapChainImageFormat; }
@@ -67,13 +68,12 @@ namespace IC {
         std::vector<VkFramebuffer> _swapChainFramebuffers;
         VkRenderPass _renderPass;
 
-        std::vector<VkImage> _depthImages;
-        std::vector<VkDeviceMemory> _depthImageMemorys;
-        std::vector<VkImageView> _depthImageViews;
+        std::vector<AllocatedImage> _depthImages;
         std::vector<VkImage> _swapChainImages;
         std::vector<VkImageView> _swapChainImageViews;
 
         VulkanDevice &_device;
+        VulkanAllocator &_allocator;
         VkExtent2D _windowExtent;
 
         VkSwapchainKHR _swapChain;

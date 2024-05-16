@@ -40,6 +40,7 @@ if (IC_RENDERER_VULKAN)
         src/vulkan/descriptors.cpp
         src/vulkan/pipelines.cpp
         src/vulkan/swap_chain.cpp
+        src/vulkan/vulkan_allocator.cpp
         src/vulkan/vulkan_device.cpp
         src/vulkan/vulkan_initializers.cpp
         src/vulkan/vulkan_renderer.cpp

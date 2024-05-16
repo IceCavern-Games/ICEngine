@@ -7,6 +7,7 @@
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_RADIANS
+#include "vk_mem_alloc.h"
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 #include <vulkan/vk_enum_string_helper.h>
@@ -30,14 +31,14 @@
 namespace IC {
     struct AllocatedBuffer {
         VkBuffer buffer;
-        VkDeviceMemory memory;
-        void *mappedMemory;
+        VmaAllocation allocation;
+        VmaAllocationInfo allocInfo;
     };
 
     struct AllocatedImage {
         VkImage image;
         VkImageView view;
-        VkDeviceMemory memory;
+        VmaAllocation allocation;
     };
 
     struct CameraDescriptors {
@@ -110,22 +111,22 @@ namespace IC {
         void Draw(VkCommandBuffer cBuffer) { vkCmdDrawIndexed(cBuffer, meshData.indexCount, 1, 0, 0, 0); }
 
         void UpdateMvpBuffer(CameraDescriptors uniformBuffer, uint32_t currentImage) {
-            memcpy(mvpBuffers[currentImage].mappedMemory, &uniformBuffer, sizeof(uniformBuffer));
+            memcpy(mvpBuffers[currentImage].allocInfo.pMappedData, &uniformBuffer, sizeof(uniformBuffer));
         }
 
         void UpdateMaterialBuffer(uint32_t currentImage) {
             VkDeviceSize offset = 0;
             for (auto &[index, binding] : materialData.BindingValues()) {
                 if (binding.binding->bindingType == BindingType::Uniform) {
-                    memcpy(static_cast<char *>(materialBuffers[currentImage].mappedMemory) + offset, binding.value,
-                           binding.size);
+                    memcpy(static_cast<char *>(materialBuffers[currentImage].allocInfo.pMappedData) + offset,
+                           binding.value, binding.size);
                     offset += binding.size;
                 }
             }
         }
 
         template <typename T> void UpdateUniformBuffer(T &data, AllocatedBuffer &buffer) {
-            memcpy(buffer.mappedMemory, &data, sizeof(T));
+            memcpy(buffer.allocInfo.pMappedData, &data, sizeof(T));
         }
     };
 

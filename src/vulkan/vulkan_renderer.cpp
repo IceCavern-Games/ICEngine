@@ -11,8 +11,9 @@
 namespace IC {
     VulkanRenderer::VulkanRenderer(const RendererConfig &config)
         : Renderer(config),
-          _textureManager{_vulkanDevice},
           _vulkanDevice(config.window),
+          _allocator{_vulkanDevice},
+          _textureManager{_vulkanDevice, _allocator},
           _windowExtent{static_cast<uint32_t>(config.width), static_cast<uint32_t>(config.height)} {
         // find rendering functions
         VulkanBeginRendering =
@@ -42,15 +43,15 @@ namespace IC {
         _pipelineManager.DestroyPipelines(_vulkanDevice.Device());
 
         for (auto mesh : _renderData) {
-            DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.vertexBuffer);
-            DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.indexBuffer);
+            _allocator.DestroyBuffer(mesh.vertexBuffer);
+            _allocator.DestroyBuffer(mesh.indexBuffer);
 
             for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-                DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.mvpBuffers[i]);
-                DestroyAllocatedBuffer(_vulkanDevice.Device(), mesh.materialBuffers[i]);
+                _allocator.DestroyBuffer(mesh.mvpBuffers[i]);
+                _allocator.DestroyBuffer(mesh.materialBuffers[i]);
             }
             for (auto buffer : mesh.lightsBuffers) {
-                DestroyAllocatedBuffer(_vulkanDevice.Device(), buffer);
+                _allocator.DestroyBuffer(buffer);
             }
         }
     }
@@ -123,7 +124,7 @@ namespace IC {
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
         VkRenderingAttachmentInfo depthAttachment{.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-        depthAttachment.imageView = _swapChain->GetDepthImageView(imageIndex);
+        depthAttachment.imageView = _swapChain->GetDepthImage(imageIndex).view;
         depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
         depthAttachment.clearValue.depthStencil = {1.0f, 0};
         depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -262,12 +263,10 @@ namespace IC {
             _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), *_swapChain.get(), *materialData);
 
         // vertex buffers
-        CreateAndFillBuffer(_vulkanDevice, meshData.vertices.data(),
-                            sizeof(meshData.vertices[0]) * meshData.vertexCount, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, meshRenderData.vertexBuffer);
-        CreateAndFillBuffer(_vulkanDevice, meshData.indices.data(), sizeof(meshData.indices[0]) * meshData.indexCount,
-                            VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                            meshRenderData.indexBuffer);
+        _allocator.CreateBuffer(meshData.vertices.data(), sizeof(meshData.vertices[0]) * meshData.vertexCount,
+                                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, meshRenderData.vertexBuffer);
+        _allocator.CreateBuffer(meshData.indices.data(), sizeof(meshData.indices[0]) * meshData.indexCount,
+                                VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, meshRenderData.indexBuffer);
 
         // write descriptor sets
         _meshDescriptorAllocator.AllocateDescriptorSets(
@@ -275,7 +274,7 @@ namespace IC {
 
         // per object descriptors (set 0)
         DescriptorWriter writer{};
-        WritePerObjectDescriptors(_vulkanDevice, *_swapChain.get(), writer, meshRenderData);
+        WritePerObjectDescriptors(_allocator, *_swapChain.get(), writer, meshRenderData);
         for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
             writer.UpdateSet(_vulkanDevice.Device(), meshRenderData.descriptorSets[i][0]);
         }
@@ -287,7 +286,7 @@ namespace IC {
                 _directionalLight, _pointLights,
                 glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
 
-            WriteLightDescriptors(_vulkanDevice, SwapChain::MAX_FRAMES_IN_FLIGHT, descriptors, writer,
+            WriteLightDescriptors(_allocator, SwapChain::MAX_FRAMES_IN_FLIGHT, descriptors, writer,
                                   meshRenderData.lightsBuffers);
 
             for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
@@ -297,7 +296,7 @@ namespace IC {
         }
 
         // material descriptors (set 1 or 2)
-        WriteMaterialDescriptors(_vulkanDevice, SwapChain::MAX_FRAMES_IN_FLIGHT, writer, *materialData, _textureManager,
+        WriteMaterialDescriptors(_allocator, SwapChain::MAX_FRAMES_IN_FLIGHT, writer, *materialData, _textureManager,
                                  meshRenderData.materialBuffers);
         for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
             int index = materialData->Template().flags & MaterialFlags::Lit ? 2 : 1;
@@ -324,9 +323,9 @@ namespace IC {
 
         vkDeviceWaitIdle(_vulkanDevice.Device());
         if (_swapChain == nullptr) {
-            _swapChain = std::make_unique<SwapChain>(_vulkanDevice, _windowExtent);
+            _swapChain = std::make_unique<SwapChain>(_vulkanDevice, _allocator, _windowExtent);
         } else {
-            _swapChain = std::make_unique<SwapChain>(_vulkanDevice, _windowExtent, std::move(_swapChain));
+            _swapChain = std::make_unique<SwapChain>(_vulkanDevice, _allocator, _windowExtent, std::move(_swapChain));
             if (_swapChain->ImageCount() != _cBuffers.size()) {
                 FreeCommandBuffers();
                 CreateCommandBuffers();
