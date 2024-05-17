@@ -21,6 +21,9 @@ namespace IC {
         void DestroyImage(AllocatedImage &image);
 
     private:
+        VulkanAllocator(const VulkanAllocator &) = delete;
+        void operator=(const VulkanAllocator &) = delete;
+
         VmaAllocator _allocator;
         VulkanDevice &_device;
     };
