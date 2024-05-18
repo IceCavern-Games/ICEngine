@@ -59,10 +59,15 @@ namespace IC {
 
     void VulkanAllocator::DestroyBuffer(AllocatedBuffer &buffer) {
         vmaDestroyBuffer(_allocator, buffer.buffer, buffer.allocation);
+
+        buffer.buffer = nullptr;
     }
 
     void VulkanAllocator::DestroyImage(AllocatedImage &image) {
         vmaDestroyImage(_allocator, image.image, image.allocation);
         vkDestroyImageView(_device.Device(), image.view, nullptr);
+
+        image.image = nullptr;
+        image.view = nullptr;
     }
 } // namespace IC
