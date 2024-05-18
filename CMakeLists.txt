@@ -31,14 +31,16 @@ set(LIBS glfw glm::glm)
 if (IC_RENDERER_VULKAN)
     message("Vulkan Renderer Enabled")
     find_package(Vulkan REQUIRED)
+    find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 
     add_compile_definitions(IC_RENDERER_VULKAN)
-    set(LIBS ${LIBS} Vulkan::Vulkan)
+    set(LIBS ${LIBS} Vulkan::Vulkan GPUOpen::VulkanMemoryAllocator)
 
     set(SOURCE_FILES__RENDERER
         src/vulkan/descriptors.cpp
         src/vulkan/pipelines.cpp
         src/vulkan/swap_chain.cpp
+        src/vulkan/vulkan_allocator.cpp
         src/vulkan/vulkan_device.cpp
         src/vulkan/vulkan_initializers.cpp
         src/vulkan/vulkan_renderer.cpp

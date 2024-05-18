@@ -73,16 +73,10 @@ namespace IC {
                                      VkFormatFeatureFlags features);
 
         // Buffer Helper Functions
-        void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
-                          VkBuffer &buffer, VkDeviceMemory &bufferMemory);
         VkCommandBuffer BeginSingleTimeCommands();
         void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
         void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
-        VkImageView CreateImageView(VkImage image, VkFormat format);
-
-        void CreateImageWithInfo(const VkImageCreateInfo &imageInfo, VkMemoryPropertyFlags properties, VkImage &image,
-                                 VkDeviceMemory &imageMemory);
 
         VkPhysicalDeviceProperties properties;
 

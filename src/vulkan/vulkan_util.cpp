@@ -5,35 +5,6 @@
 #include <cstring>
 
 namespace IC {
-    void CreateAllocatedBuffer(VulkanDevice &device, VkDeviceSize bufferSize, VkBufferUsageFlags bufferUsageFlags,
-                               VkMemoryPropertyFlags memoryPropertyFlags, AllocatedBuffer &allocatedBuffer) {
-        device.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | bufferUsageFlags, memoryPropertyFlags,
-                            allocatedBuffer.buffer, allocatedBuffer.memory);
-    }
-
-    void CreateAndFillBuffer(VulkanDevice &device, const void *srcData, VkDeviceSize bufferSize,
-                             VkBufferUsageFlags bufferUsageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
-                             AllocatedBuffer &allocatedBuffer) {
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-
-        device.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
-                            stagingBufferMemory);
-        void *data;
-        vkMapMemory(device.Device(), stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, srcData, (size_t)bufferSize);
-        vkUnmapMemory(device.Device(), stagingBufferMemory);
-
-        device.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | bufferUsageFlags, memoryPropertyFlags,
-                            allocatedBuffer.buffer, allocatedBuffer.memory);
-
-        device.CopyBuffer(stagingBuffer, allocatedBuffer.buffer, bufferSize);
-
-        vkDestroyBuffer(device.Device(), stagingBuffer, nullptr);
-        vkFreeMemory(device.Device(), stagingBufferMemory, nullptr);
-    }
-
     void CopyImageToImage(VkCommandBuffer commandBuffer, VkImage source, VkImage destination, VkExtent2D srcSize,
                           VkExtent2D dstSize) {
         VkImageBlit2 blitRegion{.sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr};
@@ -122,10 +93,5 @@ namespace IC {
         for (auto shader : pipeline.shaderModules) {
             vkDestroyShaderModule(device, shader, nullptr);
         }
-    }
-
-    void DestroyAllocatedBuffer(VkDevice device, const AllocatedBuffer &buffer) {
-        vkDestroyBuffer(device, buffer.buffer, nullptr);
-        vkFreeMemory(device, buffer.memory, nullptr);
     }
 } // namespace IC

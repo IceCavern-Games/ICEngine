@@ -6,6 +6,7 @@
         "stb",
         "tinyobjloader",
         "vulkan",
+        "vulkan-memory-allocator",
         "vulkan-utility-libraries",
         {
             "name": "imgui",
