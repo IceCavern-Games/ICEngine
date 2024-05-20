@@ -161,7 +161,25 @@ namespace IC {
                               VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
         VulkanBeginRendering(_cBuffers[imageIndex], &renderingInfo);
-        for (MeshRenderData data : _renderData) {
+        for (MeshRenderData &data : _renderData) {
+            // rebuild vertex and index buffers if required
+            if (data.meshData.MeshUpdated()) {
+                _allocator.DestroyBuffer(data.vertexBuffer);
+                _allocator.DestroyBuffer(data.indexBuffer);
+
+                data.vertexBuffer = {};
+                data.indexBuffer = {};
+
+                _allocator.CreateBuffer(data.meshData.Vertices().data(),
+                                        sizeof(data.meshData.Vertices()[0]) * data.meshData.VertexCount(),
+                                        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, data.vertexBuffer);
+                _allocator.CreateBuffer(data.meshData.Indices().data(),
+                                        sizeof(data.meshData.Indices()[0]) * data.meshData.IndexCount(),
+                                        VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, data.indexBuffer);
+
+                data.meshData.ClearMeshUpdatedFlag();
+            }
+
             // bind pipeline todo: only bind if different
             vkCmdBindPipeline(_cBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, data.renderPipeline->pipeline);
 
@@ -265,6 +283,7 @@ namespace IC {
                                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, meshRenderData.vertexBuffer);
         _allocator.CreateBuffer(mesh.Indices().data(), sizeof(mesh.Indices()[0]) * mesh.IndexCount(),
                                 VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, meshRenderData.indexBuffer);
+        mesh.ClearMeshUpdatedFlag();
 
         // write descriptor sets
         _meshDescriptorAllocator.AllocateDescriptorSets(

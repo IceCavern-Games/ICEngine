@@ -44,12 +44,14 @@ namespace IC {
         Mesh();
         ~Mesh();
 
+        bool MeshUpdated() { return _meshUpdatedFlag; }
         MaterialInstance *Material() { return _material.get(); }
         std::vector<VertexData> &Vertices() { return _vertices; }
         std::vector<uint32_t> &Indices() { return _indices; }
         uint32_t VertexCount() { return _vertexCount; }
         uint32_t IndexCount() { return _indexCount; }
 
+        void ClearMeshUpdatedFlag() { _meshUpdatedFlag = false; }
         void SetMaterial(std::shared_ptr<MaterialInstance> &material) { _material = material; }
 
         void Gui() override;
@@ -58,13 +60,14 @@ namespace IC {
         void LoadMesh();
 
         std::shared_ptr<MaterialInstance> _material;
+        std::string _filename = "resources/models/cube.obj";
 
         std::vector<VertexData> _vertices;
         std::vector<uint32_t> _indices;
         uint32_t _vertexCount;
         uint32_t _indexCount;
 
-        std::string _filename = "resources/models/cube.obj";
+        bool _meshUpdatedFlag = false;
     };
 
     class PointLight : public GameObjectComponent {

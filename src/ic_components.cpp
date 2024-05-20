@@ -28,6 +28,9 @@ namespace IC {
     Mesh::~Mesh() {}
 
     void Mesh::LoadMesh() {
+        _vertices.clear();
+        _indices.clear();
+
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
@@ -65,6 +68,8 @@ namespace IC {
 
         _vertexCount = static_cast<uint32_t>(_vertices.size());
         _indexCount = static_cast<uint32_t>(_indices.size());
+
+        _meshUpdatedFlag = true;
     }
 
     void Mesh::Gui() {

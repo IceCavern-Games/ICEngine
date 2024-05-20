@@ -105,7 +105,8 @@ bool App::Run(const Config *c) {
     appRendererApi->AddGameObject(pointLight);
     appRendererApi->AddGameObject(dirLight);
     appRendererApi->AddImguiFunction("game object", std::bind(&GameObject::Gui, mesh.get()));
-    appRendererApi->AddImguiFunction("point light", std::bind(&GameObject::Gui, dirLight.get()));
+    appRendererApi->AddImguiFunction("point light", std::bind(&GameObject::Gui, pointLight.get()));
+    appRendererApi->AddImguiFunction("directional light", std::bind(&GameObject::Gui, dirLight.get()));
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
