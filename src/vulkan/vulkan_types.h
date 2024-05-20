@@ -7,6 +7,7 @@
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_RADIANS
+#include "vk_mem_alloc.h"
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 #include <vulkan/vk_enum_string_helper.h>
@@ -30,14 +31,14 @@
 namespace IC {
     struct AllocatedBuffer {
         VkBuffer buffer;
-        VkDeviceMemory memory;
-        void *mappedMemory;
+        VmaAllocation allocation;
+        VmaAllocationInfo allocInfo;
     };
 
     struct AllocatedImage {
         VkImage image;
         VkImageView view;
-        VkDeviceMemory memory;
+        VmaAllocation allocation;
     };
 
     struct CameraDescriptors {
@@ -77,7 +78,7 @@ namespace IC {
         VkPipeline pipeline;
         VkPipelineLayout layout;
         std::vector<VkShaderModule> shaderModules;
-        VkDescriptorSetLayout descriptorSetLayout;
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
         MaterialFlags materialFlags;
 
         bool operator<(const Pipeline &other) const {
@@ -88,32 +89,44 @@ namespace IC {
 
     struct MeshRenderData {
         Mesh &meshData;
-        Material &materialData;
+        MaterialInstance &materialData;
         std::shared_ptr<Pipeline> renderPipeline;
-        std::vector<VkDescriptorSet> descriptorSets;
+        std::vector<std::vector<VkDescriptorSet>> descriptorSets;
         AllocatedBuffer vertexBuffer;
         AllocatedBuffer indexBuffer;
         std::vector<AllocatedBuffer> mvpBuffers;
-        std::vector<AllocatedBuffer> constantsBuffers;
         std::vector<AllocatedBuffer> lightsBuffers;
+        std::vector<AllocatedBuffer> materialBuffers;
 
         void Bind(VkCommandBuffer cBuffer, VkPipelineLayout pipelineLayout, size_t currentFrame) {
             VkBuffer vertexBuffers[] = {vertexBuffer.buffer};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(cBuffer, 0, 1, vertexBuffers, offsets);
             vkCmdBindIndexBuffer(cBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-            vkCmdBindDescriptorSets(cBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-                                    &descriptorSets[currentFrame], 0, nullptr);
+            vkCmdBindDescriptorSets(cBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0,
+                                    descriptorSets[currentFrame].size(), descriptorSets[currentFrame].data(), 0,
+                                    nullptr);
         }
 
         void Draw(VkCommandBuffer cBuffer) { vkCmdDrawIndexed(cBuffer, meshData.indexCount, 1, 0, 0, 0); }
 
         void UpdateMvpBuffer(CameraDescriptors uniformBuffer, uint32_t currentImage) {
-            memcpy(mvpBuffers[currentImage].mappedMemory, &uniformBuffer, sizeof(uniformBuffer));
+            memcpy(mvpBuffers[currentImage].allocInfo.pMappedData, &uniformBuffer, sizeof(uniformBuffer));
+        }
+
+        void UpdateMaterialBuffer(uint32_t currentImage) {
+            VkDeviceSize offset = 0;
+            for (auto &[index, binding] : materialData.BindingValues()) {
+                if (binding.binding->bindingType == BindingType::Uniform) {
+                    memcpy(static_cast<char *>(materialBuffers[currentImage].allocInfo.pMappedData) + offset,
+                           binding.value, binding.size);
+                    offset += binding.size;
+                }
+            }
         }
 
         template <typename T> void UpdateUniformBuffer(T &data, AllocatedBuffer &buffer) {
-            memcpy(buffer.mappedMemory, &data, sizeof(T));
+            memcpy(buffer.allocInfo.pMappedData, &data, sizeof(T));
         }
     };
 

@@ -49,10 +49,10 @@ namespace IC {
     public:
         void DestroyPipelines(VkDevice device);
         std::shared_ptr<Pipeline> FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain,
-                                                               Material &materialData);
+                                                               MaterialInstance &materialData);
 
     private:
-        bool IsPipelineSuitable(Pipeline &pipeline, Material &materialData);
+        bool IsPipelineSuitable(Pipeline &pipeline, MaterialInstance &materialData);
         std::vector<std::shared_ptr<Pipeline>> _createdPipelines;
     };
 } // namespace IC

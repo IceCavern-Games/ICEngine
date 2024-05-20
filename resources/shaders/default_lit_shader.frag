@@ -1,33 +1,7 @@
 #version 450
 
-#define MAX_POINT_LIGHTS 4
-
-struct DirectionalLightData {
-    vec3 dir;
-
-    vec3 amb;
-    vec3 diff;
-    vec3 spec;
-};
-
-struct PointLightData {
-    vec3 pos;
-
-    vec3 amb;
-    vec3 diff;
-    vec3 spec;
-
-    float cons;
-    float lin;
-    float quad;
-};
-
-layout(binding = 2) uniform SceneLightData {
-    DirectionalLightData directional;
-    PointLightData[MAX_POINT_LIGHTS] pointLights;
-    uint numPointLights;
-}
-lightData;
+#extension GL_GOOGLE_include_directive : require
+#include "lighting_headers.glsl"
 
 layout(push_constant) uniform PushConstants {
     mat4 model;
@@ -42,53 +16,11 @@ layout(location = 3) in vec2 fragTexCoord;
 
 layout(location = 0) out vec4 outColor;
 
-vec3 calcPointLight(PointLightData light);
-vec3 calcDirectionalLight(DirectionalLightData light);
-
 void main() {
     vec3 result;
-    result = calcDirectionalLight(lightData.directional);
+    result = calcDirectionalLight(lightData.directional, fragTexCoord, normal, fragPos);
     for (int i = 0; i < lightData.numPointLights; i++) {
-        result += calcPointLight(lightData.pointLights[i]);
+        result += calcPointLight(lightData.pointLights[i], fragTexCoord, normal, fragPos);
     }
     outColor = vec4(result * fragColor.rgb, 1.0);
-}
-
-vec3 calcPointLight(PointLightData light) {
-    // vectors
-    vec3 lightDir = normalize(light.pos - fragPos);
-    vec3 viewDir = normalize(-fragPos);
-    vec3 reflectDir = reflect(-lightDir, normal);
-
-    float lightDistance = length(light.pos - fragPos);
-
-    // scalar calculations
-    float diff = max(dot(normal, lightDir), 0.0);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-    float attenuation = 1.0 / (light.cons + light.lin * lightDistance + light.quad * (lightDistance * lightDistance));
-
-    // final values
-    vec3 ambient = light.amb * attenuation;
-    vec3 diffuse = diff * light.diff * attenuation;
-    vec3 specular = spec * light.spec * attenuation;
-
-    return (ambient + diffuse + specular);
-}
-
-vec3 calcDirectionalLight(DirectionalLightData light) {
-    // vectors
-    vec3 lightDir = normalize(-light.dir);
-    vec3 viewDir = normalize(-fragPos);
-    vec3 reflectDir = reflect(-lightDir, normal);
-
-    // scalar calculations
-    float diff = max(dot(normal, lightDir), 0.0);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-
-    // final values
-    vec3 ambient = light.amb;
-    vec3 diffuse = diff * light.diff;
-    vec3 specular = spec * light.spec;
-
-    return (ambient + diffuse + specular);
 }

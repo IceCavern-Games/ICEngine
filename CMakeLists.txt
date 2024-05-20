@@ -22,6 +22,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+find_package(Stb REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
 
 # Tracks which libraries we need to link, depending on the options above.
@@ -30,17 +31,20 @@ set(LIBS glfw glm::glm)
 if (IC_RENDERER_VULKAN)
     message("Vulkan Renderer Enabled")
     find_package(Vulkan REQUIRED)
+    find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 
     add_compile_definitions(IC_RENDERER_VULKAN)
-    set(LIBS ${LIBS} Vulkan::Vulkan)
+    set(LIBS ${LIBS} Vulkan::Vulkan GPUOpen::VulkanMemoryAllocator)
 
     set(SOURCE_FILES__RENDERER
         src/vulkan/descriptors.cpp
         src/vulkan/pipelines.cpp
         src/vulkan/swap_chain.cpp
+        src/vulkan/vulkan_allocator.cpp
         src/vulkan/vulkan_device.cpp
         src/vulkan/vulkan_initializers.cpp
         src/vulkan/vulkan_renderer.cpp
+        src/vulkan/vulkan_texture_manager.cpp
         src/vulkan/vulkan_util.cpp
     )
 
@@ -57,6 +61,7 @@ add_library(${PROJECT_NAME}
     src/ic_camera.cpp
     src/ic_graphics.cpp
     src/ic_log.cpp
+    src/ic_material.cpp
     src/ic_renderer.cpp
 )
 
@@ -82,7 +87,7 @@ target_include_directories(${PROJECT_NAME}
 )
 
 # Renderer include directory
-target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR__RENDERER})
+target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIR__RENDERER} ${Stb_INCLUDE_DIR})
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE ${LIBS}

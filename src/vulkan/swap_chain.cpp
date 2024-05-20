@@ -13,8 +13,9 @@
 #include <stdexcept>
 
 namespace IC {
-    SwapChain::SwapChain(VulkanDevice &deviceRef, VkExtent2D extent, std::shared_ptr<SwapChain> previous)
-        : _device{deviceRef}, _windowExtent{extent} {
+    SwapChain::SwapChain(VulkanDevice &deviceRef, VulkanAllocator &allocator, VkExtent2D extent,
+                         std::shared_ptr<SwapChain> previous)
+        : _device{deviceRef}, _allocator{allocator}, _windowExtent{extent} {
         Init(previous);
     }
 
@@ -39,9 +40,7 @@ namespace IC {
         }
 
         for (int i = 0; i < _depthImages.size(); i++) {
-            vkDestroyImageView(_device.Device(), _depthImageViews[i], nullptr);
-            vkDestroyImage(_device.Device(), _depthImages[i], nullptr);
-            vkFreeMemory(_device.Device(), _depthImageMemorys[i], nullptr);
+            _allocator.DestroyImage(_depthImages[i]);
         }
 
         for (auto framebuffer : _swapChainFramebuffers) {
@@ -202,7 +201,9 @@ namespace IC {
     void SwapChain::CreateImageViews() {
         _swapChainImageViews.resize(_swapChainImages.size());
         for (size_t i = 0; i < _swapChainImages.size(); i++) {
-            _swapChainImageViews[i] = _device.CreateImageView(_swapChainImages[i], _swapChainImageFormat);
+            VkImageViewCreateInfo createInfo =
+                ImageViewCreateInfo(_swapChainImageFormat, _swapChainImages[i], VK_IMAGE_ASPECT_COLOR_BIT);
+            VK_CHECK(vkCreateImageView(_device.Device(), &createInfo, nullptr, &_swapChainImageViews[i]));
         }
     }
 
@@ -267,7 +268,7 @@ namespace IC {
     void SwapChain::CreateFramebuffers() {
         _swapChainFramebuffers.resize(ImageCount());
         for (size_t i = 0; i < ImageCount(); i++) {
-            std::array<VkImageView, 2> attachments = {_swapChainImageViews[i], _depthImageViews[i]};
+            std::array<VkImageView, 2> attachments = {_swapChainImageViews[i], _depthImages[i].view};
 
             VkExtent2D swapChainExtent = GetSwapChainExtent();
             VkFramebufferCreateInfo framebufferInfo = {};
@@ -288,41 +289,14 @@ namespace IC {
         VkExtent2D swapChainExtent = GetSwapChainExtent();
 
         _depthImages.resize(ImageCount());
-        _depthImageMemorys.resize(ImageCount());
-        _depthImageViews.resize(ImageCount());
 
         for (int i = 0; i < _depthImages.size(); i++) {
-            VkImageCreateInfo imageInfo{};
-            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = swapChainExtent.width;
-            imageInfo.extent.height = swapChainExtent.height;
-            imageInfo.extent.depth = 1;
-            imageInfo.mipLevels = 1;
-            imageInfo.arrayLayers = 1;
-            imageInfo.format = _swapChainDepthFormat;
-            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            imageInfo.flags = 0;
-
-            _device.CreateImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _depthImages[i],
-                                        _depthImageMemorys[i]);
-
-            VkImageViewCreateInfo viewInfo{};
-            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.image = _depthImages[i];
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = _swapChainDepthFormat;
-            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-            viewInfo.subresourceRange.baseMipLevel = 0;
-            viewInfo.subresourceRange.levelCount = 1;
-            viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
-
-            VK_CHECK(vkCreateImageView(_device.Device(), &viewInfo, nullptr, &_depthImageViews[i]));
+            VkExtent3D size{};
+            size.depth = 1;
+            size.width = swapChainExtent.width;
+            size.height = swapChainExtent.height;
+            _allocator.CreateImage(size, _swapChainDepthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                                   _depthImages[i]);
         }
     }
 

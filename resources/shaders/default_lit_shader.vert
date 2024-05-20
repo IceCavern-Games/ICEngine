@@ -1,15 +1,14 @@
 #version 450
 
-layout(binding = 0) uniform UniformBufferObject {
+layout(set = 0, binding = 0) uniform UniformBufferObject {
     mat4 proj;
 }
 proj;
 
-layout(binding = 1) uniform MaterialConstants {
+layout(set = 2, binding = 0) uniform ColorProperty {
     vec4 color;
 }
-constants;
-
+materialColor;
 
 layout(push_constant) uniform PushConstants {
     mat4 model;
@@ -30,7 +29,7 @@ layout(location = 3) out vec2 fragTexCoord;
 void main() {
     gl_Position = proj.proj * mv.view * mv.model * vec4(inPosition, 1.0);
     normal = normalize(mat3(transpose(inverse(mv.view * mv.model))) * inNormal);
-    fragColor = constants.color;
+    fragColor = materialColor.color;
     fragPos = vec3(mv.view * mv.model * vec4(inPosition, 1.0));
     fragTexCoord = inTexCoord;
 }
