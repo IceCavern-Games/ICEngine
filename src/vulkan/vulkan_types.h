@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ic_gameobject.h>
 #include <ic_graphics.h>
 #include <ic_log.h>
 
@@ -89,7 +90,7 @@ namespace IC {
 
     struct MeshRenderData {
         Mesh &meshData;
-        MaterialInstance &materialData;
+        Transform &transform;
         std::shared_ptr<Pipeline> renderPipeline;
         std::vector<std::vector<VkDescriptorSet>> descriptorSets;
         AllocatedBuffer vertexBuffer;
@@ -108,7 +109,7 @@ namespace IC {
                                     nullptr);
         }
 
-        void Draw(VkCommandBuffer cBuffer) { vkCmdDrawIndexed(cBuffer, meshData.indexCount, 1, 0, 0, 0); }
+        void Draw(VkCommandBuffer cBuffer) { vkCmdDrawIndexed(cBuffer, meshData.IndexCount(), 1, 0, 0, 0); }
 
         void UpdateMvpBuffer(CameraDescriptors uniformBuffer, uint32_t currentImage) {
             memcpy(mvpBuffers[currentImage].allocInfo.pMappedData, &uniformBuffer, sizeof(uniformBuffer));
@@ -116,7 +117,7 @@ namespace IC {
 
         void UpdateMaterialBuffer(uint32_t currentImage) {
             VkDeviceSize offset = 0;
-            for (auto &[index, binding] : materialData.BindingValues()) {
+            for (auto &[index, binding] : meshData.Material()->BindingValues()) {
                 if (binding.binding->bindingType == BindingType::Uniform) {
                     memcpy(static_cast<char *>(materialBuffers[currentImage].allocInfo.pMappedData) + offset,
                            binding.value, binding.size);

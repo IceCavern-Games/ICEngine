@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ic_gameobject.h>
+
 #include "descriptors.h"
 #include "swap_chain.h"
 #include "vulkan_device.h"
@@ -42,8 +44,9 @@ namespace IC {
     void WriteMaterialDescriptors(VulkanAllocator &allocator, size_t maxFrames, DescriptorWriter &writer,
                                   MaterialInstance &material, VulkanTextureManager &textureManager,
                                   std::vector<AllocatedBuffer> &materialBuffers);
-    SceneLightDescriptors CreateSceneLightDescriptors(std::shared_ptr<DirectionalLight> &directionalLight,
-                                                      std::vector<std::shared_ptr<PointLight>> &pointLights,
+    DirectionalLightDescriptors CreateDirectionalLightDescriptors(DirectionalLight *directionalLight,
+                                                                  glm::mat4 viewMat);
+    PointLightDescriptors CreatePointLightDescriptors(PointLight *pointLight, glm::vec3 lightPosition,
                                                       glm::mat4 viewMat);
 
     // images

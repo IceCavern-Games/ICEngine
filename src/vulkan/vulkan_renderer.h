@@ -15,9 +15,7 @@ namespace IC {
         VulkanRenderer(const RendererConfig &config);
         virtual ~VulkanRenderer();
 
-        void AddMesh(Mesh &meshData, MaterialInstance *materialData) override;
-        void AddLight(std::shared_ptr<PointLight> light) override;
-        void AddDirectionalLight(std::shared_ptr<DirectionalLight> light) override;
+        void AddGameObject(std::shared_ptr<GameObject> object) override;
         void DrawFrame() override;
         static void FramebufferResizeCallback(GLFWwindow *window, int width, int height);
 
@@ -27,6 +25,11 @@ namespace IC {
         void InitDescriptorAllocators();
         void RecreateSwapChain();
         void RenderImGui(VkCommandBuffer cBuffer, VkImageView targetImageView);
+
+        // GameObject helpers
+        void AddDirectionalLight(DirectionalLight *light);
+        void AddPointLight(PointLight *light, glm::vec3 position);
+        void AddMesh(Mesh &mesh, Transform &transform);
 
         // function pointers (for mac)
         PFN_vkCmdBeginRenderingKHR VulkanBeginRendering{};
@@ -42,9 +45,9 @@ namespace IC {
         DescriptorAllocator _imGuiDescriptorAllocator{};
 
         // rendering data (mesh, lights)
+        SceneLightDescriptors _lightData{};
         std::vector<MeshRenderData> _renderData{};
-        std::vector<std::shared_ptr<PointLight>> _pointLights;
-        std::shared_ptr<DirectionalLight> _directionalLight;
+        std::vector<std::shared_ptr<GameObject>> _gameObjects;
 
         // command buffers
         std::vector<VkCommandBuffer> _cBuffers{};

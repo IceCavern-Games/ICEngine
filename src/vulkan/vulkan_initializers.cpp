@@ -188,38 +188,36 @@ namespace IC {
         }
     }
 
-    SceneLightDescriptors CreateSceneLightDescriptors(std::shared_ptr<DirectionalLight> &directionalLight,
-                                                      std::vector<std::shared_ptr<PointLight>> &pointLights,
+    DirectionalLightDescriptors CreateDirectionalLightDescriptors(DirectionalLight *directionalLight,
+                                                                  glm::mat4 viewMat) {
+        glm::vec3 directionalViewSpaceDirection = viewMat * glm::vec4(directionalLight->Direction(), 0.0f);
+
+        DirectionalLightDescriptors descriptors{};
+        descriptors.dir = directionalViewSpaceDirection;
+        descriptors.diff = directionalLight->Color();
+        descriptors.amb = directionalLight->Ambient();
+        descriptors.spec = directionalLight->Specular();
+
+        return descriptors;
+    }
+
+    PointLightDescriptors CreatePointLightDescriptors(PointLight *pointLight, glm::vec3 lightPosition,
                                                       glm::mat4 viewMat) {
-        SceneLightDescriptors descriptors;
-        glm::vec3 directionalViewSpaceDirection = viewMat * glm::vec4(directionalLight->direction, 0.0f);
+        glm::vec3 lightViewSpacePos = viewMat * glm::vec4(lightPosition, 1.0f);
 
-        DirectionalLightDescriptors directionalDescriptors{};
-        directionalDescriptors.dir = directionalViewSpaceDirection;
-        directionalDescriptors.diff = directionalLight->color;
-        directionalDescriptors.amb = directionalLight->ambient;
-        directionalDescriptors.spec = directionalLight->specular;
-        descriptors.directionalLight = directionalDescriptors;
-        for (int i = 0; i < pointLights.size() && i < MAX_POINT_LIGHTS; i++) {
-            glm::vec3 lightViewSpacePos = viewMat * glm::vec4(pointLights[i]->previewMesh.pos, 1.0f);
+        PointLightDescriptors descriptors{};
+        descriptors.pos = lightViewSpacePos;
+        descriptors.diff = pointLight->Color();
+        descriptors.amb = pointLight->Ambient();
+        descriptors.spec = pointLight->Specular();
+        descriptors.cons = pointLight->Constant();
+        descriptors.lin = pointLight->Linear();
+        descriptors.quad = pointLight->Quadratic();
 
-            PointLightDescriptors pointLightDescriptors{};
-            pointLightDescriptors.pos = lightViewSpacePos;
-            pointLightDescriptors.amb = pointLights[i]->ambient;
-            pointLightDescriptors.diff = pointLights[i]->color;
-            pointLightDescriptors.spec = pointLights[i]->specular;
-            pointLightDescriptors.cons = pointLights[i]->constant;
-            pointLightDescriptors.lin = pointLights[i]->linear;
-            pointLightDescriptors.quad = pointLights[i]->quadratic;
-
-            descriptors.pointLights[i] = pointLightDescriptors;
-        }
-        descriptors.numPointLights = pointLights.size() > MAX_POINT_LIGHTS ? MAX_POINT_LIGHTS : pointLights.size();
         return descriptors;
     }
 
     // images
-
     void CreateImageSampler(VkDevice device, float maxAnisotropy, VkSampler &textureSampler) {
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;

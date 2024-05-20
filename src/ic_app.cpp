@@ -1,6 +1,7 @@
 #include <ic_app.h>
 
 #include "ic_renderer.h"
+#include <ic_gameobject.h>
 #include <ic_log.h>
 
 #include <GLFW/glfw3.h>
@@ -49,8 +50,7 @@ bool App::Run(const Config *c) {
 
         return false;
     }
-
-    Mesh mesh;
+    // material setup
     MaterialTemplate meshMaterial{};
     meshMaterial.AddBinding(0, "color", BindingType::Uniform, ShaderDataType::Vec4);
     meshMaterial.AddBinding(1, "diffuse", BindingType::Texture, ShaderDataType::String);
@@ -69,46 +69,43 @@ bool App::Run(const Config *c) {
     std::string diffusePath = "resources/textures/backpack_diffuse.jpg";
     std::string specularPath = "resources/textures/backpack_specular.jpg";
 
-    MaterialInstance meshMaterialInstance{meshMaterial};
-    meshMaterialInstance.SetBindingValue(0, &color, sizeof(glm::vec4));
-    meshMaterialInstance.SetBindingValue(1, &diffusePath, sizeof(diffusePath));
-    meshMaterialInstance.SetBindingValue(2, &specularPath, sizeof(specularPath));
+    std::shared_ptr<MaterialInstance> meshMaterialInstance = std::make_shared<MaterialInstance>(meshMaterial);
+    meshMaterialInstance->SetBindingValue(0, &color, sizeof(glm::vec4));
+    meshMaterialInstance->SetBindingValue(1, &diffusePath, sizeof(diffusePath));
+    meshMaterialInstance->SetBindingValue(2, &specularPath, sizeof(specularPath));
 
-    MaterialInstance unlitMaterialInstance{unlitMaterial};
-    unlitMaterialInstance.SetBindingValue(0, &color, sizeof(glm::vec4));
+    std::shared_ptr<MaterialInstance> unlitMaterialInstance = std::make_shared<MaterialInstance>(unlitMaterial);
+    unlitMaterialInstance->SetBindingValue(0, &color, sizeof(glm::vec4));
 
-    mesh.LoadFromFile("resources/models/backpack.obj");
-    mesh.pos = glm::vec3(0.0f);
-    mesh.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-    mesh.scale = glm::vec3(0.5f);
+    // mesh game object
+    auto mesh = std::make_shared<GameObject>("test mesh");
+    Mesh meshComponent{};
+    mesh->GetTransform()->SetScale(glm::vec3(0.5f));
+    meshComponent.SetMaterial(meshMaterialInstance);
+    mesh->AddComponent<Mesh>(meshComponent);
 
     // test light
-    std::shared_ptr<PointLight> light = std::make_shared<PointLight>();
-    light->color = {1.0f, 1.0f, 1.0f};
-    light->ambient = glm::vec3(0.1f);
-    light->specular = glm::vec3(1.0f);
-
-    Mesh lightMesh;
-    lightMesh.pos = glm::vec3(1.7f, 1.0f, 1.0f);
-    lightMesh.rotation = glm::vec3(0.0f);
-    lightMesh.scale = glm::vec3(0.1f);
-    lightMesh.LoadFromFile("resources/models/sphere.obj");
-
-    light->previewMesh = lightMesh;
-    light->previewMaterial = &unlitMaterialInstance;
+    auto pointLight = std::make_shared<GameObject>("point light");
+    Mesh pointLightMesh{};
+    PointLight pointLightComponent{};
+    pointLight->GetTransform()->SetPosition(glm::vec3(1.7f, 1.0f, 1.0f));
+    pointLight->GetTransform()->SetScale(glm::vec3(0.1f));
+    pointLightMesh.SetMaterial(unlitMaterialInstance);
+    pointLight->AddComponent<PointLight>(pointLightComponent);
+    pointLight->AddComponent<Mesh>(pointLightMesh);
 
     // directional light
-    std::shared_ptr<DirectionalLight> dirLight = std::make_shared<DirectionalLight>();
-    dirLight->direction = {0.0f, 0.0f, 1.0f};
-    dirLight->color = glm::vec3(1.0f);
-    dirLight->ambient = glm::vec3(0.2f);
-    dirLight->specular = glm::vec3(1.0f);
+    auto dirLight = std::make_shared<GameObject>("directional light");
+    DirectionalLight dirLightComponent{};
+    dirLightComponent.SetDirection({0.0f, 0.0f, 1.0f});
+    dirLightComponent.SetAmbient(glm::vec3(0.2f));
+    dirLight->AddComponent<DirectionalLight>(dirLightComponent);
 
-    appRendererApi->AddLight(light);
-    appRendererApi->AddDirectionalLight(dirLight);
-    appRendererApi->AddMesh(mesh, &meshMaterialInstance);
-    appRendererApi->AddImguiFunction("point light", std::bind(&PointLight::ParameterGui, light.get()));
-    appRendererApi->AddImguiFunction("directional light", std::bind(&DirectionalLight::ParameterGui, dirLight.get()));
+    appRendererApi->AddGameObject(mesh);
+    appRendererApi->AddGameObject(pointLight);
+    appRendererApi->AddGameObject(dirLight);
+    appRendererApi->AddImguiFunction("game object", std::bind(&GameObject::Gui, mesh.get()));
+    appRendererApi->AddImguiFunction("point light", std::bind(&GameObject::Gui, dirLight.get()));
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
