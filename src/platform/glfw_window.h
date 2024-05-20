@@ -20,6 +20,7 @@ namespace IC {
         inline bool ShouldClose() const override { return glfwWindowShouldClose(_window); }
 
         inline virtual void *GetNativeWindow() const override { return _window; }
+        inline void SetEventCallback(const EventCallbackFn &callback) override { _data.eventCallback = callback; }
 
     private:
         virtual void Init(const WindowProps &props);
@@ -32,6 +33,8 @@ namespace IC {
         struct WindowData {
             std::string title;
             unsigned int width, height;
+
+            EventCallbackFn eventCallback;
         };
 
         WindowData _data;

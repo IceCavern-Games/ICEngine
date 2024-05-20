@@ -255,7 +255,7 @@ namespace IC {
         descriptorLayoutBuilder.Clear();
 
         // lit descriptors
-        if (materialData.Template().flags & MaterialFlags::Lit) {
+        if (materialData.Template().flags & MaterialFlags::MaterialFlagsLit) {
             descriptorLayoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // scene light data
             descriptorSets.push_back(descriptorLayoutBuilder.Build(device, VK_SHADER_STAGE_FRAGMENT_BIT));
             descriptorLayoutBuilder.Clear();
@@ -300,8 +300,8 @@ namespace IC {
         pipelineBuilder.SetPolygonMode(VK_POLYGON_MODE_FILL);
         pipelineBuilder.SetCullMode(VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
         pipelineBuilder.SetMultisamplingNone();
-        materialData.Template().flags &MaterialFlags::Transparent ? pipelineBuilder.EnableBlending()
-                                                                  : pipelineBuilder.DisableBlending();
+        materialData.Template().flags &MaterialFlags::MaterialFlagsTransparent ? pipelineBuilder.EnableBlending()
+                                                                               : pipelineBuilder.DisableBlending();
         pipelineBuilder.EnableDepthTest();
         pipelineBuilder.SetColorAttachmentFormat(swapChain.GetSwapChainImageFormat());
         pipelineBuilder.SetDepthFormat(swapChain.GetSwapChainDepthFormat());

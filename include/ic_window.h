@@ -1,5 +1,7 @@
 #pragma once
 
+#include "events/ic_event.h"
+
 #include <functional>
 #include <string>
 
@@ -15,6 +17,8 @@ namespace IC {
 
     class Window {
     public:
+        using EventCallbackFn = std::function<void(Event &)>;
+
         virtual ~Window() {}
 
         virtual void OnUpdate() = 0;
@@ -24,6 +28,7 @@ namespace IC {
         virtual bool ShouldClose() const = 0;
 
         virtual void *GetNativeWindow() const = 0;
+        virtual void SetEventCallback(const EventCallbackFn &callback) = 0;
 
         static Window *Create(const WindowProps &props = WindowProps());
     };
