@@ -8,6 +8,7 @@ namespace IC {
 
     void GameObject::Gui() {
         ImGui::Begin(_name.c_str());
+        _transform->Gui();
         for (auto &component : _components) {
             component->Gui();
         }

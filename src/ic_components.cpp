@@ -15,10 +15,10 @@ namespace IC {
     Transform::~Transform() {}
 
     void Transform::Gui() {
+        ImGui::SeparatorText("TRANSFORM");
         ImGui::DragFloat3("Position", (float *)&_position, 0.01);
         ImGui::DragFloat3("Rotation", (float *)&_rotation);
         ImGui::DragFloat3("Scale", (float *)&_scale);
-        ImGui::End();
     }
 
     Mesh::Mesh() {
@@ -73,6 +73,7 @@ namespace IC {
     }
 
     void Mesh::Gui() {
+        ImGui::SeparatorText("MESH");
         ImGui::InputText("File Name", &_filename);
         if (ImGui::Button("Load Mesh")) {
             LoadMesh();
@@ -84,6 +85,7 @@ namespace IC {
     PointLight::~PointLight() {}
 
     void PointLight::Gui() {
+        ImGui::SeparatorText("POINT LIGHT");
         ImGui::ColorEdit3("Light Color", (float *)&_color);
         ImGui::ColorEdit3("Ambient", (float *)&_ambient);
         ImGui::ColorEdit3("Specular", (float *)&_specular);
@@ -94,6 +96,7 @@ namespace IC {
     DirectionalLight::~DirectionalLight() {}
 
     void DirectionalLight::Gui() {
+        ImGui::SeparatorText("DIRECTIONAL LIGHT");
         ImGui::DragFloat3("Light Direction", (float *)&_direction, 0.01);
         ImGui::ColorEdit3("Light Color", (float *)&_color);
         ImGui::ColorEdit3("Ambient", (float *)&_ambient);
