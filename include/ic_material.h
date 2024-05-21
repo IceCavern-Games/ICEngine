@@ -10,9 +10,9 @@
 
 namespace IC {
     enum MaterialFlags {
-        None = 0,
-        Lit = 1 << 0,
-        Transparent = 1 << 1
+        MaterialFlagsNone = 0,
+        MaterialFlagsLit = 1 << 0,
+        MaterialFlagsTransparent = 1 << 1
     };
 
     enum class BindingType {

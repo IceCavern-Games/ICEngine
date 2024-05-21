@@ -56,6 +56,7 @@ endif()
 ##############################################
 # Create target and set properties
 add_library(${PROJECT_NAME}
+    src/platform/glfw_window.cpp
     src/ic_app.cpp
     src/ic_camera.cpp
     src/ic_graphics.cpp

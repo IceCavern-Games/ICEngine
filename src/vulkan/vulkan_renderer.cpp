@@ -29,13 +29,13 @@ namespace IC {
                   _swapChain->GetSwapChainImageFormat());
 
         // window resize callback
-        glfwSetWindowUserPointer(window, this);
-        glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
+        // glfwSetWindowUserPointer(window, this);
+        // glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
     }
 
     VulkanRenderer::~VulkanRenderer() {
-        glfwSetWindowUserPointer(window, nullptr);
-        glfwSetFramebufferSizeCallback(window, nullptr);
+        // glfwSetWindowUserPointer(window, nullptr);
+        // glfwSetFramebufferSizeCallback(window, nullptr);
 
         ImGui_ImplVulkan_Shutdown();
         _meshDescriptorAllocator.DestroyDescriptorPool(_vulkanDevice.Device());
@@ -176,7 +176,7 @@ namespace IC {
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                                sizeof(TransformationPushConstants), &pushConstants);
 
-            if (data.materialData.Template().flags & MaterialFlags::Lit) {
+            if (data.materialData.Template().flags & MaterialFlags::MaterialFlagsLit) {
                 // update light data
                 SceneLightDescriptors descriptors =
                     CreateSceneLightDescriptors(_directionalLight, _pointLights, pushConstants.view);
@@ -281,7 +281,7 @@ namespace IC {
         writer.Clear();
 
         // scene data/lighting descriptors (set 1)
-        if (materialData->Template().flags & MaterialFlags::Lit) {
+        if (materialData->Template().flags & MaterialFlags::MaterialFlagsLit) {
             SceneLightDescriptors descriptors = CreateSceneLightDescriptors(
                 _directionalLight, _pointLights,
                 glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
@@ -299,7 +299,7 @@ namespace IC {
         WriteMaterialDescriptors(_allocator, SwapChain::MAX_FRAMES_IN_FLIGHT, writer, *materialData, _textureManager,
                                  meshRenderData.materialBuffers);
         for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-            int index = materialData->Template().flags & MaterialFlags::Lit ? 2 : 1;
+            int index = materialData->Template().flags & MaterialFlags::MaterialFlagsLit ? 2 : 1;
             writer.UpdateSet(_vulkanDevice.Device(), meshRenderData.descriptorSets[i][index]);
             meshRenderData.UpdateMaterialBuffer(i);
         }
