@@ -52,6 +52,16 @@ namespace IC {
         glm::mat4 view;
     };
 
+    struct PointLightData {
+        std::shared_ptr<PointLight> light;
+        std::shared_ptr<Transform> transform;
+    };
+
+    struct SceneLightData {
+        std::shared_ptr<DirectionalLight> directionalLight;
+        std::vector<PointLightData> pointLights;
+    };
+
     struct DirectionalLightDescriptors {
         alignas(16) glm::vec3 dir;
         alignas(16) glm::vec3 amb;

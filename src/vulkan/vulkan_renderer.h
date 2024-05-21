@@ -27,8 +27,8 @@ namespace IC {
         void RenderImGui(VkCommandBuffer cBuffer, VkImageView targetImageView);
 
         // GameObject helpers
-        void AddDirectionalLight(DirectionalLight *light);
-        void AddPointLight(PointLight *light, glm::vec3 position);
+        void AddDirectionalLight(std::shared_ptr<DirectionalLight> &light);
+        void AddPointLight(std::shared_ptr<PointLight> &light, std::shared_ptr<Transform> &transform);
         void AddMesh(Mesh &mesh, Transform &transform);
 
         // function pointers (for mac)
@@ -45,9 +45,11 @@ namespace IC {
         DescriptorAllocator _imGuiDescriptorAllocator{};
 
         // rendering data (mesh, lights)
-        SceneLightDescriptors _lightData{};
+        SceneLightData _lightData{};
         std::vector<MeshRenderData> _renderData{};
         std::vector<std::shared_ptr<GameObject>> _gameObjects;
+        DirectionalLight _directionalLight;
+        std::vector<std::shared_ptr<PointLight>> _pointLights;
 
         // command buffers
         std::vector<VkCommandBuffer> _cBuffers{};

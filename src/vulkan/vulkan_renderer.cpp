@@ -92,6 +92,10 @@ namespace IC {
         static float rotation = 0.0f;
         rotation += 0.01f;
 
+        // update scene light descriptors
+        SceneLightDescriptors sceneLightDescriptors = CreateSceneLightDescriptors(
+            _lightData, glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+
         uint32_t imageIndex;
         auto result = _swapChain->AcquireNextImage(&imageIndex);
 
@@ -196,7 +200,7 @@ namespace IC {
 
             if (data.meshData.Material()->Template().flags & MaterialFlags::Lit) {
                 // update light data
-                data.UpdateUniformBuffer<SceneLightDescriptors>(_lightData,
+                data.UpdateUniformBuffer<SceneLightDescriptors>(sceneLightDescriptors,
                                                                 data.lightsBuffers[_swapChain->GetCurrentFrame()]);
             }
 
@@ -299,8 +303,7 @@ namespace IC {
 
         // scene data/lighting descriptors (set 1)
         if (mesh.Material()->Template().flags & MaterialFlags::Lit) {
-            WriteLightDescriptors(_allocator, SwapChain::MAX_FRAMES_IN_FLIGHT, _lightData, writer,
-                                  meshRenderData.lightsBuffers);
+            WriteLightDescriptors(_allocator, SwapChain::MAX_FRAMES_IN_FLIGHT, writer, meshRenderData.lightsBuffers);
 
             for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
                 writer.UpdateSet(_vulkanDevice.Device(), meshRenderData.descriptorSets[i][1]);
@@ -320,17 +323,13 @@ namespace IC {
         _renderData.push_back(meshRenderData);
     }
 
-    void VulkanRenderer::AddDirectionalLight(DirectionalLight *light) {
-        _lightData.directionalLight = CreateDirectionalLightDescriptors(
-            light, glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+    void VulkanRenderer::AddDirectionalLight(std::shared_ptr<DirectionalLight> &light) {
+        _lightData.directionalLight = light;
     }
 
-    void VulkanRenderer::AddPointLight(PointLight *light, glm::vec3 position) {
-        if (_lightData.numPointLights < MAX_POINT_LIGHTS) {
-            _lightData.pointLights[_lightData.numPointLights] = CreatePointLightDescriptors(
-                light, position,
-                glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-            _lightData.numPointLights++;
+    void VulkanRenderer::AddPointLight(std::shared_ptr<PointLight> &light, std::shared_ptr<Transform> &transform) {
+        if (_lightData.pointLights.size() < MAX_POINT_LIGHTS) {
+            _lightData.pointLights.push_back({light, transform});
         }
     }
 
@@ -339,9 +338,11 @@ namespace IC {
             if (typeid(*component) == typeid(Mesh)) {
                 AddMesh(*static_cast<Mesh *>(component.get()), *object->GetTransform());
             } else if (typeid(*component) == typeid(PointLight)) {
-                AddPointLight(static_cast<PointLight *>(component.get()), object->GetTransform()->Position());
+                std::shared_ptr<PointLight> light = std::dynamic_pointer_cast<PointLight>(component);
+                AddPointLight(light, object->GetTransform());
             } else if (typeid(*component) == typeid(DirectionalLight)) {
-                AddDirectionalLight(static_cast<DirectionalLight *>(component.get()));
+                std::shared_ptr<DirectionalLight> light = std::dynamic_pointer_cast<DirectionalLight>(component);
+                AddDirectionalLight(light);
             }
         }
     }

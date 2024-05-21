@@ -2,7 +2,7 @@
 
 namespace IC {
     GameObject::GameObject(std::string name) : _name{name} {
-        _transform = std::make_unique<Transform>();
+        _transform = std::make_shared<Transform>();
     }
     GameObject::~GameObject() {}
 

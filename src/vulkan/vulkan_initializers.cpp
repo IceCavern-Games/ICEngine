@@ -142,14 +142,13 @@ namespace IC {
         }
     }
 
-    void WriteLightDescriptors(VulkanAllocator &allocator, size_t maxFrames, SceneLightDescriptors &lightData,
-                               DescriptorWriter &writer, std::vector<AllocatedBuffer> &lightBuffers) {
+    void WriteLightDescriptors(VulkanAllocator &allocator, size_t maxFrames, DescriptorWriter &writer,
+                               std::vector<AllocatedBuffer> &lightBuffers) {
         lightBuffers.resize(maxFrames);
         for (size_t i = 0; i < maxFrames; i++) {
             allocator.CreateBuffer(sizeof(SceneLightDescriptors), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                    VMA_MEMORY_USAGE_AUTO, lightBuffers[i]);
 
-            memcpy(lightBuffers[i].allocInfo.pMappedData, &lightData, sizeof(SceneLightDescriptors));
             writer.WriteBuffer(0, lightBuffers[i].buffer, sizeof(SceneLightDescriptors), 0,
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }
@@ -188,32 +187,33 @@ namespace IC {
         }
     }
 
-    DirectionalLightDescriptors CreateDirectionalLightDescriptors(DirectionalLight *directionalLight,
-                                                                  glm::mat4 viewMat) {
-        glm::vec3 directionalViewSpaceDirection = viewMat * glm::vec4(directionalLight->Direction(), 0.0f);
+    SceneLightDescriptors CreateSceneLightDescriptors(SceneLightData &lightData, glm::mat4 viewMat) {
+        SceneLightDescriptors descriptors;
+        glm::vec3 directionalViewSpaceDirection = viewMat * glm::vec4(lightData.directionalLight->Direction(), 0.0f);
 
-        DirectionalLightDescriptors descriptors{};
-        descriptors.dir = directionalViewSpaceDirection;
-        descriptors.diff = directionalLight->Color();
-        descriptors.amb = directionalLight->Ambient();
-        descriptors.spec = directionalLight->Specular();
+        DirectionalLightDescriptors directionalDescriptors{};
+        directionalDescriptors.dir = directionalViewSpaceDirection;
+        directionalDescriptors.diff = lightData.directionalLight->Color();
+        directionalDescriptors.amb = lightData.directionalLight->Ambient();
+        directionalDescriptors.spec = lightData.directionalLight->Specular();
+        descriptors.directionalLight = directionalDescriptors;
 
-        return descriptors;
-    }
+        for (int i = 0; i < lightData.pointLights.size() && i < MAX_POINT_LIGHTS; i++) {
+            glm::vec3 lightViewSpacePos = viewMat * glm::vec4(lightData.pointLights[i].transform->Position(), 1.0f);
 
-    PointLightDescriptors CreatePointLightDescriptors(PointLight *pointLight, glm::vec3 lightPosition,
-                                                      glm::mat4 viewMat) {
-        glm::vec3 lightViewSpacePos = viewMat * glm::vec4(lightPosition, 1.0f);
+            PointLightDescriptors pointLightDescriptors{};
+            pointLightDescriptors.pos = lightViewSpacePos;
+            pointLightDescriptors.amb = lightData.pointLights[i].light->Ambient();
+            pointLightDescriptors.diff = lightData.pointLights[i].light->Color();
+            pointLightDescriptors.spec = lightData.pointLights[i].light->Specular();
+            pointLightDescriptors.cons = lightData.pointLights[i].light->Constant();
+            pointLightDescriptors.lin = lightData.pointLights[i].light->Linear();
+            pointLightDescriptors.quad = lightData.pointLights[i].light->Quadratic();
 
-        PointLightDescriptors descriptors{};
-        descriptors.pos = lightViewSpacePos;
-        descriptors.diff = pointLight->Color();
-        descriptors.amb = pointLight->Ambient();
-        descriptors.spec = pointLight->Specular();
-        descriptors.cons = pointLight->Constant();
-        descriptors.lin = pointLight->Linear();
-        descriptors.quad = pointLight->Quadratic();
-
+            descriptors.pointLights[i] = pointLightDescriptors;
+        }
+        descriptors.numPointLights =
+            lightData.pointLights.size() > MAX_POINT_LIGHTS ? MAX_POINT_LIGHTS : lightData.pointLights.size();
         return descriptors;
     }
 
