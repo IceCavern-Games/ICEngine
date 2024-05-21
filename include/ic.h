@@ -2,6 +2,7 @@
 #include "ic_app.h"
 #include "ic_camera.h"
 #include "ic_graphics.h"
+#include "ic_layer.h"
 #include "ic_log.h"
 #include "ic_window.h"
 
