@@ -188,10 +188,10 @@ namespace IC {
             vkCmdBindPipeline(_cBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, data.renderPipeline->pipeline);
 
             TransformationPushConstants pushConstants{};
-            pushConstants.model = glm::translate(glm::mat4(1.0f), data.transform.Position()) *
+            pushConstants.model = glm::translate(glm::mat4(1.0f), data.transform.position) *
                                   glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), {1.0f, 0.0f, 0.0f}) *
                                   glm::rotate(glm::mat4(1.0f), rotation, {0.0f, 1.0f, 0.0f}) *
-                                  glm::scale(glm::mat4(1.0f), data.transform.Scale());
+                                  glm::scale(glm::mat4(1.0f), data.transform.scale);
             pushConstants.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
             vkCmdPushConstants(_cBuffers[imageIndex], data.renderPipeline->layout,
@@ -334,16 +334,16 @@ namespace IC {
     }
 
     void VulkanRenderer::AddGameObject(std::shared_ptr<GameObject> object) {
-        for (auto &component : object->Components()) {
-            if (typeid(*component) == typeid(Mesh)) {
-                AddMesh(*static_cast<Mesh *>(component.get()), *object->GetTransform());
-            } else if (typeid(*component) == typeid(PointLight)) {
-                std::shared_ptr<PointLight> light = std::dynamic_pointer_cast<PointLight>(component);
-                AddPointLight(light, object->GetTransform());
-            } else if (typeid(*component) == typeid(DirectionalLight)) {
-                std::shared_ptr<DirectionalLight> light = std::dynamic_pointer_cast<DirectionalLight>(component);
-                AddDirectionalLight(light);
-            }
+        if (object->HasComponent<Mesh>()) {
+            AddMesh(*object->GetComponent<Mesh>(), *object->GetTransform());
+        }
+        if (object->HasComponent<PointLight>()) {
+            auto light = object->GetComponent<PointLight>();
+            AddPointLight(light, object->GetTransform());
+        }
+        if (object->HasComponent<DirectionalLight>()) {
+            auto light = object->GetComponent<DirectionalLight>();
+            AddDirectionalLight(light);
         }
     }
 

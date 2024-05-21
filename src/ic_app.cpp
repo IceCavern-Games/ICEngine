@@ -79,27 +79,23 @@ bool App::Run(const Config *c) {
 
     // mesh game object
     auto mesh = std::make_shared<GameObject>("test mesh");
-    Mesh meshComponent{};
-    mesh->GetTransform()->SetScale(glm::vec3(0.5f));
-    meshComponent.SetMaterial(meshMaterialInstance);
-    mesh->AddComponent<Mesh>(meshComponent);
+    auto meshComponent = mesh->AddComponent<Mesh>();
+    meshComponent->SetMaterial(meshMaterialInstance);
+    mesh->GetTransform()->scale = glm::vec3(0.5f);
 
     // test light
     auto pointLight = std::make_shared<GameObject>("point light");
-    Mesh pointLightMesh{};
-    PointLight pointLightComponent{};
-    pointLight->GetTransform()->SetPosition(glm::vec3(1.7f, 1.0f, 1.0f));
-    pointLight->GetTransform()->SetScale(glm::vec3(0.1f));
-    pointLightMesh.SetMaterial(unlitMaterialInstance);
-    pointLight->AddComponent<PointLight>(pointLightComponent);
-    pointLight->AddComponent<Mesh>(pointLightMesh);
+    pointLight->AddComponent<PointLight>();
+    auto pointLightMesh = pointLight->AddComponent<Mesh>();
+    pointLight->GetTransform()->position = glm::vec3(1.7f, 1.0f, 1.0f);
+    pointLight->GetTransform()->scale = glm::vec3(0.1f);
+    pointLightMesh->SetMaterial(unlitMaterialInstance);
 
     // directional light
     auto dirLight = std::make_shared<GameObject>("directional light");
-    DirectionalLight dirLightComponent{};
-    dirLightComponent.SetDirection({0.0f, 0.0f, 1.0f});
-    dirLightComponent.SetAmbient(glm::vec3(0.2f));
-    dirLight->AddComponent<DirectionalLight>(dirLightComponent);
+    auto dirLightComponent = dirLight->AddComponent<DirectionalLight>();
+    dirLightComponent->direction = {0.0f, 0.0f, 1.0f};
+    dirLightComponent->ambient = glm::vec3(0.2f);
 
     appRendererApi->AddGameObject(mesh);
     appRendererApi->AddGameObject(pointLight);

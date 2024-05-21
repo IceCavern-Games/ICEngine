@@ -189,31 +189,30 @@ namespace IC {
 
     SceneLightDescriptors CreateSceneLightDescriptors(SceneLightData &lightData, glm::mat4 viewMat) {
         SceneLightDescriptors descriptors;
-        glm::vec3 directionalViewSpaceDirection = viewMat * glm::vec4(lightData.directionalLight->Direction(), 0.0f);
+        glm::vec3 directionalViewSpaceDirection = viewMat * glm::vec4(lightData.directionalLight->direction, 0.0f);
 
         DirectionalLightDescriptors directionalDescriptors{};
         directionalDescriptors.dir = directionalViewSpaceDirection;
-        directionalDescriptors.diff = lightData.directionalLight->Color();
-        directionalDescriptors.amb = lightData.directionalLight->Ambient();
-        directionalDescriptors.spec = lightData.directionalLight->Specular();
+        directionalDescriptors.diff = lightData.directionalLight->color;
+        directionalDescriptors.amb = lightData.directionalLight->ambient;
+        directionalDescriptors.spec = lightData.directionalLight->specular;
         descriptors.directionalLight = directionalDescriptors;
 
         for (int i = 0; i < lightData.pointLights.size() && i < MAX_POINT_LIGHTS; i++) {
-            glm::vec3 lightViewSpacePos = viewMat * glm::vec4(lightData.pointLights[i].transform->Position(), 1.0f);
+            glm::vec3 lightViewSpacePos = viewMat * glm::vec4(lightData.pointLights[i].transform->position, 1.0f);
 
             PointLightDescriptors pointLightDescriptors{};
             pointLightDescriptors.pos = lightViewSpacePos;
-            pointLightDescriptors.amb = lightData.pointLights[i].light->Ambient();
-            pointLightDescriptors.diff = lightData.pointLights[i].light->Color();
-            pointLightDescriptors.spec = lightData.pointLights[i].light->Specular();
+            pointLightDescriptors.amb = lightData.pointLights[i].light->ambient;
+            pointLightDescriptors.diff = lightData.pointLights[i].light->color;
+            pointLightDescriptors.spec = lightData.pointLights[i].light->specular;
             pointLightDescriptors.cons = lightData.pointLights[i].light->Constant();
             pointLightDescriptors.lin = lightData.pointLights[i].light->Linear();
             pointLightDescriptors.quad = lightData.pointLights[i].light->Quadratic();
 
             descriptors.pointLights[i] = pointLightDescriptors;
         }
-        descriptors.numPointLights =
-            lightData.pointLights.size() > MAX_POINT_LIGHTS ? MAX_POINT_LIGHTS : lightData.pointLights.size();
+        descriptors.numPointLights = std::min(static_cast<int>(lightData.pointLights.size()), MAX_POINT_LIGHTS);
         return descriptors;
     }
 

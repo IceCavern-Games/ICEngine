@@ -8,38 +8,29 @@
 #include <vector>
 
 namespace IC {
-    class GameObjectComponent {
+    class Component {
     public:
-        GameObjectComponent();
-        ~GameObjectComponent();
+        Component();
+        virtual ~Component() = 0;
 
         virtual void Gui() = 0;
 
     protected:
     };
 
-    class Transform : public GameObjectComponent {
+    class Transform : public Component {
     public:
         Transform();
         ~Transform();
 
-        glm::vec3 Position() { return _position; }
-        glm::vec3 Rotation() { return _rotation; }
-        glm::vec3 Scale() { return _scale; }
-
-        void SetPosition(glm::vec3 position) { _position = position; }
-        void SetRotation(glm::vec3 rotation) { _rotation = rotation; }
-        void SetScale(glm::vec3 scale) { _scale = scale; }
+        glm::vec3 position = glm::vec3(0.0f);
+        glm::vec3 rotation = glm::vec3(0.0f);
+        glm::vec3 scale = glm::vec3(0.0f);
 
         void Gui() override;
-
-    private:
-        glm::vec3 _position = glm::vec3(0.0f);
-        glm::vec3 _rotation = glm::vec3(0.0f);
-        glm::vec3 _scale = glm::vec3(0.0f);
     };
 
-    class Mesh : public GameObjectComponent {
+    class Mesh : public Component {
     public:
         Mesh();
         ~Mesh();
@@ -70,55 +61,37 @@ namespace IC {
         bool _meshUpdatedFlag = false;
     };
 
-    class PointLight : public GameObjectComponent {
+    class PointLight : public Component {
     public:
         PointLight();
         ~PointLight();
 
-        glm::vec3 Color() { return _color; }
-        glm::vec3 Ambient() { return _ambient; }
-        glm::vec3 Specular() { return _specular; }
         float Constant() { return _constant; }
         float Linear() { return _linear; }
         float Quadratic() { return _quadratic; }
 
-        void SetColor(glm::vec3 color) { _color = color; }
-        void SetAmbient(glm::vec3 ambient) { _ambient = ambient; }
-        void SetSpecular(glm::vec3 specular) { _specular = specular; }
-
         void Gui() override;
 
-    private:
-        glm::vec3 _color = glm::vec3(1.0f);
-        glm::vec3 _ambient = glm::vec3(0.1f);
-        glm::vec3 _specular = glm::vec3(1.0f);
+        glm::vec3 color = glm::vec3(1.0f);
+        glm::vec3 ambient = glm::vec3(0.1f);
+        glm::vec3 specular = glm::vec3(1.0f);
 
+    private:
         float _constant = 1.0f;
         float _linear = 0.09f;
         float _quadratic = 0.032f;
     };
 
-    class DirectionalLight : public GameObjectComponent {
+    class DirectionalLight : public Component {
     public:
         DirectionalLight();
         ~DirectionalLight();
 
-        glm::vec3 Direction() { return _direction; }
-        glm::vec3 Color() { return _color; }
-        glm::vec3 Ambient() { return _ambient; }
-        glm::vec3 Specular() { return _specular; }
-
-        void SetDirection(glm::vec3 direction) { _direction = direction; }
-        void SetColor(glm::vec3 color) { _color = color; }
-        void SetAmbient(glm::vec3 ambient) { _ambient = ambient; }
-        void SetSpecular(glm::vec3 specular) { _specular = specular; }
+        glm::vec3 direction;
+        glm::vec3 color = glm::vec3(1.0f);
+        glm::vec3 ambient = glm::vec3(0.1f);
+        glm::vec3 specular = glm::vec3(1.0f);
 
         void Gui() override;
-
-    private:
-        glm::vec3 _direction;
-        glm::vec3 _color = glm::vec3(1.0f);
-        glm::vec3 _ambient = glm::vec3(0.1f);
-        glm::vec3 _specular = glm::vec3(1.0f);
     };
 } // namespace IC

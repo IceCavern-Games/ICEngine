@@ -6,9 +6,9 @@
 #include <tiny_obj_loader.h>
 
 namespace IC {
-    GameObjectComponent::GameObjectComponent() {}
+    Component::Component() {}
 
-    GameObjectComponent::~GameObjectComponent() {}
+    Component::~Component() {}
 
     Transform::Transform() {}
 
@@ -16,9 +16,9 @@ namespace IC {
 
     void Transform::Gui() {
         ImGui::SeparatorText("TRANSFORM");
-        ImGui::DragFloat3("Position", (float *)&_position, 0.01);
-        ImGui::DragFloat3("Rotation", (float *)&_rotation);
-        ImGui::DragFloat3("Scale", (float *)&_scale);
+        ImGui::DragFloat3("Position", (float *)&position, 0.01);
+        ImGui::DragFloat3("Rotation", (float *)&rotation);
+        ImGui::DragFloat3("Scale", (float *)&scale);
     }
 
     Mesh::Mesh() {
@@ -86,9 +86,9 @@ namespace IC {
 
     void PointLight::Gui() {
         ImGui::SeparatorText("POINT LIGHT");
-        ImGui::ColorEdit3("Light Color", (float *)&_color);
-        ImGui::ColorEdit3("Ambient", (float *)&_ambient);
-        ImGui::ColorEdit3("Specular", (float *)&_specular);
+        ImGui::ColorEdit3("Light Color", (float *)&color);
+        ImGui::ColorEdit3("Ambient", (float *)&ambient);
+        ImGui::ColorEdit3("Specular", (float *)&specular);
     }
 
     DirectionalLight::DirectionalLight() {}
@@ -97,9 +97,9 @@ namespace IC {
 
     void DirectionalLight::Gui() {
         ImGui::SeparatorText("DIRECTIONAL LIGHT");
-        ImGui::DragFloat3("Light Direction", (float *)&_direction, 0.01);
-        ImGui::ColorEdit3("Light Color", (float *)&_color);
-        ImGui::ColorEdit3("Ambient", (float *)&_ambient);
-        ImGui::ColorEdit3("Specular", (float *)&_specular);
+        ImGui::DragFloat3("Light Direction", (float *)&direction, 0.01);
+        ImGui::ColorEdit3("Light Color", (float *)&color);
+        ImGui::ColorEdit3("Ambient", (float *)&ambient);
+        ImGui::ColorEdit3("Specular", (float *)&specular);
     }
 } // namespace IC

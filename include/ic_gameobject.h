@@ -3,6 +3,8 @@
 #include "ic_components.h"
 
 #include <memory>
+#include <typeindex>
+#include <typeinfo>
 #include <vector>
 
 namespace IC {
@@ -11,16 +13,20 @@ namespace IC {
         GameObject(std::string name);
         ~GameObject();
 
-        std::vector<std::shared_ptr<GameObjectComponent>> &Components() { return _components; }
         std::shared_ptr<Transform> &GetTransform() { return _transform; }
-        template <typename T> void AddComponent(const T &component) {
-            _components.push_back(std::make_shared<T>(component));
+
+        template <typename T> std::shared_ptr<T> AddComponent() {
+            _componentMap[typeid(T)] = std::make_shared<T>();
+            return static_pointer_cast<T>(_componentMap[typeid(T)]);
         }
-        template <typename T> GameObjectComponent *GetComponent() {
-            for (auto component : _components) {
-                if (typeid(*component) == typeid(T)) {
-                    return component.get();
-                }
+
+        template <typename T> bool HasComponent() { return _componentMap.contains(typeid(T)); }
+
+        template <typename T> std::shared_ptr<T> GetComponent() {
+            if (HasComponent<T>()) {
+                return static_pointer_cast<T>(_componentMap.at(typeid(T)));
+            } else {
+                return nullptr;
             }
         }
 
@@ -29,6 +35,6 @@ namespace IC {
     private:
         std::string _name;
         std::shared_ptr<Transform> _transform;
-        std::vector<std::shared_ptr<GameObjectComponent>> _components;
+        std::map<std::type_index, std::shared_ptr<Component>> _componentMap;
     };
 } // namespace IC
