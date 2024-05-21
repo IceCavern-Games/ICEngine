@@ -1,5 +1,6 @@
 #include "glfw_window.h"
 
+#include <events/ic_app_event.h>
 #include <ic_common.h>
 #include <ic_log.h>
 
@@ -42,6 +43,8 @@ namespace IC {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 #endif
         _window = glfwCreateWindow((int)props.width, (int)props.height, props.title.c_str(), nullptr, nullptr);
+        glfwSetWindowUserPointer(_window, &_data);
+
         _glfwWindowCount++;
 
         RendererType rendererType = RendererType::None;
@@ -52,7 +55,21 @@ namespace IC {
         _renderer = Renderer::MakeRenderer(RendererConfig(_window, rendererType, props.width, props.height));
         IC_CORE_ASSERT(_renderer != nullptr, "Render module was not found.");
 
-        // @TODO: Set GLFW callbacks
+        glfwSetWindowCloseCallback(_window, [](GLFWwindow *window) {
+            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+
+            WindowCloseEvent event;
+            data.eventCallback(event);
+        });
+
+        glfwSetWindowSizeCallback(_window, [](GLFWwindow *window, int width, int height) {
+            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+            data.width = width;
+            data.height = height;
+
+            WindowResizeEvent event(width, height);
+            data.eventCallback(event);
+        });
     }
 
     void GLFWWindow::Exit() {
