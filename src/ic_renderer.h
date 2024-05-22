@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ic_gameobject.h>
 #include <ic_graphics.h>
 
 #include <GLFW/glfw3.h>
@@ -33,9 +34,7 @@ namespace IC {
 
         static Renderer *MakeRenderer(const RendererConfig &rendererConfig);
 
-        virtual void AddMesh(Mesh &meshData, MaterialInstance *materialData) = 0;
-        virtual void AddLight(std::shared_ptr<PointLight> light) = 0;
-        virtual void AddDirectionalLight(std::shared_ptr<DirectionalLight> light) = 0;
+        virtual void AddGameObject(std::shared_ptr<GameObject> object) = 0;
         virtual void DrawFrame() = 0;
 
         void AddImguiFunction(std::string windowName, std::function<void()> function);

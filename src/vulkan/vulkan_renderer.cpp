@@ -92,6 +92,10 @@ namespace IC {
         static float rotation = 0.0f;
         rotation += 0.01f;
 
+        // update scene light descriptors
+        SceneLightDescriptors sceneLightDescriptors = CreateSceneLightDescriptors(
+            _lightData, glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+
         uint32_t imageIndex;
         auto result = _swapChain->AcquireNextImage(&imageIndex);
 
@@ -161,33 +165,49 @@ namespace IC {
                               VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
         VulkanBeginRendering(_cBuffers[imageIndex], &renderingInfo);
-        for (MeshRenderData data : _renderData) {
+        for (MeshRenderData &data : _renderData) {
+            // rebuild vertex and index buffers if required
+            if (data.meshData.MeshUpdated()) {
+                _allocator.DestroyBuffer(data.vertexBuffer);
+                _allocator.DestroyBuffer(data.indexBuffer);
+
+                data.vertexBuffer = {};
+                data.indexBuffer = {};
+
+                _allocator.CreateBuffer(data.meshData.Vertices().data(),
+                                        sizeof(data.meshData.Vertices()[0]) * data.meshData.VertexCount(),
+                                        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, data.vertexBuffer);
+                _allocator.CreateBuffer(data.meshData.Indices().data(),
+                                        sizeof(data.meshData.Indices()[0]) * data.meshData.IndexCount(),
+                                        VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, data.indexBuffer);
+
+                data.meshData.ClearMeshUpdatedFlag();
+            }
+
             // bind pipeline todo: only bind if different
             vkCmdBindPipeline(_cBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, data.renderPipeline->pipeline);
 
             TransformationPushConstants pushConstants{};
-            pushConstants.model = glm::translate(glm::mat4(1.0f), data.meshData.pos) *
+            pushConstants.model = glm::translate(glm::mat4(1.0f), data.transform.position) *
                                   glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), {1.0f, 0.0f, 0.0f}) *
                                   glm::rotate(glm::mat4(1.0f), rotation, {0.0f, 1.0f, 0.0f}) *
-                                  glm::scale(glm::mat4(1.0f), data.meshData.scale);
+                                  glm::scale(glm::mat4(1.0f), data.transform.scale);
             pushConstants.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
             vkCmdPushConstants(_cBuffers[imageIndex], data.renderPipeline->layout,
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                                sizeof(TransformationPushConstants), &pushConstants);
 
-            if (data.materialData.Template().flags & MaterialFlags::Lit) {
+            if (data.meshData.Material()->Template().flags & MaterialFlags::Lit) {
                 // update light data
-                SceneLightDescriptors descriptors =
-                    CreateSceneLightDescriptors(_directionalLight, _pointLights, pushConstants.view);
-                data.UpdateUniformBuffer<SceneLightDescriptors>(descriptors,
+                data.UpdateUniformBuffer<SceneLightDescriptors>(sceneLightDescriptors,
                                                                 data.lightsBuffers[_swapChain->GetCurrentFrame()]);
             }
 
             data.Bind(_cBuffers[imageIndex], data.renderPipeline->layout, _swapChain->GetCurrentFrame());
             data.Draw(_cBuffers[imageIndex]);
             renderStats.drawCalls++;
-            renderStats.numTris += data.meshData.indexCount / 3;
+            renderStats.numTris += data.meshData.IndexCount() / 3;
         }
 
         VulkanEndRendering(_cBuffers[imageIndex]);
@@ -256,17 +276,18 @@ namespace IC {
     }
 
     // Adds a mesh and associated material to list of renderable objects
-    void VulkanRenderer::AddMesh(Mesh &meshData, MaterialInstance *materialData) {
-        MeshRenderData meshRenderData{.meshData = meshData, .materialData = *materialData};
+    void VulkanRenderer::AddMesh(Mesh &mesh, Transform &transform) {
+        MeshRenderData meshRenderData{.meshData = mesh, .transform = transform};
 
         meshRenderData.renderPipeline =
-            _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), *_swapChain.get(), *materialData);
+            _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), *_swapChain.get(), *mesh.Material());
 
         // vertex buffers
-        _allocator.CreateBuffer(meshData.vertices.data(), sizeof(meshData.vertices[0]) * meshData.vertexCount,
+        _allocator.CreateBuffer(mesh.Vertices().data(), sizeof(mesh.Vertices()[0]) * mesh.VertexCount(),
                                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, meshRenderData.vertexBuffer);
-        _allocator.CreateBuffer(meshData.indices.data(), sizeof(meshData.indices[0]) * meshData.indexCount,
+        _allocator.CreateBuffer(mesh.Indices().data(), sizeof(mesh.Indices()[0]) * mesh.IndexCount(),
                                 VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, meshRenderData.indexBuffer);
+        mesh.ClearMeshUpdatedFlag();
 
         // write descriptor sets
         _meshDescriptorAllocator.AllocateDescriptorSets(
@@ -281,13 +302,8 @@ namespace IC {
         writer.Clear();
 
         // scene data/lighting descriptors (set 1)
-        if (materialData->Template().flags & MaterialFlags::Lit) {
-            SceneLightDescriptors descriptors = CreateSceneLightDescriptors(
-                _directionalLight, _pointLights,
-                glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-
-            WriteLightDescriptors(_allocator, SwapChain::MAX_FRAMES_IN_FLIGHT, descriptors, writer,
-                                  meshRenderData.lightsBuffers);
+        if (mesh.Material()->Template().flags & MaterialFlags::Lit) {
+            WriteLightDescriptors(_allocator, SwapChain::MAX_FRAMES_IN_FLIGHT, writer, meshRenderData.lightsBuffers);
 
             for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
                 writer.UpdateSet(_vulkanDevice.Device(), meshRenderData.descriptorSets[i][1]);
@@ -296,10 +312,10 @@ namespace IC {
         }
 
         // material descriptors (set 1 or 2)
-        WriteMaterialDescriptors(_allocator, SwapChain::MAX_FRAMES_IN_FLIGHT, writer, *materialData, _textureManager,
+        WriteMaterialDescriptors(_allocator, SwapChain::MAX_FRAMES_IN_FLIGHT, writer, *mesh.Material(), _textureManager,
                                  meshRenderData.materialBuffers);
         for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-            int index = materialData->Template().flags & MaterialFlags::Lit ? 2 : 1;
+            int index = mesh.Material()->Template().flags & MaterialFlags::Lit ? 2 : 1;
             writer.UpdateSet(_vulkanDevice.Device(), meshRenderData.descriptorSets[i][index]);
             meshRenderData.UpdateMaterialBuffer(i);
         }
@@ -307,13 +323,28 @@ namespace IC {
         _renderData.push_back(meshRenderData);
     }
 
-    void VulkanRenderer::AddLight(std::shared_ptr<PointLight> light) {
-        _pointLights.push_back(light);
-        AddMesh(light->previewMesh, light->previewMaterial);
+    void VulkanRenderer::AddDirectionalLight(std::shared_ptr<DirectionalLight> &light) {
+        _lightData.directionalLight = light;
     }
 
-    void VulkanRenderer::AddDirectionalLight(std::shared_ptr<DirectionalLight> light) {
-        _directionalLight = light;
+    void VulkanRenderer::AddPointLight(std::shared_ptr<PointLight> &light, std::shared_ptr<Transform> &transform) {
+        if (_lightData.pointLights.size() < MAX_POINT_LIGHTS) {
+            _lightData.pointLights.push_back({light, transform});
+        }
+    }
+
+    void VulkanRenderer::AddGameObject(std::shared_ptr<GameObject> object) {
+        if (object->HasComponent<Mesh>()) {
+            AddMesh(*object->GetComponent<Mesh>(), *object->GetTransform());
+        }
+        if (object->HasComponent<PointLight>()) {
+            auto light = object->GetComponent<PointLight>();
+            AddPointLight(light, object->GetTransform());
+        }
+        if (object->HasComponent<DirectionalLight>()) {
+            auto light = object->GetComponent<DirectionalLight>();
+            AddDirectionalLight(light);
+        }
     }
 
     void VulkanRenderer::RecreateSwapChain() {

@@ -61,6 +61,7 @@ namespace IC {
         vmaDestroyBuffer(_allocator, buffer.buffer, buffer.allocation);
 
         buffer.buffer = nullptr;
+        buffer.allocation = nullptr;
     }
 
     void VulkanAllocator::DestroyImage(AllocatedImage &image) {

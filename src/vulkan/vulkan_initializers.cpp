@@ -142,14 +142,13 @@ namespace IC {
         }
     }
 
-    void WriteLightDescriptors(VulkanAllocator &allocator, size_t maxFrames, SceneLightDescriptors &lightData,
-                               DescriptorWriter &writer, std::vector<AllocatedBuffer> &lightBuffers) {
+    void WriteLightDescriptors(VulkanAllocator &allocator, size_t maxFrames, DescriptorWriter &writer,
+                               std::vector<AllocatedBuffer> &lightBuffers) {
         lightBuffers.resize(maxFrames);
         for (size_t i = 0; i < maxFrames; i++) {
             allocator.CreateBuffer(sizeof(SceneLightDescriptors), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                    VMA_MEMORY_USAGE_AUTO, lightBuffers[i]);
 
-            memcpy(lightBuffers[i].allocInfo.pMappedData, &lightData, sizeof(SceneLightDescriptors));
             writer.WriteBuffer(0, lightBuffers[i].buffer, sizeof(SceneLightDescriptors), 0,
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }
@@ -188,38 +187,36 @@ namespace IC {
         }
     }
 
-    SceneLightDescriptors CreateSceneLightDescriptors(std::shared_ptr<DirectionalLight> &directionalLight,
-                                                      std::vector<std::shared_ptr<PointLight>> &pointLights,
-                                                      glm::mat4 viewMat) {
+    SceneLightDescriptors CreateSceneLightDescriptors(SceneLightData &lightData, glm::mat4 viewMat) {
         SceneLightDescriptors descriptors;
-        glm::vec3 directionalViewSpaceDirection = viewMat * glm::vec4(directionalLight->direction, 0.0f);
+        glm::vec3 directionalViewSpaceDirection = viewMat * glm::vec4(lightData.directionalLight->direction, 0.0f);
 
         DirectionalLightDescriptors directionalDescriptors{};
         directionalDescriptors.dir = directionalViewSpaceDirection;
-        directionalDescriptors.diff = directionalLight->color;
-        directionalDescriptors.amb = directionalLight->ambient;
-        directionalDescriptors.spec = directionalLight->specular;
+        directionalDescriptors.diff = lightData.directionalLight->color;
+        directionalDescriptors.amb = lightData.directionalLight->ambient;
+        directionalDescriptors.spec = lightData.directionalLight->specular;
         descriptors.directionalLight = directionalDescriptors;
-        for (int i = 0; i < pointLights.size() && i < MAX_POINT_LIGHTS; i++) {
-            glm::vec3 lightViewSpacePos = viewMat * glm::vec4(pointLights[i]->previewMesh.pos, 1.0f);
+
+        for (int i = 0; i < lightData.pointLights.size() && i < MAX_POINT_LIGHTS; i++) {
+            glm::vec3 lightViewSpacePos = viewMat * glm::vec4(lightData.pointLights[i].transform->position, 1.0f);
 
             PointLightDescriptors pointLightDescriptors{};
             pointLightDescriptors.pos = lightViewSpacePos;
-            pointLightDescriptors.amb = pointLights[i]->ambient;
-            pointLightDescriptors.diff = pointLights[i]->color;
-            pointLightDescriptors.spec = pointLights[i]->specular;
-            pointLightDescriptors.cons = pointLights[i]->constant;
-            pointLightDescriptors.lin = pointLights[i]->linear;
-            pointLightDescriptors.quad = pointLights[i]->quadratic;
+            pointLightDescriptors.amb = lightData.pointLights[i].light->ambient;
+            pointLightDescriptors.diff = lightData.pointLights[i].light->color;
+            pointLightDescriptors.spec = lightData.pointLights[i].light->specular;
+            pointLightDescriptors.cons = lightData.pointLights[i].light->Constant();
+            pointLightDescriptors.lin = lightData.pointLights[i].light->Linear();
+            pointLightDescriptors.quad = lightData.pointLights[i].light->Quadratic();
 
             descriptors.pointLights[i] = pointLightDescriptors;
         }
-        descriptors.numPointLights = pointLights.size() > MAX_POINT_LIGHTS ? MAX_POINT_LIGHTS : pointLights.size();
+        descriptors.numPointLights = std::min(static_cast<int>(lightData.pointLights.size()), MAX_POINT_LIGHTS);
         return descriptors;
     }
 
     // images
-
     void CreateImageSampler(VkDevice device, float maxAnisotropy, VkSampler &textureSampler) {
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
