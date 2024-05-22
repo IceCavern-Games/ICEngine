@@ -11,7 +11,7 @@ namespace IC {
     class Component {
     public:
         Component();
-        virtual ~Component() = 0;
+        virtual ~Component();
 
         virtual void Gui() = 0;
 
