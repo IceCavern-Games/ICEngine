@@ -97,7 +97,7 @@ namespace IC {
 
     void DirectionalLight::Gui() {
         ImGui::SeparatorText("DIRECTIONAL LIGHT");
-        ImGui::DragFloat3("Light Direction", (float *)&direction, 0.01);
+        ImGui::DragFloat3("Light Direction", (float *)&direction);
         ImGui::ColorEdit3("Light Color", (float *)&color);
         ImGui::ColorEdit3("Ambient", (float *)&ambient);
         ImGui::ColorEdit3("Specular", (float *)&specular);

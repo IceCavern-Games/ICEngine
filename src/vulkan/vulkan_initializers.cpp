@@ -7,6 +7,8 @@
 #include "swap_chain.h"
 #include "vulkan_util.h"
 
+#include <glm/gtx/quaternion.hpp>
+
 #include <iostream>
 
 namespace IC {
@@ -189,7 +191,11 @@ namespace IC {
 
     SceneLightDescriptors CreateSceneLightDescriptors(SceneLightData &lightData, glm::mat4 viewMat) {
         SceneLightDescriptors descriptors;
-        glm::vec3 directionalViewSpaceDirection = viewMat * glm::vec4(lightData.directionalLight->direction, 0.0f);
+        glm::quat rotation = glm::quat(glm::vec3(glm::radians(lightData.directionalLight->direction.x),
+                                                 glm::radians(lightData.directionalLight->direction.y),
+                                                 glm::radians(lightData.directionalLight->direction.z)));
+        glm::vec4 rotatedDirection = glm::toMat4(rotation) * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+        glm::vec3 directionalViewSpaceDirection = viewMat * rotatedDirection;
 
         DirectionalLightDescriptors directionalDescriptors{};
         directionalDescriptors.dir = directionalViewSpaceDirection;
