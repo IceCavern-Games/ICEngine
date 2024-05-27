@@ -28,7 +28,7 @@ layout(location = 3) out vec2 fragTexCoord;
 
 void main() {
     gl_Position = proj.proj * mv.view * mv.model * vec4(inPosition, 1.0);
-    normal = normalize(mat3(transpose(inverse(mv.view * mv.model))) * inNormal);
+    normal = mat3(transpose(inverse(mv.view * mv.model))) * inNormal;
     fragColor = materialColor.color;
     fragPos = vec3(mv.view * mv.model * vec4(inPosition, 1.0));
     fragTexCoord = inTexCoord;

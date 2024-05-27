@@ -5,6 +5,7 @@
 #include "vulkan_util.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include <iostream>
 
@@ -88,9 +89,6 @@ namespace IC {
         renderStats.drawCalls = 0;
         renderStats.numTris = 0;
         renderStats.frametime = 0.0f;
-
-        static float rotation = 0.0f;
-        rotation += 0.01f;
 
         // update scene light descriptors
         SceneLightDescriptors sceneLightDescriptors = CreateSceneLightDescriptors(
@@ -187,10 +185,12 @@ namespace IC {
             // bind pipeline todo: only bind if different
             vkCmdBindPipeline(_cBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, data.renderPipeline->pipeline);
 
+            // build model matrix
+            glm::quat rotation =
+                glm::quat(glm::vec3(glm::radians(data.transform.rotation.x), glm::radians(data.transform.rotation.y),
+                                    glm::radians(data.transform.rotation.z)));
             TransformationPushConstants pushConstants{};
-            pushConstants.model = glm::translate(glm::mat4(1.0f), data.transform.position) *
-                                  glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), {1.0f, 0.0f, 0.0f}) *
-                                  glm::rotate(glm::mat4(1.0f), rotation, {0.0f, 1.0f, 0.0f}) *
+            pushConstants.model = glm::translate(glm::mat4(1.0f), data.transform.position) * glm::toMat4(rotation) *
                                   glm::scale(glm::mat4(1.0f), data.transform.scale);
             pushConstants.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 

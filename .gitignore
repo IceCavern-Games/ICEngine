@@ -20,6 +20,9 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
+# imgui
+imgui.ini
+
 # Prerequisites
 *.d
 
