@@ -18,9 +18,10 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     vec3 result;
-    result = calcDirectionalLight(lightData.directional, fragTexCoord, normal, fragPos);
+    vec3 normalizedNormal = normalize(normal);
+    result = calcDirectionalLight(lightData.directional, fragTexCoord, normalizedNormal, fragPos);
     for (int i = 0; i < lightData.numPointLights; i++) {
-        result += calcPointLight(lightData.pointLights[i], fragTexCoord, normal, fragPos);
+        result += calcPointLight(lightData.pointLights[i], fragTexCoord, normalizedNormal, fragPos);
     }
     outColor = vec4(result * fragColor.rgb, 1.0);
 }
