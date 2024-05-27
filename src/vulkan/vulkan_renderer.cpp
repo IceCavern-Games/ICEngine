@@ -90,9 +90,6 @@ namespace IC {
         renderStats.numTris = 0;
         renderStats.frametime = 0.0f;
 
-        static float rotation = 0.0f;
-        rotation += 0.01f;
-
         // update scene light descriptors
         SceneLightDescriptors sceneLightDescriptors = CreateSceneLightDescriptors(
             _lightData, glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
