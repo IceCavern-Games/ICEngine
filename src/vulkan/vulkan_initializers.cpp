@@ -145,7 +145,8 @@ namespace IC {
     }
 
     void WriteLightDescriptors(VulkanAllocator &allocator, size_t maxFrames, DescriptorWriter &writer,
-                               std::vector<AllocatedBuffer> &lightBuffers) {
+                               std::vector<AllocatedBuffer> &lightBuffers, std::vector<AllocatedImage> &shadowMaps,
+                               VkSampler shadowSampler) {
         lightBuffers.resize(maxFrames);
         for (size_t i = 0; i < maxFrames; i++) {
             allocator.CreateBuffer(sizeof(SceneLightDescriptors), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -153,6 +154,9 @@ namespace IC {
 
             writer.WriteBuffer(0, lightBuffers[i].buffer, sizeof(SceneLightDescriptors), 0,
                                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+            writer.WriteImage(1, shadowMaps[i].view, shadowSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                              VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
         }
     }
 
@@ -259,7 +263,8 @@ namespace IC {
 
         // lit descriptors
         if (materialData.Template().flags & MaterialFlags::Lit) {
-            descriptorLayoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // scene light data
+            descriptorLayoutBuilder.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);         // scene light data
+            descriptorLayoutBuilder.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // shadow map
             descriptorSets.push_back(descriptorLayoutBuilder.Build(device, VK_SHADER_STAGE_FRAGMENT_BIT));
             descriptorLayoutBuilder.Clear();
         }

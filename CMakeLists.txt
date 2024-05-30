@@ -146,6 +146,10 @@ export(EXPORT ${PROJECT_NAME}_targets
 
 add_subdirectory(resources/shaders)
 
+if (IC_RENDERER_VULKAN) 
+    add_subdirectory(src/vulkan/shaders)
+endif()
+
 ##############################################
 # Editor
 

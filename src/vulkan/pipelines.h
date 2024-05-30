@@ -36,6 +36,7 @@ namespace IC {
         void DisableBlending();
         void EnableBlending();
         void SetColorAttachmentFormat(VkFormat format);
+        void DisableColorAttachment();
         void SetDepthFormat(VkFormat format);
         void DisableDepthTest();
         void EnableDepthTest();
@@ -47,12 +48,19 @@ namespace IC {
 
     class PipelineManager {
     public:
+        PipelineManager(VkDevice device);
+
+        Pipeline &ShadowMapPipeline() { return *_shadowMapPipeline; }
+
+        void CreateShadowMapPipeline(VkFormat swapChainDepthFormat);
         void DestroyPipelines(VkDevice device);
-        std::shared_ptr<Pipeline> FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain,
-                                                               MaterialInstance &materialData);
+        std::shared_ptr<Pipeline> FindOrCreateSuitablePipeline(SwapChain &swapChain, MaterialInstance &materialData);
 
     private:
         bool IsPipelineSuitable(Pipeline &pipeline, MaterialInstance &materialData);
+
         std::vector<std::shared_ptr<Pipeline>> _createdPipelines;
+        std::unique_ptr<Pipeline> _shadowMapPipeline;
+        VkDevice _device;
     };
 } // namespace IC

@@ -24,4 +24,5 @@ void main() {
         result += calcPointLight(lightData.pointLights[i], fragTexCoord, normalizedNormal, fragPos);
     }
     outColor = vec4(result * fragColor.rgb, 1.0);
+    // outColor = texture(shadowMap, fragTexCoord);
 }

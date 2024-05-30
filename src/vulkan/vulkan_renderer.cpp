@@ -13,6 +13,7 @@ namespace IC {
     VulkanRenderer::VulkanRenderer(const RendererConfig &config)
         : Renderer(config),
           _vulkanDevice(config.window),
+          _pipelineManager{_vulkanDevice.Device()},
           _allocator{_vulkanDevice},
           _textureManager{_vulkanDevice, _allocator},
           _windowExtent{static_cast<uint32_t>(config.width), static_cast<uint32_t>(config.height)} {
@@ -23,6 +24,7 @@ namespace IC {
             (PFN_vkCmdEndRenderingKHR)vkGetInstanceProcAddr(_vulkanDevice.Instance(), "vkCmdEndRenderingKHR");
 
         RecreateSwapChain();
+        _pipelineManager.CreateShadowMapPipeline(_swapChain->GetSwapChainDepthFormat());
 
         CreateCommandBuffers();
         InitDescriptorAllocators();
@@ -118,6 +120,8 @@ namespace IC {
             throw std::runtime_error("Failed to begin recording command buffer.");
         }
 
+        BuildShadowMap(imageIndex);
+
         VkRenderingAttachmentInfo colorAttachment = {.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
         colorAttachment.imageView = _swapChain->GetImageView(imageIndex);
         colorAttachment.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -148,14 +152,18 @@ namespace IC {
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 
-        vkCmdSetViewport(_cBuffers[imageIndex], 0, 1, &viewport);
-
         VkRect2D scissor = {};
         scissor.offset.x = 0;
         scissor.offset.y = 0;
         scissor.extent.width = _swapChain->GetSwapChainExtent().width;
         scissor.extent.height = _swapChain->GetSwapChainExtent().height;
 
+        CameraDescriptors projection{};
+        projection.proj = glm::perspective(
+            glm::radians(45.0f),
+            (float)_swapChain->GetSwapChainExtent().width / _swapChain->GetSwapChainExtent().height, 0.1f, 10.0f);
+
+        vkCmdSetViewport(_cBuffers[imageIndex], 0, 1, &viewport);
         vkCmdSetScissor(_cBuffers[imageIndex], 0, 1, &scissor);
 
         TransitionImageLayout(_cBuffers[imageIndex], _swapChain->GetImage(imageIndex),
@@ -184,6 +192,9 @@ namespace IC {
 
             // bind pipeline todo: only bind if different
             vkCmdBindPipeline(_cBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, data.renderPipeline->pipeline);
+
+            // update projection matrix
+            data.UpdateMvpBuffer(projection, _swapChain->GetCurrentFrame());
 
             // build model matrix
             glm::quat rotation =
@@ -242,6 +253,96 @@ namespace IC {
         renderStats.frametime = elapsed * 1000.0f;
     }
 
+    void VulkanRenderer::BuildShadowMap(uint32_t imageIndex) {
+        VkRenderingAttachmentInfo depthAttachment{.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+        depthAttachment.imageView = _swapChain->GetShadowImage(imageIndex).view;
+        depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+        depthAttachment.clearValue.depthStencil = {1.0f, 0};
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+        VkRenderingInfo renderingInfo{.sType = VK_STRUCTURE_TYPE_RENDERING_INFO};
+        renderingInfo.renderArea = VkRect2D{VkOffset2D{0, 0}, {1024, 1024}};
+        renderingInfo.layerCount = 1;
+        renderingInfo.colorAttachmentCount = 0;
+        renderingInfo.pColorAttachments = nullptr;
+        renderingInfo.pDepthAttachment = &depthAttachment;
+        renderingInfo.pStencilAttachment = nullptr;
+
+        VkViewport viewport = {};
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.width = 1024;
+        viewport.height = 1024;
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+
+        VkRect2D scissor = {};
+        scissor.offset.x = 0;
+        scissor.offset.y = 0;
+        scissor.extent.width = 1024;
+        scissor.extent.height = 1024;
+
+        CameraDescriptors projection{};
+        projection.proj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f);
+
+        vkCmdSetViewport(_cBuffers[imageIndex], 0, 1, &viewport);
+        vkCmdSetScissor(_cBuffers[imageIndex], 0, 1, &scissor);
+
+        TransitionImageLayout(_cBuffers[imageIndex], _swapChain->GetShadowImage(imageIndex).image,
+                              _swapChain->GetSwapChainDepthFormat(), VK_IMAGE_LAYOUT_UNDEFINED,
+                              VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+        VulkanBeginRendering(_cBuffers[imageIndex], &renderingInfo);
+        for (MeshRenderData &data : _renderData) {
+            // rebuild vertex and index buffers if required
+            if (data.meshData.MeshUpdated()) {
+                _allocator.DestroyBuffer(data.vertexBuffer);
+                _allocator.DestroyBuffer(data.indexBuffer);
+
+                data.vertexBuffer = {};
+                data.indexBuffer = {};
+
+                _allocator.CreateBuffer(data.meshData.Vertices().data(),
+                                        sizeof(data.meshData.Vertices()[0]) * data.meshData.VertexCount(),
+                                        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, data.vertexBuffer);
+                _allocator.CreateBuffer(data.meshData.Indices().data(),
+                                        sizeof(data.meshData.Indices()[0]) * data.meshData.IndexCount(),
+                                        VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, data.indexBuffer);
+
+                data.meshData.ClearMeshUpdatedFlag();
+            }
+
+            // bind pipeline todo: only bind if different
+            vkCmdBindPipeline(_cBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS,
+                              _pipelineManager.ShadowMapPipeline().pipeline);
+
+            // build model matrix
+            glm::quat rotation =
+                glm::quat(glm::vec3(glm::radians(data.transform.rotation.x), glm::radians(data.transform.rotation.y),
+                                    glm::radians(data.transform.rotation.z)));
+            TransformationPushConstants pushConstants{};
+            pushConstants.model = glm::translate(glm::mat4(1.0f), data.transform.position) * glm::toMat4(rotation) *
+                                  glm::scale(glm::mat4(1.0f), data.transform.scale);
+            pushConstants.view =
+                glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+            vkCmdPushConstants(_cBuffers[imageIndex], data.renderPipeline->layout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                               sizeof(TransformationPushConstants), &pushConstants);
+
+            data.UpdateMvpBuffer(projection, _swapChain->GetCurrentFrame());
+
+            data.Bind(_cBuffers[imageIndex], data.renderPipeline->layout, _swapChain->GetCurrentFrame());
+            data.Draw(_cBuffers[imageIndex]);
+            renderStats.drawCalls++;
+        }
+
+        VulkanEndRendering(_cBuffers[imageIndex]);
+    }
+
+    void VulkanRenderer::DrawGeometry(uint32_t imageIndex) {}
+
     void VulkanRenderer::FramebufferResizeCallback(GLFWwindow *window, int width, int height) {
         auto renderer = reinterpret_cast<VulkanRenderer *>(glfwGetWindowUserPointer(window));
         renderer->_framebufferResized = true;
@@ -279,8 +380,7 @@ namespace IC {
     void VulkanRenderer::AddMesh(Mesh &mesh, Transform &transform) {
         MeshRenderData meshRenderData{.meshData = mesh, .transform = transform};
 
-        meshRenderData.renderPipeline =
-            _pipelineManager.FindOrCreateSuitablePipeline(_vulkanDevice.Device(), *_swapChain.get(), *mesh.Material());
+        meshRenderData.renderPipeline = _pipelineManager.FindOrCreateSuitablePipeline(*_swapChain, *mesh.Material());
 
         // vertex buffers
         _allocator.CreateBuffer(mesh.Vertices().data(), sizeof(mesh.Vertices()[0]) * mesh.VertexCount(),
@@ -303,7 +403,8 @@ namespace IC {
 
         // scene data/lighting descriptors (set 1)
         if (mesh.Material()->Template().flags & MaterialFlags::Lit) {
-            WriteLightDescriptors(_allocator, SwapChain::MAX_FRAMES_IN_FLIGHT, writer, meshRenderData.lightsBuffers);
+            WriteLightDescriptors(_allocator, SwapChain::MAX_FRAMES_IN_FLIGHT, writer, meshRenderData.lightsBuffers,
+                                  _swapChain->GetShadowImages(), _textureManager.DefaultSampler());
 
             for (size_t i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
                 writer.UpdateSet(_vulkanDevice.Device(), meshRenderData.descriptorSets[i][1]);

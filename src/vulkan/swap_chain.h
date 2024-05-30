@@ -28,6 +28,8 @@ namespace IC {
         VkImage &GetImage(int index) { return _swapChainImages[index]; }
         VkImageView GetImageView(int index) { return _swapChainImageViews[index]; }
         AllocatedImage &GetDepthImage(int index) { return _depthImages[index]; }
+        AllocatedImage &GetShadowImage(int index) { return _shadowImages[index]; }
+        std::vector<AllocatedImage> &GetShadowImages() { return _shadowImages; }
         size_t ImageCount() { return _swapChainImages.size(); }
         VkFormat GetSwapChainDepthFormat() { return _swapChainDepthFormat; }
         VkFormat GetSwapChainImageFormat() { return _swapChainImageFormat; }
@@ -43,13 +45,13 @@ namespace IC {
         VkResult AcquireNextImage(uint32_t *imageIndex);
         VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
         void WaitForFrameFence(uint32_t *imageIndex);
-        void ImmediateSubmitCommandBuffers(const VkCommandBuffer buffer,
-                                           std::function<void(VkCommandBuffer cmd)> &&function);
+        void ImmediateSubmitCommandBuffers(std::function<void(VkCommandBuffer cmd)> &&function);
 
     private:
         void CreateSwapChain(std::shared_ptr<SwapChain> &previous);
         void CreateImageViews();
         void CreateDepthResources();
+        void CreateShadowResources();
         void CreateRenderPass();
         void CreateFramebuffers();
         void CreateSyncObjects();
@@ -69,6 +71,7 @@ namespace IC {
         VkRenderPass _renderPass;
 
         std::vector<AllocatedImage> _depthImages;
+        std::vector<AllocatedImage> _shadowImages;
         std::vector<VkImage> _swapChainImages;
         std::vector<VkImageView> _swapChainImageViews;
 
@@ -85,6 +88,7 @@ namespace IC {
         size_t _currentFrame = 0;
 
         VkFence _immFence;
+        VkCommandBuffer _immCommandBuffer;
     };
 
 } // namespace IC

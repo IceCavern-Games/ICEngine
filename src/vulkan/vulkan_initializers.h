@@ -40,7 +40,8 @@ namespace IC {
     void WritePerObjectDescriptors(VulkanAllocator &allocator, SwapChain &swapChain, DescriptorWriter &writer,
                                    MeshRenderData &renderData);
     void WriteLightDescriptors(VulkanAllocator &allocator, size_t maxFrames, DescriptorWriter &writer,
-                               std::vector<AllocatedBuffer> &lightBuffers);
+                               std::vector<AllocatedBuffer> &lightBuffers, std::vector<AllocatedImage> &shadowMaps,
+                               VkSampler shadowSampler);
     void WriteMaterialDescriptors(VulkanAllocator &allocator, size_t maxFrames, DescriptorWriter &writer,
                                   MaterialInstance &material, VulkanTextureManager &textureManager,
                                   std::vector<AllocatedBuffer> &materialBuffers);

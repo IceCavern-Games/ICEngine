@@ -121,7 +121,7 @@ namespace IC {
 
         void Draw(VkCommandBuffer cBuffer) { vkCmdDrawIndexed(cBuffer, meshData.IndexCount(), 1, 0, 0, 0); }
 
-        void UpdateMvpBuffer(CameraDescriptors uniformBuffer, uint32_t currentImage) {
+        void UpdateMvpBuffer(CameraDescriptors &uniformBuffer, uint32_t currentImage) {
             memcpy(mvpBuffers[currentImage].allocInfo.pMappedData, &uniformBuffer, sizeof(uniformBuffer));
         }
 

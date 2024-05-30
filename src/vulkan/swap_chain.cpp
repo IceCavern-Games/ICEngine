@@ -24,6 +24,7 @@ namespace IC {
         CreateImageViews();
         CreateRenderPass();
         CreateDepthResources();
+        CreateShadowResources();
         CreateFramebuffers();
         CreateSyncObjects();
     }
@@ -41,6 +42,10 @@ namespace IC {
 
         for (int i = 0; i < _depthImages.size(); i++) {
             _allocator.DestroyImage(_depthImages[i]);
+        }
+
+        for (int i = 0; i < _shadowImages.size(); i++) {
+            _allocator.DestroyImage(_shadowImages[i]);
         }
 
         for (auto framebuffer : _swapChainFramebuffers) {
@@ -118,20 +123,20 @@ namespace IC {
         }
     }
 
-    void SwapChain::ImmediateSubmitCommandBuffers(const VkCommandBuffer buffer,
-                                                  std::function<void(VkCommandBuffer cmd)> &&function) {
+    void SwapChain::ImmediateSubmitCommandBuffers(std::function<void(VkCommandBuffer cmd)> &&function) {
         VK_CHECK(vkResetFences(_device.Device(), 1, &_immFence));
-        VK_CHECK(vkResetCommandBuffer(buffer, 0));
+        VK_CHECK(vkResetCommandBuffer(_immCommandBuffer, 0));
 
+        VkCommandBuffer cmd = _immCommandBuffer;
         VkCommandBufferBeginInfo beginInfo = CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-        VK_CHECK(vkBeginCommandBuffer(buffer, &beginInfo));
+        VK_CHECK(vkBeginCommandBuffer(_immCommandBuffer, &beginInfo));
 
-        function(buffer);
+        function(cmd);
 
-        VK_CHECK(vkEndCommandBuffer(buffer));
+        VK_CHECK(vkEndCommandBuffer(cmd));
 
-        VkCommandBufferSubmitInfo cmdInfo = CommandBufferSubmitInfo(buffer);
+        VkCommandBufferSubmitInfo cmdInfo = CommandBufferSubmitInfo(cmd);
         VkSubmitInfo2 submit = SubmitInfo(&cmdInfo, nullptr, nullptr);
 
         VK_CHECK(vkQueueSubmit2(_device.GraphicsQueue(), 1, &submit, _immFence));
@@ -297,6 +302,22 @@ namespace IC {
             size.height = swapChainExtent.height;
             _allocator.CreateImage(size, _swapChainDepthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                                    _depthImages[i]);
+        }
+    }
+
+    void SwapChain::CreateShadowResources() {
+        _shadowImages.resize(ImageCount());
+
+        for (int i = 0; i < _shadowImages.size(); i++) {
+            VkExtent3D size = {};
+            size.depth = 1;
+            size.width = 1024;
+            size.height = 1024;
+
+            IC_CORE_WARN("CREATING SHADOW IMAGE");
+            _allocator.CreateImage(size, _swapChainDepthFormat,
+                                   VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                   _shadowImages[i]);
         }
     }
 

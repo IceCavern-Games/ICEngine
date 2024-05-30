@@ -26,6 +26,7 @@ layout(set = 1, binding = 0) uniform SceneLightData {
     uint numPointLights;
 }
 lightData;
+layout(set = 1, binding = 1) uniform sampler2D shadowMap;
 
 layout(set = 2, binding = 1) uniform sampler2D diffuseTexture;
 layout(set = 2, binding = 2) uniform sampler2D specularMask;

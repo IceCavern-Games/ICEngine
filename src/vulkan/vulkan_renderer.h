@@ -20,6 +20,8 @@ namespace IC {
         static void FramebufferResizeCallback(GLFWwindow *window, int width, int height);
 
     private:
+        void BuildShadowMap(uint32_t imageIndex);
+        void DrawGeometry(uint32_t imageIndex);
         void CreateCommandBuffers();
         void FreeCommandBuffers();
         void InitDescriptorAllocators();
@@ -39,8 +41,8 @@ namespace IC {
         VulkanDevice _vulkanDevice;
         VulkanAllocator _allocator;
         VulkanTextureManager _textureManager;
-        std::unique_ptr<SwapChain> _swapChain;
-        PipelineManager _pipelineManager{};
+        PipelineManager _pipelineManager;
+        std::shared_ptr<SwapChain> _swapChain;
         DescriptorAllocator _meshDescriptorAllocator{};
         DescriptorAllocator _imGuiDescriptorAllocator{};
 

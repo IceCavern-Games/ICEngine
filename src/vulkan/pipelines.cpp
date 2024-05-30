@@ -181,6 +181,11 @@ namespace IC {
         renderInfo.pColorAttachmentFormats = &colorAttachmentformat;
     }
 
+    void PipelineBuilder::DisableColorAttachment() {
+        renderInfo.colorAttachmentCount = 0;
+        renderInfo.pColorAttachmentFormats = nullptr;
+    }
+
     void PipelineBuilder::SetDepthFormat(VkFormat format) {
         renderInfo.depthAttachmentFormat = format;
     }
@@ -219,20 +224,23 @@ namespace IC {
     }
 
     // pipeline manager
+    PipelineManager::PipelineManager(VkDevice device) : _device{device} {}
+
     void PipelineManager::DestroyPipelines(VkDevice device) {
         for (auto pipeline : _createdPipelines) {
             DestroyPipeline(device, *pipeline);
         }
+        DestroyPipeline(device, *_shadowMapPipeline);
     }
 
-    std::shared_ptr<Pipeline> PipelineManager::FindOrCreateSuitablePipeline(VkDevice device, SwapChain &swapChain,
+    std::shared_ptr<Pipeline> PipelineManager::FindOrCreateSuitablePipeline(SwapChain &swapChain,
                                                                             MaterialInstance &materialData) {
         for (auto pipeline : _createdPipelines) {
             if (IsPipelineSuitable(*pipeline, materialData)) {
                 return pipeline;
             }
         }
-        std::shared_ptr<Pipeline> pipeline = CreateOpaquePipeline(device, swapChain, materialData);
+        std::shared_ptr<Pipeline> pipeline = CreateOpaquePipeline(_device, swapChain, materialData);
         _createdPipelines.push_back(pipeline);
         return pipeline;
     }
@@ -240,5 +248,45 @@ namespace IC {
     bool PipelineManager::IsPipelineSuitable(Pipeline &pipeline, MaterialInstance &materialData) {
         // todo: oversimplification, but will do for now
         return pipeline.materialFlags == materialData.Template().flags;
+    }
+
+    /// @brief Creates the graphics pipeline for shadow render pass
+    void PipelineManager::CreateShadowMapPipeline(VkFormat swapChainDepthFormat) {
+        // pipeline layout
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo{.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+        pipelineLayoutInfo.setLayoutCount = 0;
+        pipelineLayoutInfo.pSetLayouts = nullptr;
+
+        // push constants
+        VkPushConstantRange pushConstants =
+            PushConstants<TransformationPushConstants>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstants;
+
+        VkPipelineLayout pipelineLayout;
+        VK_CHECK(vkCreatePipelineLayout(_device, &pipelineLayoutInfo, nullptr, &pipelineLayout));
+
+        PipelineBuilder pipelineBuilder;
+        pipelineBuilder.pipelineLayout = pipelineLayout;
+        VkShaderModule vertShaderModule =
+            PipelineBuilder::CreateShaderModule(_device, "src/vulkan/shaders/shadow_pass.vert.spv");
+        VkShaderModule fragShaderModule =
+            PipelineBuilder::CreateShaderModule(_device, "src/vulkan/shaders/shadow_pass.frag.spv");
+        pipelineBuilder.SetShaders(vertShaderModule, fragShaderModule);
+        pipelineBuilder.SetInputTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+        pipelineBuilder.SetPolygonMode(VK_POLYGON_MODE_FILL);
+        pipelineBuilder.SetCullMode(VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE);
+        pipelineBuilder.SetMultisamplingNone();
+        pipelineBuilder.DisableBlending();
+        pipelineBuilder.DisableColorAttachment();
+        pipelineBuilder.EnableDepthTest();
+        pipelineBuilder.SetDepthFormat(swapChainDepthFormat);
+
+        _shadowMapPipeline = std::make_unique<Pipeline>();
+        _shadowMapPipeline->pipeline = pipelineBuilder.BuildPipeline(_device);
+        _shadowMapPipeline->layout = pipelineLayout;
+        _shadowMapPipeline->descriptorSetLayouts = {};
+        _shadowMapPipeline->shaderModules = {vertShaderModule, fragShaderModule};
+        _shadowMapPipeline->materialFlags = MaterialFlags::None;
     }
 } // namespace IC
