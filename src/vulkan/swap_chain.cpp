@@ -314,7 +314,6 @@ namespace IC {
             size.width = 1024;
             size.height = 1024;
 
-            IC_CORE_WARN("CREATING SHADOW IMAGE");
             _allocator.CreateImage(size, _swapChainDepthFormat,
                                    VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                                    _shadowImages[i]);

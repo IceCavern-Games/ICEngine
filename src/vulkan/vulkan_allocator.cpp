@@ -48,7 +48,6 @@ namespace IC {
 
         VkImageAspectFlags aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT;
         if (format == VK_FORMAT_D32_SFLOAT) {
-            IC_CORE_WARN("YO WE SWAGGING UP IN HERE");
             aspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT;
         }
 
