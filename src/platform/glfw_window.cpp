@@ -1,7 +1,9 @@
 #include "glfw_window.h"
 
 #include <events/ic_app_event.h>
+#include <events/ic_key_event.h>
 #include <ic_common.h>
+#include <ic_keycodes.h>
 #include <ic_log.h>
 
 #include "ic_renderer.h"
@@ -54,6 +56,28 @@ namespace IC {
 
         _renderer = Renderer::MakeRenderer(RendererConfig(_window, rendererType, props.width, props.height));
         IC_CORE_ASSERT(_renderer != nullptr, "Render module was not found.");
+
+        glfwSetKeyCallback(_window, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
+            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+
+            switch (action) {
+            case GLFW_PRESS: {
+                KeyPressedEvent event((KeyCode)key, 0);
+                data.eventCallback(event);
+                break;
+            }
+            case GLFW_RELEASE: {
+                KeyReleasedEvent event((KeyCode)key);
+                data.eventCallback(event);
+                break;
+            }
+            case GLFW_REPEAT: {
+                KeyPressedEvent event((KeyCode)key, 1);
+                data.eventCallback(event);
+                break;
+            }
+            }
+        });
 
         glfwSetWindowCloseCallback(_window, [](GLFWwindow *window) {
             WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
