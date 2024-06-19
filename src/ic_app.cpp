@@ -19,6 +19,9 @@ namespace IC {
 
     void App::Run() {
         while (_isRunning) {
+            for (Layer *layer : _layerStack)
+                layer->OnUpdate();
+
             _window->OnUpdate();
         }
     }
@@ -27,6 +30,40 @@ namespace IC {
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(OnWindowClose));
         dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(OnWindowResize));
+        dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(OnKeyPressed));
+
+        // Propagate events up the layer stack and cancel the
+        // event propagation if the event is marked as "handled".
+        for (auto it = _layerStack.end(); it != _layerStack.begin();) {
+            (*--it)->OnEvent(e);
+
+            if (e.handled)
+                break;
+        }
+    }
+
+    void App::PushLayer(Layer *layer) {
+        _layerStack.PushLayer(layer);
+        layer->OnAttach();
+    }
+
+    void App::PushOverlay(Layer *layer) {
+        _layerStack.PushOverlay(layer);
+        layer->OnAttach();
+    }
+
+    bool App::OnKeyPressed(KeyPressedEvent &e) {
+        switch (e.GetKeyCode()) {
+        case Key::Escape:
+            _isRunning = false;
+
+            return true;
+            break;
+        default:
+            break;
+        }
+
+        return false;
     }
 
     bool App::OnWindowClose(WindowCloseEvent &e) {

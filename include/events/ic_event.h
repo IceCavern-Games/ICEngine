@@ -11,11 +11,16 @@ namespace IC {
         // Window events.
         WindowClose,
         WindowResize,
+        // Keyboard events.
+        KeyPressed,
+        KeyReleased
     };
 
     enum EventCategory {
         EventCategoryNone = 0,
         EventCategoryApp = 1 << 0,
+        EventCategoryInput = 1 << 1,
+        EventCategoryKeyboard = 1 << 2
     };
 
 #define EVENT_CLASS_TYPE(type)                                                                                         \
