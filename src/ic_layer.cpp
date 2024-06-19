@@ -6,7 +6,7 @@ namespace IC {
     Layer::~Layer() {}
 
     LayerStack::LayerStack() {
-        _layerInsertIndex = _layers.begin();
+        _layerInsertIndex = 0;
     }
 
     LayerStack::~LayerStack() {
@@ -15,7 +15,8 @@ namespace IC {
     }
 
     void LayerStack::PushLayer(Layer *layer) {
-        _layerInsertIndex = _layers.emplace(_layerInsertIndex, layer);
+        _layers.emplace(_layers.begin() + _layerInsertIndex, layer);
+        _layerInsertIndex++;
     }
 
     void LayerStack::PushOverlay(Layer *overlay) {
